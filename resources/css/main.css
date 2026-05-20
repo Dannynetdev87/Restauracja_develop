@@ -1,0 +1,66 @@
+@import 'tailwindcss';
+/*@import './index.css';*/
+@import './logowanie.css';
+/*@import './menu.css';*/
+
+@source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
+@source '../../storage/framework/views/*.php';
+@source '../**/*.blade.php';
+@source '../**/*.js';
+
+@theme {
+    --font-sans: 'Instrument Sans', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
+
+    /* REJESTRACJA TWOICH KOLORÓW RESTAURACJI */
+    --color-brand-dark: #3a2a1e;   /* Ciemny brąz na napisy, obrysy, główne elementy */
+    --color-brand-accent: #7a553a; /* Ciepły brąz na akcenty, teksty drugorzędne, hover */
+    --color-brand-light: #f5deb3;  /* Twoje tło w typie Wheat (bursztynowy/biszkoptowy) */
+    --color-brand-card: #fffbf5;   /* Kremowa biel dla karty formularza logowania */
+}
+
+@tailwind utilities;
+
+/* Zmienne globalne i gradienty przeniesione z menu */
+:root {
+    --color1: linear-gradient(18deg, rgba(161, 120, 95, 1) 0%, rgba(222, 157, 113, 1) 72%);
+    --text-color4: wheat;
+    --text-color1: #3a2a1e;
+}
+
+@layer base {
+    /* Style tagów bazowych używane w menu i layoutach */
+    header { @apply bg-black min-h-[100px]; }
+    main { @apply flex justify-center bg-brand-light; }
+    footer { @apply bg-black min-h-[45px]; }
+}
+
+@layer components {
+    /* --- WSPÓLNY LAYOUT STRONY --- */
+    .site-body {
+        @apply bg-brand-light flex flex-col min-h-screen text-brand-dark font-sans antialiased;
+    }
+
+    .main-header {
+        @apply bg-white/80 backdrop-blur-md shadow-sm sticky top-0 z-50 border-b border-brand-dark/10;
+    }
+
+    .header-container {
+        @apply max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex justify-between items-center;
+    }
+
+    .site-logo { @apply text-2xl font-black tracking-tight text-brand-dark; }
+    .logo-accent { @apply text-brand-accent; }
+
+    .main-nav { @apply flex items-center gap-8 font-medium; }
+    .nav-link { @apply text-brand-accent hover:text-brand-dark transition; }
+
+    /* Dropdown dla konta */
+    .dropdown-wrapper { @apply relative py-2; }
+    .dropdown-trigger { @apply flex items-center gap-1 text-brand-accent hover:text-brand-dark transition focus:outline-none; }
+    .dropdown-menu { @apply absolute right-0 mt-2 w-48 bg-white rounded-xl shadow-lg border border-brand-dark/10 py-2 hidden group-hover:block transition-all z-50; }
+    .dropdown-item { @apply block px-4 py-2.5 text-sm text-brand-dark hover:bg-brand-light/50 hover:text-brand-accent font-semibold transition; }
+
+    /* Wspólna stopka */
+    .site-footer { @apply bg-brand-dark text-brand-light/70 py-8 border-t border-brand-dark/20 mt-auto; }
+    .footer-container { @apply max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center text-sm; }
+}
