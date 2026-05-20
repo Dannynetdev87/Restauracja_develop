@@ -31,9 +31,18 @@
             @if(request('role') === 'manager')
                 <a href="#stoliki" class="nav-link font-bold text-brand-dark border-b-2 border-brand-accent">Stoliki</a>
 
-                <a href="/logout" class="text-sm bg-brand-dark text-brand-light px-4 py-2 rounded-xl hover:bg-brand-accent transition">
-                    Wyloguj
-                </a>
+                @auth
+                    <form method="POST" action="{{ route('logout') }}">
+                        @csrf
+                        <button type="submit" class="text-sm bg-brand-dark text-brand-light px-4 py-2 rounded-xl hover:bg-brand-accent transition">
+                            Wyloguj
+                        </button>
+                    </form>
+                @else
+                    <a href="/login" class="text-sm bg-brand-dark text-brand-light px-4 py-2 rounded-xl hover:bg-brand-accent transition">
+                        Zaloguj
+                    </a>
+                @endauth
             @else
                 <a href="/login" class="bg-brand-dark text-brand-light font-bold px-5 py-2.5 rounded-xl transition hover:bg-brand-accent shadow-sm text-sm">
                     Zaloguj się

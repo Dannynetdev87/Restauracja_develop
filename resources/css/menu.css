@@ -37,7 +37,7 @@ h1 {
 
 .btn-add
 {
-    @apply bg-[#3a2a1e] text-[wheat] px-4 py-2 rounded-xl text-sm font-semibold border border-[#7a553a] hover:bg-[593710] transition-colors no-underline cursor-pointer;
+    @apply bg-[#3a2a1e] text-[wheat] px-4 py-2 rounded-xl text-sm font-semibold border border-[#7a553a] hover:bg-[#593710] transition-colors no-underline cursor-pointer;
 }
 
 .food
@@ -57,7 +57,7 @@ h2 {
 /* To o co pytałeś na samym początku – czysto i czytelnie */
 .box-content {
     @apply flex flex-row justify-between items-center border-2 border-[#593710] rounded-[25px] py-2 px-4 m-[5px];
-    color: var(--color1);
+    color: var(--text-color1);
 }
 
 .dish-actions
