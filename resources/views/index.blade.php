@@ -1,4 +1,4 @@
-<x-app>
+<x-layout>
     <x-slot:title>Panel - SmakPrzeszłości</x-slot>
 
     <x-slot:styles>
@@ -80,4 +80,4 @@
             </div>
         </section>
     @endif
-</x-app>
+</x-layout>

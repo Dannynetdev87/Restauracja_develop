@@ -1,4 +1,4 @@
-<x-app>
+<x-layout>
     <x-slot:title>Zarządzanie Menu - SmakPrzeszłości</x-slot>
 
     <x-slot:styles>
@@ -41,4 +41,4 @@
             </div>
         </div>
     </div>
-</x-app>
+</x-layout>

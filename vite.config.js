@@ -7,11 +7,12 @@ export default defineConfig({
     plugins: [
         laravel({
             input: [
+                //'resources/css/app.css',
                 'resources/css/main.css',
-                'resources/css/index.css',
                 'resources/css/menu.css',
                 'resources/css/logowanie.css',
-                'resources/js/menu.js',
+                //'resources/js/app.js',
+                'resources/js/menu.js'
             ],
             refresh: true,
             fonts: [
