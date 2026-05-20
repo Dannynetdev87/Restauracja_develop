@@ -13,8 +13,8 @@ return new class extends Migration
     {
         Schema::create('restaurant_tables', function (Blueprint $table) {
             $table->id();
-            $table->integer('number')->unique();
-            $table->integer('seats');
+            $table->unsignedInteger('number')->unique();
+            $table->unsignedSmallInteger('seats');
             $table->enum('status', ['wolny', 'zajety', 'zarezerwowany'])->default('wolny');
             $table->timestamps();
         });
