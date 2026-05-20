@@ -5,6 +5,8 @@ use App\Http\Controllers\MenuCategoryController;
 use App\Http\Controllers\MenuItemController;
 use App\Http\Controllers\MenuManagementController;
 use App\Http\Controllers\RestaurantTableController;
+use App\Http\Controllers\WaiterOrderController;
+use App\Http\Controllers\WaiterTableController;
 use App\Models\MenuCategory;
 use App\Models\User;
 use Illuminate\Support\Facades\Route;
@@ -39,6 +41,12 @@ Route::middleware('auth')->group(function () {
             'description' => 'Obsługa stolików, przyjmowanie zamówień i zamykanie rachunków.',
         ]);
     })->middleware('role:kelner')->name('waiter.dashboard');
+
+    Route::middleware('role:kelner')->group(function () {
+        Route::get('/waiter/tables', [WaiterTableController::class, 'index'])->name('waiter.tables.index');
+        Route::post('/waiter/tables/{restaurantTable}/orders', [WaiterOrderController::class, 'store'])->name('waiter.orders.store');
+        Route::get('/waiter/orders/{order}', [WaiterOrderController::class, 'show'])->name('waiter.orders.show');
+    });
 
     Route::get('/kitchen/dashboard', function () {
         return view('dashboard', [

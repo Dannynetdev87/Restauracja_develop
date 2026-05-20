@@ -23,6 +23,16 @@ class Order extends Model
 
     public const STATUS_CANCELLED = 'cancelled';
 
+    public static function activeStatuses(): array
+    {
+        return [
+            self::STATUS_OPEN,
+            self::STATUS_IN_PROGRESS,
+            self::STATUS_READY,
+            self::STATUS_SERVED,
+        ];
+    }
+
     protected $fillable = [
         'restaurant_table_id',
         'waiter_id',
