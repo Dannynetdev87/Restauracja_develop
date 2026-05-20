@@ -4,6 +4,7 @@ use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\MenuCategoryController;
 use App\Http\Controllers\MenuItemController;
 use App\Http\Controllers\MenuManagementController;
+use App\Http\Controllers\RestaurantTableController;
 use App\Models\MenuCategory;
 use App\Models\User;
 use Illuminate\Support\Facades\Route;
@@ -66,6 +67,12 @@ Route::middleware('auth')->group(function () {
         })->name('manager.dashboard');
 
         Route::get('/manager/menu', [MenuManagementController::class, 'index'])->name('manager.podglad');
+
+        Route::get('/manager/tables', [RestaurantTableController::class, 'index'])->name('manager.tables.index');
+        Route::post('/manager/tables', [RestaurantTableController::class, 'store'])->name('manager.tables.store');
+        Route::get('/manager/tables/{restaurantTable}/edit', [RestaurantTableController::class, 'edit'])->name('manager.tables.edit');
+        Route::put('/manager/tables/{restaurantTable}', [RestaurantTableController::class, 'update'])->name('manager.tables.update');
+        Route::delete('/manager/tables/{restaurantTable}', [RestaurantTableController::class, 'destroy'])->name('manager.tables.destroy');
 
         Route::post('/manager/menu/categories', [MenuCategoryController::class, 'store'])->name('manager.menu-categories.store');
         Route::get('/manager/menu/categories/{menuCategory}/edit', [MenuCategoryController::class, 'edit'])->name('manager.menu-categories.edit');

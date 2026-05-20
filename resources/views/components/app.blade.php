@@ -41,6 +41,9 @@
                     <a href="{{ route('manager.podglad') }}" class="nav-link {{ request()->routeIs('manager.podglad', 'manager.menu-categories.*', 'manager.menu-items.*') ? $activeNavClass : '' }}">
                         Zarządzanie menu
                     </a>
+                    <a href="{{ route('manager.tables.index') }}" class="nav-link {{ request()->routeIs('manager.tables.*') ? $activeNavClass : '' }}">
+                        Stoliki
+                    </a>
                 @endif
 
                 <form method="POST" action="{{ route('logout') }}">
