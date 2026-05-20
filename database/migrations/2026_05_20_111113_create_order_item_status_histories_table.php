@@ -1,4 +1,3 @@
-
 <?php
 
 use Illuminate\Database\Migrations\Migration;
@@ -15,7 +14,7 @@ return new class extends Migration
         Schema::create('order_item_status_histories', function (Blueprint $table) {
             $table->id();
             $table->foreignId('order_item_id')->constrained('order_items')->onDelete('cascade');
-            $table->foreignId('changed_by')->constrained('users')->onDelete('cascade');
+            $table->foreignId('changed_by')->nullable()->constrained('users')->nullOnDelete();
             $table->string('old_status')->nullable()->index();
             $table->string('new_status')->index();
             $table->timestamp('created_at')->useCurrent();
