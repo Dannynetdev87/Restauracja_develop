@@ -26,15 +26,19 @@
             Smak<span class="logo-accent">Przeszłości</span>
         </a>
 
+        @php
+            $activeNavClass = 'font-bold text-brand-dark border-b-2 border-brand-accent';
+        @endphp
+
         <nav class="main-nav">
-            <a href="{{ route('home') }}" class="nav-link">Start</a>
-            <a href="{{ route('menu.index') }}" class="nav-link">Menu</a>
+            <a href="{{ route('home') }}" class="nav-link {{ request()->routeIs('home') ? $activeNavClass : '' }}">Start</a>
+            <a href="{{ route('menu.index') }}" class="nav-link {{ request()->routeIs('menu.index') ? $activeNavClass : '' }}">Menu</a>
 
             @auth
-                <a href="{{ route('dashboard') }}" class="nav-link">Panel</a>
+                <a href="{{ route('dashboard') }}" class="nav-link {{ request()->routeIs('dashboard', 'admin.dashboard', 'manager.dashboard', 'waiter.dashboard', 'kitchen.dashboard', 'bar.dashboard') ? $activeNavClass : '' }}">Panel</a>
 
                 @if(auth()->user()->isManager() || auth()->user()->isAdmin())
-                    <a href="{{ route('manager.podglad') }}" class="nav-link font-bold text-brand-dark border-b-2 border-brand-accent">
+                    <a href="{{ route('manager.podglad') }}" class="nav-link {{ request()->routeIs('manager.podglad', 'manager.menu-categories.*', 'manager.menu-items.*') ? $activeNavClass : '' }}">
                         Zarządzanie menu
                     </a>
                 @endif
