@@ -13,9 +13,15 @@
         </p>
 
         <div class="welcome-actions">
-            <a href="{{ route('menu.index') }}" class="btn-welcome-primary">
-                Zobacz menu
-            </a>
+            @if(auth()->user()->isWaiter())
+                <a href="{{ route('waiter.tables.index') }}" class="btn-welcome-primary">
+                    Przejdź do stolików
+                </a>
+            @else
+                <a href="{{ route('menu.index') }}" class="btn-welcome-primary">
+                    Zobacz menu
+                </a>
+            @endif
         </div>
     </section>
 </x-app>

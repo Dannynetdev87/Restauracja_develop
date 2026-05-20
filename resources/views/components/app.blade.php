@@ -35,7 +35,7 @@
             <a href="{{ route('menu.index') }}" class="nav-link {{ request()->routeIs('menu.index') ? $activeNavClass : '' }}">Menu</a>
 
             @auth
-                <a href="{{ route('dashboard') }}" class="nav-link {{ request()->routeIs('dashboard', 'admin.dashboard', 'manager.dashboard', 'waiter.dashboard', 'kitchen.dashboard', 'bar.dashboard') ? $activeNavClass : '' }}">Panel</a>
+                <a href="{{ route('dashboard') }}" class="nav-link {{ request()->routeIs('dashboard', 'admin.dashboard', 'manager.dashboard', 'waiter.dashboard', 'waiter.tables.*', 'waiter.orders.*', 'kitchen.dashboard', 'bar.dashboard') ? $activeNavClass : '' }}">Panel</a>
 
                 @if(auth()->user()->isManager() || auth()->user()->isAdmin())
                     <a href="{{ route('manager.podglad') }}" class="nav-link {{ request()->routeIs('manager.podglad', 'manager.menu-categories.*', 'manager.menu-items.*') ? $activeNavClass : '' }}">

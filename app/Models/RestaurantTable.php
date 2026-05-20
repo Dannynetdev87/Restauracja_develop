@@ -32,9 +32,19 @@ class RestaurantTable extends Model
         return $this->hasMany(Order::class);
     }
 
+    public function activeOrders(): HasMany
+    {
+        return $this->orders()->whereIn('status', Order::activeStatuses());
+    }
+
     public function isFree(): bool
     {
         return $this->status === self::STATUS_FREE;
+    }
+
+    public function canOpenOrder(): bool
+    {
+        return $this->isFree() && ! $this->activeOrders()->exists();
     }
 
     protected function status(): Attribute
