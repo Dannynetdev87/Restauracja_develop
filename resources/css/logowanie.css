@@ -1,0 +1,48 @@
+@import 'tailwindcss';
+
+@source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
+@source '../../storage/framework/views/*.php';
+@source '../**/*.blade.php';
+@source '../**/*.js';
+
+@tailwind utilities;
+
+/* 1. Konfiguracja motywu Tailwind v4 */
+@theme {
+    --font-sans: 'Instrument Sans', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
+
+    /* REJESTRACJA TWOICH KOLORÓW RESTAURACJI */
+    --color-brand-dark: #3a2a1e;   /* Ciemny brąz na napisy, obrysy, główne elementy */
+    --color-brand-accent: #7a553a; /* Ciepły brąz na akcenty, teksty drugorzędne, hover */
+    --color-brand-light: #f5deb3;  /* Twoje tło w typie Wheat (bursztynowy/biszkoptowy) */
+    --color-brand-card: #fffbf5;   /* Kremowa biel dla karty formularza logowania */
+}
+@layer components {
+    /* --- STRONA LOGOWANIA --- */
+    .login-page { @apply bg-brand-light text-brand-dark font-sans antialiased; }
+    .login-wrapper { @apply min-h-screen flex items-center justify-center p-4; }
+
+    .login-card { @apply w-full max-w-md bg-brand-card rounded-xl shadow-md border border-brand-dark/10 p-8 space-y-6; }
+    .login-header { @apply text-center; }
+    .login-title { @apply text-2xl font-bold tracking-tight text-brand-dark; }
+    .login-subtitle { @apply mt-2 text-sm text-brand-accent; }
+
+    .login-form { @apply space-y-4; }
+    .form-group { @apply flex flex-col; }
+    .form-label { @apply block text-sm font-medium text-brand-dark mb-1; }
+
+    .form-input {
+        @apply w-full px-4 py-2 bg-white rounded-lg outline-none transition-colors border border-brand-accent/30 focus:ring-2 focus:ring-brand-accent/30 focus:border-brand-dark;
+    }
+    .form-input.has-error { @apply border-red-500 focus:border-red-500 focus:ring-red-200; }
+    .form-error-msg { @apply mt-1 text-sm text-red-600; }
+
+    .form-actions { @apply flex items-center justify-between; }
+    .checkbox-wrapper { @apply flex items-center gap-2 cursor-pointer; }
+    .form-checkbox { @apply w-4 h-4 rounded text-brand-dark border-brand-accent/30 focus:ring-brand-accent/50; }
+    .checkbox-label { @apply text-sm text-brand-accent; }
+    .auth-link { @apply text-sm font-medium text-brand-accent transition-colors hover:text-brand-dark; }
+
+    .btn-primary { @apply w-full bg-brand-dark text-white font-medium py-2.5 rounded-lg transition-all hover:bg-brand-accent focus:ring-4 focus:ring-brand-accent/30; }
+    .login-footer { @apply text-center text-sm text-brand-accent; }
+}
