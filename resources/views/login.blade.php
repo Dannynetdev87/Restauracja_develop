@@ -21,7 +21,7 @@
         </div>
 
         <!-- Formularz -->
-        <form method="POST" action="" class="login-form">
+        <form method="POST" action="{{ route('login') }}" class="login-form">
             @csrf
 
             <!-- Pole Login -->
