@@ -67,10 +67,10 @@
             </p>
 
             <div class="welcome-actions">
-                <a href="/menu" class="btn-welcome-primary">
+                <a href="{{ route('menu.index') }}" class="btn-welcome-primary">
                     Zobacz Menu
                 </a>
-                <a href="/login" class="btn-welcome-secondary">
+                <a href="{{ route('login') }}" class="btn-welcome-secondary">
                     Zaloguj się do panelu
                 </a>
             </div>
