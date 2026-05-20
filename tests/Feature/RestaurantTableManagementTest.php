@@ -33,6 +33,18 @@ class RestaurantTableManagementTest extends TestCase
         ]);
     }
 
+    public function test_manager_dashboard_links_to_table_management(): void
+    {
+        $manager = User::factory()->create(['role' => User::ROLE_MANAGER]);
+
+        $this
+            ->actingAs($manager)
+            ->get(route('manager.dashboard'))
+            ->assertOk()
+            ->assertSee(route('manager.tables.index'))
+            ->assertSee('+ Dodaj nowy stolik');
+    }
+
     public function test_manager_can_update_restaurant_table(): void
     {
         $manager = User::factory()->create(['role' => User::ROLE_MANAGER]);

@@ -9,9 +9,9 @@
                         <h1 class="text-3xl font-black tracking-tight text-brand-dark">Zarządzanie stolikami</h1>
                         <p class="text-brand-accent text-sm mt-1">Podgląd statusu sal, liczby miejsc oraz rezerwacji.</p>
                     </div>
-                    <button class="mt-4 sm:mt-0 bg-brand-dark text-brand-light hover:bg-brand-accent font-bold px-5 py-2.5 rounded-xl transition shadow-sm text-sm flex items-center gap-2">
+                    <a href="{{ route('manager.tables.index') }}" class="mt-4 sm:mt-0 bg-brand-dark text-brand-light hover:bg-brand-accent font-bold px-5 py-2.5 rounded-xl transition shadow-sm text-sm flex items-center gap-2">
                         <span>+ Dodaj nowy stolik</span>
-                    </button>
+                    </a>
                 </div>
 
                 @php
