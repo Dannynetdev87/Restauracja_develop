@@ -10,44 +10,46 @@
 <body class="site-body">
 
 <div class="bg-brand-dark text-white text-xs py-2 px-4 flex justify-between items-center border-b border-white/10">
-    <span>Przeglądasz jako: <strong class="uppercase text-brand-light">{{ request('role', 'gosc') }}</strong></span>
-    <div class="flex gap-2">
-        <a href="?role=gosc" class="px-2 py-0.5 rounded bg-white/20 hover:bg-white/30 transition">Niezalogowany</a>
-        <a href="?role=manager" class="px-2 py-0.5 rounded bg-amber-600 hover:bg-amber-500 transition">Manager</a>
-    </div>
+    @auth
+        <span>Zalogowano jako: <strong class="uppercase text-brand-light">{{ auth()->user()->full_name }}</strong></span>
+        <span>Rola: <strong class="uppercase text-brand-light">{{ auth()->user()->role }}</strong></span>
+    @else
+        <span>Przeglądasz jako: <strong class="uppercase text-brand-light">gość</strong></span>
+        <span>Dostęp do paneli wymaga logowania</span>
+    @endauth
 </div>
 
 <header class="main-header">
     <div class="header-container">
 
-        <a href="/{{ request()->has('role') ? '?role='.request('role') : '' }}" class="site-logo">
+        <a href="{{ route('home') }}" class="site-logo">
             Smak<span class="logo-accent">Przeszłości</span>
         </a>
 
         <nav class="main-nav">
-            <a href="/{{ request()->has('role') ? '?role='.request('role') : '' }}" class="nav-link">Start</a>
-            <a href="/menu" class="nav-link">Menu</a>
+            <a href="{{ route('home') }}" class="nav-link">Start</a>
+            <a href="{{ route('menu.index') }}" class="nav-link">Menu</a>
 
-            @if(request('role') === 'manager')
-                <a href="#stoliki" class="nav-link font-bold text-brand-dark border-b-2 border-brand-accent">Stoliki</a>
+            @auth
+                <a href="{{ route('dashboard') }}" class="nav-link">Panel</a>
 
-                @auth
-                    <form method="POST" action="{{ route('logout') }}">
-                        @csrf
-                        <button type="submit" class="text-sm bg-brand-dark text-brand-light px-4 py-2 rounded-xl hover:bg-brand-accent transition">
-                            Wyloguj
-                        </button>
-                    </form>
-                @else
-                    <a href="/login" class="text-sm bg-brand-dark text-brand-light px-4 py-2 rounded-xl hover:bg-brand-accent transition">
-                        Zaloguj
+                @if(auth()->user()->isManager())
+                    <a href="{{ route('manager.podglad') }}" class="nav-link font-bold text-brand-dark border-b-2 border-brand-accent">
+                        Zarządzanie menu
                     </a>
-                @endauth
+                @endif
+
+                <form method="POST" action="{{ route('logout') }}">
+                    @csrf
+                    <button type="submit" class="text-sm bg-brand-dark text-brand-light px-4 py-2 rounded-xl hover:bg-brand-accent transition">
+                        Wyloguj
+                    </button>
+                </form>
             @else
-                <a href="/login" class="bg-brand-dark text-brand-light font-bold px-5 py-2.5 rounded-xl transition hover:bg-brand-accent shadow-sm text-sm">
+                <a href="{{ route('login') }}" class="bg-brand-dark text-brand-light font-bold px-5 py-2.5 rounded-xl transition hover:bg-brand-accent shadow-sm text-sm">
                     Zaloguj się
                 </a>
-            @endif
+            @endauth
         </nav>
 
     </div>
@@ -59,7 +61,7 @@
 
 <footer class="site-footer">
     <div class="footer-container">
-        &copy; 2026 SmakPrzeszłości. Panel: <span class="uppercase font-bold text-white">{{ request('role', 'Gość (Niezalogowany)') }}</span>
+        &copy; 2026 SmakPrzeszłości. Panel: <span class="uppercase font-bold text-white">{{ auth()->user()->role ?? 'Gość' }}</span>
     </div>
 </footer>
 

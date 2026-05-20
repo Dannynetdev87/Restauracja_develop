@@ -8,42 +8,35 @@
     @vite('resources/css/logowanie.css')
 </head>
 <body class="login-page">
-<!--To pójdzie do main -->
-<!-- Wrapper centrujący -->
 <div class="login-wrapper">
 
-    <!-- Karta logowania -->
     <div class="login-card">
 
-        <!-- Nagłówek -->
         <div class="login-header">
             <h1 class="login-title">Zaloguj się</h1>
-            <p class="login-subtitle">Wprowadź swoje dane, aby uzyskać dostęp.</p>
+            <p class="login-subtitle">Wprowadź dane pracownika, aby uzyskać dostęp do panelu.</p>
         </div>
 
-        <!-- Formularz -->
         <form method="POST" action="{{ route('login') }}" class="login-form">
             @csrf
 
-            <!-- Pole Login -->
             <div class="form-group">
-                <label for="login" class="form-label">Adres e-mail / Login</label>
+                <label for="login" class="form-label">Adres e-mail</label>
                 <input
-                    type="text"
+                    type="email"
                     name="login"
                     id="login"
                     value="{{ old('login') }}"
                     required
                     autofocus
-                    class="form-input @error('email') has-error @enderror"
-                    placeholder="Wprowadz login"
+                    class="form-input @error('login') has-error @enderror"
+                    placeholder="manager@example.com"
                 >
-                @error('email')
-                <p class="form-error-msg">{{ $message }}</p>
+                @error('login')
+                    <p class="form-error-msg">{{ $message }}</p>
                 @enderror
             </div>
 
-            <!-- Pole Hasło -->
             <div class="form-group">
                 <label for="password" class="form-label">Hasło</label>
                 <input
@@ -55,35 +48,21 @@
                     placeholder="••••••••"
                 >
                 @error('password')
-                <p class="form-error-msg">{{ $message }}</p>
+                    <p class="form-error-msg">{{ $message }}</p>
                 @enderror
             </div>
 
-            <!-- Akcje dodatkowe -->
             <div class="form-actions">
                 <label class="checkbox-wrapper">
                     <input type="checkbox" name="remember" class="form-checkbox">
                     <span class="checkbox-label">Zapamiętaj mnie</span>
                 </label>
-
-                @if (Route::has('password.request'))
-                    <a href="" class="auth-link">Zapomniałeś hasła?</a>
-                @endif
             </div>
 
-            <!-- Przycisk Submit -->
             <button type="submit" class="btn-primary">
                 Zaloguj
             </button>
         </form>
-
-        <!-- Stopka -->
-        @if (Route::has('register'))
-            <div class="login-footer">
-                Nie masz konta?
-                <a href="" class="auth-link">Zarejestruj się</a>
-            </div>
-        @endif
 
     </div>
 </div>

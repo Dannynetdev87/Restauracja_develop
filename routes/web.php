@@ -1,39 +1,64 @@
 <?php
 
-use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Auth\LoginController;
+use App\Models\User;
+use Illuminate\Support\Facades\Route;
 
-// Trasa do indexu
 Route::get('/', function () {
     return view('index');
 })->name('home');
 
-// Ścieżki dla gości (niezalogowanych)
 Route::middleware('guest')->group(function () {
     Route::get('/login', [LoginController::class, 'create'])->name('login');
     Route::post('/login', [LoginController::class, 'store']);
 });
 
-// Ścieżki dla zalogowanych użytkowników
 Route::middleware('auth')->group(function () {
     Route::post('/logout', [LoginController::class, 'destroy'])->name('logout');
 
-    // Przykładowy panel po zalogowaniu
     Route::get('/dashboard', function () {
-        return 'Witaj w panelu restauracji! <form method="POST" action="'.route('logout').'">'.csrf_field().'<button type="submit">Wyloguj</button></form>';
+        $user = request()->user();
+
+        return match ($user->role) {
+            User::ROLE_MANAGER => redirect()->route('manager.dashboard'),
+            User::ROLE_KITCHEN => redirect()->route('kitchen.dashboard'),
+            User::ROLE_BAR => redirect()->route('bar.dashboard'),
+            default => redirect()->route('waiter.dashboard'),
+        };
     })->name('dashboard');
+
+    Route::get('/waiter/dashboard', function () {
+        return view('dashboard', [
+            'title' => 'Panel kelnera',
+            'description' => 'Obsługa stolików, przyjmowanie zamówień i zamykanie rachunków.',
+        ]);
+    })->middleware('role:kelner')->name('waiter.dashboard');
+
+    Route::get('/kitchen/dashboard', function () {
+        return view('dashboard', [
+            'title' => 'Panel kuchni',
+            'description' => 'Podgląd pozycji do przygotowania oraz zmiana statusów zamówień.',
+        ]);
+    })->middleware('role:kuchnia')->name('kitchen.dashboard');
+
+    Route::get('/bar/dashboard', function () {
+        return view('dashboard', [
+            'title' => 'Panel baru',
+            'description' => 'Podgląd napojów do przygotowania i obsługa statusów baru.',
+        ]);
+    })->middleware('role:bar')->name('bar.dashboard');
+
+    Route::middleware('role:manager')->group(function () {
+        Route::get('/manager/dashboard', function () {
+            return view('index');
+        })->name('manager.dashboard');
+
+        Route::get('/manager/menu', function () {
+            return view('menu-manager');
+        })->name('manager.podglad');
+    });
 });
 
-// Trasa do Menu (na ten moment zwraca po prostu Twój widok menu.blade.php)
 Route::get('/menu', function () {
     return view('menu');
 })->name('menu.index');
-
-// Tymczasowa trasa dla managera, żeby link w menu.blade.php nie wywalał błędu 500
-Route::get('/manager/menu', function () {
-    return view('menu-manager');
-})->name('manager.podglad');
-
-// Tutaj w przyszłości dopiszemy kolejne adresy, np.:
-// Route::get('/menu', [MenuController::class, 'index']);
-// Route::get('/rezerwacje', [ReservationController::class, 'create']);

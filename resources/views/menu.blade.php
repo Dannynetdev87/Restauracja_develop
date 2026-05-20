@@ -11,7 +11,11 @@
 <body>
 <header></header>
 <nav class="flex items-center justify-center">
-    <a href="{{ route('manager.podglad') }}" class="btn-add">Podgląd managera</a>
+    @auth
+        @if(auth()->user()->isManager())
+            <a href="{{ route('manager.podglad') }}" class="btn-add">Podgląd managera</a>
+        @endif
+    @endauth
 </nav>
 <main>
     <div class="container-main">
