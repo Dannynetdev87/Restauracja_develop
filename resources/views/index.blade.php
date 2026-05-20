@@ -1,6 +1,10 @@
 <x-app>
     <x-slot:title>Panel - SmakPrzeszłości</x-slot>
 
+    <x-slot:styles>
+        @vite(['resources/css/index.css'])
+    </x-slot:styles>
+
     @if(request('role') === 'manager')
         <section id="stoliki" class="max-w-7xl mx-auto py-12 px-4 sm:px-6 lg:px-8">
             <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center border-b border-brand-dark/10 pb-6 mb-8">

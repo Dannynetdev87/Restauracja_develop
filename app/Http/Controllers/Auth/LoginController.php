@@ -14,7 +14,7 @@ class LoginController extends Controller
     public function create()
     {
         // Ścieźka do pliku w views
-        return view('login');
+        return view('auth.login');
     }
 
     /**

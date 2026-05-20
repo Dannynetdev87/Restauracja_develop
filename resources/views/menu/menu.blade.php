@@ -1,27 +1,22 @@
-<!doctype html>
-<html lang="pl">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
-    <meta http-equiv="X-UA-Compatible" content="ie=edge">
-    <title>Menu</title>
+<x-app>
+    <x-slot:title>Menu - SmakPrzeszłości</x-slot>
 
-    @vite(['resources/css/menu.css', 'resources/js/menu.js'])
-</head>
-<body>
-<header></header>
-<nav class="flex items-center justify-center">
-    <a href="{{ route('manager.podglad') }}" class="btn-add">Podgląd managera</a>
-</nav>
-<main>
-    <div class="container-main">
-        <div class="menu-header">
-            <h1>Menu</h1>
+    <x-slot:styles>
+        @vite(['resources/css/menu.css'])
+    </x-slot:styles>
+
+    <x-slot:scripts>
+        @vite(['resources/js/menu.js'])
+    </x-slot:scripts>
+
+    <div class="container-main py-10">
+        <div class="menu-header mb-6">
+            <h1 class="text-3xl font-black text-brand-dark">Menu</h1>
         </div>
+
         <div class="food">
-
             <div class="box">
-                <h2>Zupy</h2>
+                <h2 class="text-2xl font-bold text-brand-accent mb-4 border-b pb-2">Zupy</h2>
                 <div class="box-content">
                     <p>rosół</p>
                     <p>6.99</p>
@@ -36,8 +31,8 @@
                 </div>
             </div>
 
-            <div class="box">
-                <h2>Coś innego</h2>
+            <div class="box mt-8">
+                <h2 class="text-2xl font-bold text-brand-accent mb-4 border-b pb-2">Coś innego</h2>
                 <div class="box-content">
                     <p>Nazwa</p>
                     <p>Cena</p>
@@ -51,10 +46,6 @@
                     <p>Cena</p>
                 </div>
             </div>
-
         </div>
     </div>
-</main>
-<footer></footer>
-</body>
-</html>
+</x-app>

@@ -3,12 +3,26 @@
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Auth\LoginController;
 
-// Trasa do indexu
+// 1. Strona główna
+// Wymaga pliku dokładnie tutaj: resources/views/index.blade.php
 Route::get('/', function () {
     return view('index');
 })->name('home');
 
+// 2. Menu dla gości
+// Wymaga pliku dokładnie tutaj: resources/views/menu/menu.blade.php
+Route::get('/menu', function () {
+    return view('menu.menu');
+})->name('menu.index');
+
+// 3. Panel zarządzania menu (Manager)
+// Wymaga pliku dokładnie tutaj: resources/views/menu/menu-manager.blade.php
+Route::get('/manager/menu', function () {
+    return view('menu.menu-manager');
+})->name('manager.podglad');
+
 // Ścieżki dla gości (niezalogowanych)
+// Wymaga pliku dokładnie tutaj: resources/views/auth/login.blade.php
 Route::middleware('guest')->group(function () {
     Route::get('/login', [LoginController::class, 'create'])->name('login');
     Route::post('/login', [LoginController::class, 'store']);
@@ -18,22 +32,9 @@ Route::middleware('guest')->group(function () {
 Route::middleware('auth')->group(function () {
     Route::post('/logout', [LoginController::class, 'destroy'])->name('logout');
 
-    // Przykładowy panel po zalogowaniu
+    // Twój przycisk "Dashboard" w Navbarze prowadzi tutaj.
+    // Przekierowujemy go po prostu na stronę główną, bo tam masz już zrobioną logikę ze stolikami.
     Route::get('/dashboard', function () {
-        return 'Witaj w panelu restauracji! <form method="POST" action="'.route('logout').'">'.csrf_field().'<button type="submit">Wyloguj</button></form>';
+        return redirect()->route('home');
     })->name('dashboard');
 });
-
-// Trasa do Menu (na ten moment zwraca po prostu Twój widok menu.blade.php)
-Route::get('/menu', function () {
-    return view('menu');
-})->name('menu.index');
-
-// Tymczasowa trasa dla managera, żeby link w menu.blade.php nie wywalał błędu 500
-Route::get('/manager/menu', function () {
-    return view('menu-manager');
-})->name('manager.podglad');
-
-// Tutaj w przyszłości dopiszemy kolejne adresy, np.:
-// Route::get('/menu', [MenuController::class, 'index']);
-// Route::get('/rezerwacje', [ReservationController::class, 'create']);
