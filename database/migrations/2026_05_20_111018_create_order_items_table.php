@@ -15,10 +15,10 @@ return new class extends Migration
             $table->id();
             $table->foreignId('order_id')->constrained('orders')->onDelete('cascade');
             $table->foreignId('menu_item_id')->constrained('menu_items')->onDelete('restrict');
-            $table->integer('quantity');
+            $table->unsignedInteger('quantity');
             $table->decimal('unit_price', 10, 2);
             $table->text('notes')->nullable();
-            $table->string('status')->default('pending')->index();
+            $table->enum('status', ['new', 'preparing', 'ready', 'delivered', 'cancelled'])->default('new')->index();
             $table->timestamps();
         });
     }

@@ -15,11 +15,13 @@ return new class extends Migration
             $table->id();
             $table->foreignId('order_id')->constrained('orders')->onDelete('cascade');
             $table->decimal('amount', 10, 2);
-            $table->string('payment_method')->index();
-            $table->string('status')->default('pending')->index();
+            $table->enum('payment_method', ['cash', 'card', 'blik', 'other'])->index();
+            $table->enum('status', ['pending', 'paid', 'cancelled', 'refunded'])->default('pending')->index();
+            $table->timestamp('paid_at')->nullable();
             $table->timestamps();
         });
     }
+
     /**
      * Reverse the migrations.
      */
@@ -28,4 +30,3 @@ return new class extends Migration
         Schema::dropIfExists('payments');
     }
 };
-

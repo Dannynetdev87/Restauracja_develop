@@ -9,6 +9,16 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class OrderItem extends Model
 {
+    public const STATUS_NEW = 'new';
+
+    public const STATUS_PREPARING = 'preparing';
+
+    public const STATUS_READY = 'ready';
+
+    public const STATUS_DELIVERED = 'delivered';
+
+    public const STATUS_CANCELLED = 'cancelled';
+
     protected $fillable = [
         'order_id',
         'menu_item_id',
@@ -36,6 +46,11 @@ class OrderItem extends Model
     public function statusHistory(): HasMany
     {
         return $this->hasMany(OrderItemStatusHistory::class);
+    }
+
+    public function subtotal(): float
+    {
+        return $this->quantity * $this->unit_price;
     }
 
     protected function status(): Attribute

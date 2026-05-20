@@ -9,8 +9,12 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 class RestaurantTable extends Model
 {
     public const STATUS_FREE = 'wolny';
+
     public const STATUS_OCCUPIED = 'zajety';
+
     public const STATUS_RESERVED = 'zarezerwowany';
+
+    public const STATUS_INACTIVE = 'nieaktywny';
 
     protected $fillable = [
         'number',

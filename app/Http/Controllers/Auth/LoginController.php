@@ -57,6 +57,7 @@ class LoginController extends Controller
     private function redirectPathFor(User $user): string
     {
         return match ($user->role) {
+            User::ROLE_ADMIN => route('admin.dashboard'),
             User::ROLE_MANAGER => route('manager.dashboard'),
             User::ROLE_KITCHEN => route('kitchen.dashboard'),
             User::ROLE_BAR => route('bar.dashboard'),

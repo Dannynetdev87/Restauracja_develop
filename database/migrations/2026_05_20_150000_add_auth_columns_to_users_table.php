@@ -21,7 +21,7 @@ return new class extends Migration
             }
 
             if (! Schema::hasColumn('users', 'role')) {
-                $table->enum('role', ['manager', 'kelner', 'kuchnia', 'bar'])->default('kelner');
+                $table->enum('role', ['admin', 'manager', 'kelner', 'kuchnia', 'bar'])->default('kelner');
             }
 
             if (! Schema::hasColumn('users', 'is_active')) {

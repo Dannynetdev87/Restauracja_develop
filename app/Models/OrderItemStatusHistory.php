@@ -8,7 +8,6 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class OrderItemStatusHistory extends Model
 {
-
     const UPDATED_AT = null;
 
     protected $fillable = [

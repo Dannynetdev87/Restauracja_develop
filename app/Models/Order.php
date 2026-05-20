@@ -9,6 +9,20 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Order extends Model
 {
+    public const STATUS_OPEN = 'open';
+
+    public const STATUS_IN_PROGRESS = 'in_progress';
+
+    public const STATUS_READY = 'ready';
+
+    public const STATUS_SERVED = 'served';
+
+    public const STATUS_PAID = 'paid';
+
+    public const STATUS_CLOSED = 'closed';
+
+    public const STATUS_CANCELLED = 'cancelled';
+
     protected $fillable = [
         'restaurant_table_id',
         'waiter_id',
@@ -42,6 +56,12 @@ class Order extends Model
     public function payments(): HasMany
     {
         return $this->hasMany(Payment::class);
+    }
+
+    public function total(): float
+    {
+        return $this->items
+            ->sum(fn (OrderItem $item) => $item->quantity * $item->unit_price);
     }
 
     protected function status(): Attribute

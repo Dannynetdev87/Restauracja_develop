@@ -15,7 +15,7 @@ return new class extends Migration
             $table->id();
             $table->unsignedInteger('number')->unique();
             $table->unsignedSmallInteger('seats');
-            $table->enum('status', ['wolny', 'zajety', 'zarezerwowany'])->default('wolny');
+            $table->enum('status', ['wolny', 'zajety', 'zarezerwowany', 'nieaktywny'])->default('wolny');
             $table->timestamps();
         });
     }

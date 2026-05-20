@@ -20,6 +20,7 @@ Route::middleware('auth')->group(function () {
         $user = request()->user();
 
         return match ($user->role) {
+            User::ROLE_ADMIN => redirect()->route('admin.dashboard'),
             User::ROLE_MANAGER => redirect()->route('manager.dashboard'),
             User::ROLE_KITCHEN => redirect()->route('kitchen.dashboard'),
             User::ROLE_BAR => redirect()->route('bar.dashboard'),
@@ -48,7 +49,14 @@ Route::middleware('auth')->group(function () {
         ]);
     })->middleware('role:bar')->name('bar.dashboard');
 
-    Route::middleware('role:manager')->group(function () {
+    Route::get('/admin/dashboard', function () {
+        return view('dashboard', [
+            'title' => 'Panel administratora',
+            'description' => 'Zarządzanie użytkownikami, konfiguracją systemu oraz podstawowymi danymi restauracji.',
+        ]);
+    })->middleware('role:admin')->name('admin.dashboard');
+
+    Route::middleware('role:manager,admin')->group(function () {
         Route::get('/manager/dashboard', function () {
             return view('index');
         })->name('manager.dashboard');

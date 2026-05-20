@@ -18,7 +18,7 @@ return new class extends Migration
                 }
 
                 if (! Schema::hasColumn('menu_items', 'menu_category_id')) {
-                    $table->foreignId('menu_category_id')->nullable()->constrained('menu_categories')->nullOnDelete();
+                    $table->foreignId('menu_category_id')->nullable()->constrained('menu_categories')->restrictOnDelete();
                 }
 
                 if (! Schema::hasColumn('menu_items', 'production_area')) {
@@ -31,7 +31,7 @@ return new class extends Migration
 
         Schema::create('menu_items', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('menu_category_id')->constrained('menu_categories')->onDelete('cascade');
+            $table->foreignId('menu_category_id')->constrained('menu_categories')->restrictOnDelete();
             $table->string('name');
             $table->text('description')->nullable();
             $table->decimal('price', 10, 2);

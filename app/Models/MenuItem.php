@@ -10,6 +10,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 class MenuItem extends Model
 {
     public const AREA_KITCHEN = 'kuchnia';
+
     public const AREA_BAR = 'bar';
 
     protected $fillable = [

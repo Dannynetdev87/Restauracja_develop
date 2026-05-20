@@ -33,7 +33,7 @@
             @auth
                 <a href="{{ route('dashboard') }}" class="nav-link">Panel</a>
 
-                @if(auth()->user()->isManager())
+                @if(auth()->user()->isManager() || auth()->user()->isAdmin())
                     <a href="{{ route('manager.podglad') }}" class="nav-link font-bold text-brand-dark border-b-2 border-brand-accent">
                         Zarządzanie menu
                     </a>
