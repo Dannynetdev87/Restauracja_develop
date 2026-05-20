@@ -1,4 +1,4 @@
-<x-app>
+<x-layout>
     <x-slot:title>Logowanie - SmakPrzeszłości</x-slot>
 
     <x-slot:styles>
@@ -76,4 +76,4 @@
             </div>
         </div>
     </div>
-</x-app>
+</x-layout>
