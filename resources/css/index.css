@@ -1,0 +1,43 @@
+@import 'tailwindcss';
+
+@source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
+@source '../../storage/framework/views/*.php';
+@source '../**/*.blade.php';
+@source '../**/*.js';
+
+@theme {
+    --font-sans: 'Instrument Sans', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji',
+    'Segoe UI Symbol', 'Noto Color Emoji';
+
+    /* REJESTRACJA TWOICH KOLORÓW RESTAURACJI */
+    --color-brand-dark: #3a2a1e;   /* Ciemny brąz na napisy, obrysy, główne elementy */
+    --color-brand-accent: #7a553a; /* Ciepły brąz na akcenty, teksty drugorzędne, hover */
+    --color-brand-light: #f5deb3;  /* Twoje tło w typie Wheat (bursztynowy/biszkoptowy) */
+}
+
+@tailwind utilities;
+
+@layer components {
+    /* --- STRONA STARTOWA (index) --- */
+    .welcome-section { @apply max-w-4xl mx-auto text-center py-24 px-4; }
+    .welcome-badge { @apply text-brand-accent font-bold tracking-widest uppercase text-sm; }
+    .welcome-title { @apply text-4xl sm:text-5xl font-black tracking-tight text-brand-dark mt-4 mb-6; }
+    .welcome-desc { @apply text-brand-accent/80 text-lg max-w-xl mx-auto mb-10 leading-relaxed; }
+    .welcome-actions { @apply flex flex-wrap justify-center gap-4; }
+
+    /* Przyciski strony głównej */
+    .btn-welcome-primary { @apply bg-brand-dark text-brand-light font-bold px-8 py-3.5 rounded-xl transition-all shadow-md hover:bg-brand-accent; }
+    .btn-welcome-secondary { @apply bg-white/50 hover:bg-white text-brand-dark font-bold px-8 py-3.5 rounded-xl border border-brand-dark/20 transition shadow-sm; }
+
+    /* --- MODUŁ STOLIKÓW (Dla menedżera, wyświetlany na dashboardzie) --- */
+    .tables-grid { @apply grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 mt-8; }
+    .table-card { @apply bg-white border border-brand-dark/10 rounded-2xl p-6 shadow-sm flex flex-col justify-between transition-all hover:shadow-md; }
+    .table-number { @apply text-xl font-bold text-brand-dark flex items-center gap-2; }
+    .table-seats { @apply text-sm text-brand-accent/80 mt-1; }
+
+    /* Odznaki statusów stolika */
+    .status-badge { @apply inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium mt-4 w-fit; }
+    .status-free { @apply bg-emerald-50 text-emerald-700 border border-emerald-200; }
+    .status-occupied { @apply bg-amber-50 text-amber-700 border border-amber-200; }
+    .status-reserved { @apply bg-blue-50 text-blue-700 border border-blue-200; }
+}
