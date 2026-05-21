@@ -42,10 +42,15 @@ Route::middleware('auth')->group(function () {
         ]);
     })->middleware('role:kelner')->name('waiter.dashboard');
 
+    // Grupa dla kelnerów - tutaj dodałem nowe trasy
     Route::middleware('role:kelner')->group(function () {
         Route::get('/waiter/tables', [WaiterTableController::class, 'index'])->name('waiter.tables.index');
         Route::post('/waiter/tables/{restaurantTable}/orders', [WaiterOrderController::class, 'store'])->name('waiter.orders.store');
         Route::get('/waiter/orders/{order}', [WaiterOrderController::class, 'show'])->name('waiter.orders.show');
+
+        // Trasy do rachunku i zakończenia zamówienia
+        Route::get('/waiter/orders/{order}/receipt', [WaiterOrderController::class, 'receipt'])->name('waiter.orders.receipt');
+        Route::post('/waiter/orders/{order}/finish', [WaiterOrderController::class, 'finish'])->name('waiter.orders.finish');
     });
 
     Route::get('/kitchen/dashboard', function () {
