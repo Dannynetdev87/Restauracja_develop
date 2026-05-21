@@ -10,6 +10,40 @@ Projekt Laravel dla akademickiego systemu obsługi restauracji.
 - PostgreSQL
 - Git
 
+## Szybkie uruchomienie na Windows
+
+Najprostsza ścieżka dla osób pobierających projekt na Windows:
+
+```powershell
+Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass
+.\scripts\setup-windows.ps1 -DbUsername postgres -DbPassword "twoje_haslo"
+php artisan serve
+```
+
+Jeżeli lokalny PostgreSQL nie ma hasła, można pominąć parametr `-DbPassword`. Jeżeli plik `.env` już istnieje, skrypt nie nadpisuje hasła bazy, dopóki nie podasz `-DbPassword`.
+
+Skrypt wykona kolejno:
+
+- instalację zależności PHP przez Composer,
+- instalację zależności frontendu przez npm,
+- utworzenie pliku `.env`, jeśli go nie ma,
+- ustawienie PostgreSQL, sesji, cache i kolejki w `.env`,
+- wygenerowanie `APP_KEY`,
+- uruchomienie migracji i seederów,
+- zbudowanie frontendu przez `npm run build`.
+
+Jeżeli baza ma zostać wyczyszczona i utworzona od nowa:
+
+```powershell
+.\scripts\setup-windows.ps1 -DbUsername postgres -DbPassword "twoje_haslo" -Fresh
+```
+
+Jeżeli zależności są już zainstalowane i chcesz tylko poprawić konfigurację oraz migracje:
+
+```powershell
+.\scripts\setup-windows.ps1 -DbUsername postgres -DbPassword "twoje_haslo" -SkipInstall -SkipBuild -SkipSeed
+```
+
 ## Pierwsze uruchomienie
 
 1. Sklonuj repozytorium:
