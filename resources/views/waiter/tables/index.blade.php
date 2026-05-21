@@ -6,7 +6,7 @@
             <span class="text-sm font-bold uppercase text-brand-accent">Panel kelnera</span>
             <h1 class="text-3xl font-black text-brand-dark">Stoliki</h1>
             <p class="text-brand-accent max-w-3xl">
-                Wybierz wolny stolik, aby rozpocząć obsługę i utworzyć zamówienie. Stolik zajęty, zarezerwowany lub nieaktywny nie może przyjąć nowego zamówienia.
+                Wybierz stolik, aby rozpocząć nowe zamówienie lub dodać pozycje do już istniejącego, aktywnego rachunku.
             </p>
         </div>
 
@@ -25,8 +25,16 @@
         <div class="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
             @forelse($tables as $table)
                 @php
-                    $activeOrder = $table->activeOrders->first();
-                    $canOpenOrder = $table->status === \App\Models\RestaurantTable::STATUS_FREE && $activeOrder === null;
+                    // Bezpieczna ekstrakcja pojedynczego modelu zamówienia z kolekcji relacji
+                    $activeOrder = null;
+
+                    if (!empty($table->activeOrders) && $table->activeOrders instanceof \Illuminate\Support\Collection) {
+                        $activeOrder = $table->activeOrders->first();
+                    } elseif (!empty($table->orders) && $table->orders instanceof \Illuminate\Support\Collection) {
+                        $activeOrder = $table->orders->whereIn('status', ['open', 'in_progress', 'ready', 'served'])->first();
+                    }
+
+                    // Mapowanie klas dla odznak statusów
                     $badgeClass = match ($table->status) {
                         \App\Models\RestaurantTable::STATUS_FREE => 'bg-green-100 text-green-800',
                         \App\Models\RestaurantTable::STATUS_OCCUPIED => 'bg-yellow-100 text-yellow-800',
@@ -35,33 +43,45 @@
                     };
                 @endphp
 
-                <article class="rounded-lg border border-brand-dark/15 bg-white p-5 shadow-sm">
-                    <div class="flex items-start justify-between gap-4">
-                        <div>
-                            <h2 class="text-2xl font-black text-brand-dark">Stolik {{ $table->number }}</h2>
-                            <p class="mt-1 text-sm text-brand-accent">Miejsca: {{ $table->seats }}</p>
+                <article class="rounded-lg border border-brand-dark/15 bg-white p-5 shadow-sm flex flex-col justify-between">
+                    <div>
+                        <div class="flex items-start justify-between gap-4">
+                            <div>
+                                <h2 class="text-2xl font-black text-brand-dark">Stolik {{ $table->number }}</h2>
+                                <p class="mt-1 text-sm text-brand-accent">Miejsca: {{ $table->seats }}</p>
+                            </div>
+                            <span class="rounded-full px-3 py-1 text-xs font-bold {{ $badgeClass }}">
+                                {{ $statuses[$table->status] ?? $table->status }}
+                            </span>
                         </div>
-                        <span class="rounded-full px-3 py-1 text-xs font-bold {{ $badgeClass }}">
-                            {{ $statuses[$table->status] ?? $table->status }}
-                        </span>
+
+                        @if($activeOrder)
+                            <div class="mt-4 rounded-md bg-brand-light px-3 py-2 text-sm font-bold text-brand-dark">
+                                Aktywne zamówienie #{{ $activeOrder->id }}
+                            </div>
+                        @endif
                     </div>
 
-                    @if($activeOrder)
-                        <div class="mt-4 rounded-md bg-brand-light px-3 py-2 text-sm text-brand-dark">
-                            Aktywne zamówienie #{{ $activeOrder->id }}
-                        </div>
-                    @endif
-
                     <div class="mt-5">
-                        @if($canOpenOrder)
-                            <form method="POST" action="{{ route('waiter.orders.store', $table) }}">
-                                @csrf
-                                <button type="submit" class="w-full rounded-md bg-brand-dark px-4 py-2 text-sm font-bold text-brand-light hover:bg-brand-accent">
-                                    Rozpocznij zamówienie
-                                </button>
-                            </form>
+                        @if($table->status === 'wolny')
+                            <a href="{{ route('waiter.orders.create', ['table_id' => $table->id]) }}"
+                               class="block w-full text-center rounded-md bg-brand-dark px-4 py-2 text-sm font-bold text-brand-light hover:bg-brand-accent transition no-underline">
+                                Rozpocznij zamówienie
+                            </a>
+                        @elseif($table->status === 'zajety')
+                            @if($activeOrder)
+                                <a href="{{ route('waiter.orders.show', $activeOrder) }}"
+                                   class="block w-full text-center rounded-md bg-brand-accent px-4 py-2 text-sm font-bold text-brand-light hover:bg-brand-dark transition no-underline">
+                                    Zobacz / Dodaj pozycje
+                                </a>
+                            @else
+                                <a href="{{ route('waiter.orders.create', ['table_id' => $table->id]) }}"
+                                   class="block w-full text-center rounded-md bg-amber-600 px-4 py-2 text-sm font-bold text-white hover:bg-amber-700 transition no-underline">
+                                    Otwórz nowe zamówienie
+                                </a>
+                            @endif
                         @else
-                            <button type="button" disabled class="w-full cursor-not-allowed rounded-md bg-gray-200 px-4 py-2 text-sm font-bold text-gray-600">
+                            <button type="button" disabled class="w-full cursor-not-allowed rounded-md bg-gray-200 px-4 py-2 text-sm font-bold text-gray-400">
                                 Niedostępny
                             </button>
                         @endif
