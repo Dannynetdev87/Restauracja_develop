@@ -20,7 +20,7 @@ class WaiterOrderController extends Controller
 
         if ($request->filled('table_id')) {
             $selectedTable = RestaurantTable::query()
-                ->with(['activeOrders' => fn ($query) => $query->latest('opened_at')])
+                ->with(['activeOrders' => fn ($query) => $query->with('items')->latest('opened_at')])
                 ->whereKey($request->integer('table_id'))
                 ->where('status', '!=', RestaurantTable::STATUS_INACTIVE)
                 ->firstOrFail();
@@ -108,6 +108,12 @@ class WaiterOrderController extends Controller
             if ($order && $order->waiter_id !== request()->user()->id) {
                 throw ValidationException::withMessages([
                     'table' => 'Ten stolik ma aktywne zamówienie przypisane do innego kelnera.',
+                ]);
+            }
+
+            if ($order && ! $order->canAcceptItems()) {
+                throw ValidationException::withMessages([
+                    'table' => 'Do wydanego zamówienia nie można już dodawać pozycji. Wystaw rachunek albo przyjmij płatność.',
                 ]);
             }
 

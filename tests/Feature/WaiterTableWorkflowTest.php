@@ -100,6 +100,41 @@ class WaiterTableWorkflowTest extends TestCase
             ->assertSee('Zapisz pozycje');
     }
 
+    public function test_waiter_order_form_shows_current_and_selected_total_summary(): void
+    {
+        $waiter = User::factory()->create(['role' => User::ROLE_WAITER]);
+        $table = RestaurantTable::create([
+            'number' => 928,
+            'seats' => 4,
+            'status' => RestaurantTable::STATUS_OCCUPIED,
+        ]);
+        $order = Order::create([
+            'restaurant_table_id' => $table->id,
+            'waiter_id' => $waiter->id,
+            'status' => Order::STATUS_OPEN,
+            'opened_at' => now(),
+        ]);
+        $menuItem = $this->createMenuItem(name: 'Testowa kawa', price: 12.50);
+
+        OrderItem::create([
+            'order_id' => $order->id,
+            'menu_item_id' => $menuItem->id,
+            'quantity' => 2,
+            'unit_price' => $menuItem->price,
+            'notes' => null,
+            'status' => OrderItem::STATUS_NEW,
+        ]);
+
+        $this
+            ->actingAs($waiter)
+            ->get(route('waiter.orders.create', ['table_id' => $table->id]))
+            ->assertOk()
+            ->assertSee('Aktualny rachunek')
+            ->assertSee('Nowe pozycje')
+            ->assertSee('Razem po dodaniu')
+            ->assertSee('25,00 zł');
+    }
+
     public function test_waiter_cannot_open_order_for_unavailable_table(): void
     {
         $waiter = User::factory()->create(['role' => User::ROLE_WAITER]);

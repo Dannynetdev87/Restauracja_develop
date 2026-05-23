@@ -11,12 +11,19 @@
                 </p>
             </div>
 
-            @if(in_array($order->status, \App\Models\Order::activeStatuses(), true))
-                <a href="{{ route('waiter.orders.create', ['table_id' => $order->table->id]) }}"
-                   class="inline-flex w-fit rounded-md bg-brand-dark px-4 py-2 text-sm font-bold text-brand-light hover:bg-brand-accent">
-                    Dodaj pozycje
+            <div class="flex flex-col gap-2 sm:flex-row">
+                <a href="{{ route('waiter.orders.bill', $order) }}"
+                   class="inline-flex w-fit rounded-md border border-brand-dark/20 bg-white px-4 py-2 text-sm font-bold text-brand-dark hover:bg-brand-light">
+                    Rachunek
                 </a>
-            @endif
+
+                @if($order->canAcceptItems())
+                    <a href="{{ route('waiter.orders.create', ['table_id' => $order->table->id]) }}"
+                       class="inline-flex w-fit rounded-md bg-brand-dark px-4 py-2 text-sm font-bold text-brand-light hover:bg-brand-accent">
+                        Dodaj pozycje
+                    </a>
+                @endif
+            </div>
         </div>
 
         @if(session('success'))

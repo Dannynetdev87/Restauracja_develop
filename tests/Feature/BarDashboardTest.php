@@ -34,6 +34,59 @@ class BarDashboardTest extends TestCase
         $this->assertSame(OrderItem::STATUS_NEW, $kitchenItem->fresh()->status);
     }
 
+    public function test_bar_user_can_see_current_oldest_bar_order(): void
+    {
+        $barUser = User::factory()->create(['role' => User::ROLE_BAR]);
+        OrderItem::query()->update(['status' => OrderItem::STATUS_DELIVERED]);
+
+        $oldestOrder = $this->createOrder(openedAt: now()->subYears(2));
+        $newerOrder = $this->createOrder(openedAt: now()->subMinutes(5));
+        $this->createOrderItem($oldestOrder, 'Najstarsza kawa testowa', MenuItem::AREA_BAR, notes: 'Bez cukru');
+        $this->createOrderItem($newerOrder, 'Nowsza herbata testowa', MenuItem::AREA_BAR);
+
+        $this
+            ->actingAs($barUser)
+            ->get(route('bar.current'))
+            ->assertOk()
+            ->assertSee('Zamówienie #'.$oldestOrder->id)
+            ->assertSee('Najstarsza kawa testowa')
+            ->assertSee('Bez cukru')
+            ->assertDontSee('Nowsza herbata testowa')
+            ->assertSee('>Aktualne</a>', false)
+            ->assertSee('>Dashboard</a>', false)
+            ->assertDontSee('>Start</a>', false)
+            ->assertDontSee('>Menu</a>', false)
+            ->assertSee('Pełny dashboard');
+    }
+
+    public function test_bar_current_view_shows_empty_state_without_active_items(): void
+    {
+        $barUser = User::factory()->create(['role' => User::ROLE_BAR]);
+        OrderItem::query()->update(['status' => OrderItem::STATUS_DELIVERED]);
+
+        $this
+            ->actingAs($barUser)
+            ->get(route('bar.current'))
+            ->assertOk()
+            ->assertSee('Brak aktywnych pozycji baru');
+    }
+
+    public function test_bar_user_is_redirected_to_current_view_after_login(): void
+    {
+        $barUser = User::factory()->create([
+            'email' => 'bar-current@example.com',
+            'password' => 'password',
+            'role' => User::ROLE_BAR,
+        ]);
+
+        $this
+            ->post(route('login'), [
+                'login' => $barUser->email,
+                'password' => 'password',
+            ])
+            ->assertRedirect(route('bar.current'));
+    }
+
     public function test_waiter_cannot_access_bar_dashboard(): void
     {
         $waiter = User::factory()->create(['role' => User::ROLE_WAITER]);
@@ -71,6 +124,21 @@ class BarDashboardTest extends TestCase
             'old_status' => OrderItem::STATUS_NEW,
             'new_status' => OrderItem::STATUS_PREPARING,
         ]);
+    }
+
+    public function test_bar_current_view_can_keep_user_on_current_view_after_status_change(): void
+    {
+        $barUser = User::factory()->create(['role' => User::ROLE_BAR]);
+        $order = $this->createOrder(status: Order::STATUS_OPEN);
+        $orderItem = $this->createOrderItem($order, 'Kawa do aktualnego widoku', MenuItem::AREA_BAR);
+
+        $this
+            ->actingAs($barUser)
+            ->patch(route('bar.order-items.status', $orderItem), [
+                'status' => OrderItem::STATUS_PREPARING,
+                'redirect_to' => 'bar.current',
+            ])
+            ->assertRedirect(route('bar.current'));
     }
 
     public function test_bar_user_can_mark_item_as_ready_and_order_status_is_synced(): void
@@ -145,7 +213,7 @@ class BarDashboardTest extends TestCase
         ]);
     }
 
-    private function createOrder(string $status = Order::STATUS_OPEN): Order
+    private function createOrder(string $status = Order::STATUS_OPEN, $openedAt = null): Order
     {
         $waiter = User::factory()->create(['role' => User::ROLE_WAITER]);
         $table = RestaurantTable::create([
@@ -158,7 +226,7 @@ class BarDashboardTest extends TestCase
             'restaurant_table_id' => $table->id,
             'waiter_id' => $waiter->id,
             'status' => $status,
-            'opened_at' => now(),
+            'opened_at' => $openedAt ?? now(),
         ]);
     }
 
@@ -167,6 +235,7 @@ class BarDashboardTest extends TestCase
         string $name,
         string $productionArea,
         string $status = OrderItem::STATUS_NEW,
+        ?string $notes = null,
     ): OrderItem {
         $category = MenuCategory::firstOrCreate(
             ['name' => 'Testowa kategoria baru'],
@@ -186,7 +255,7 @@ class BarDashboardTest extends TestCase
             'menu_item_id' => $menuItem->id,
             'quantity' => 1,
             'unit_price' => $menuItem->price,
-            'notes' => null,
+            'notes' => $notes,
             'status' => $status,
         ]);
     }

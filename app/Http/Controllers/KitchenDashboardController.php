@@ -11,6 +11,41 @@ use Illuminate\Validation\ValidationException;
 
 class KitchenDashboardController extends Controller
 {
+    public function current()
+    {
+        $order = Order::query()
+            ->whereHas('items', function ($query) {
+                $query
+                    ->whereIn('status', [
+                        OrderItem::STATUS_NEW,
+                        OrderItem::STATUS_PREPARING,
+                        OrderItem::STATUS_READY,
+                    ])
+                    ->whereHas('menuItem', fn ($query) => $query->where('production_area', MenuItem::AREA_KITCHEN));
+            })
+            ->with([
+                'table',
+                'items' => function ($query) {
+                    $query
+                        ->whereIn('status', [
+                            OrderItem::STATUS_NEW,
+                            OrderItem::STATUS_PREPARING,
+                            OrderItem::STATUS_READY,
+                        ])
+                        ->whereHas('menuItem', fn ($query) => $query->where('production_area', MenuItem::AREA_KITCHEN))
+                        ->with('menuItem')
+                        ->orderByRaw("case status when 'preparing' then 1 when 'new' then 2 when 'ready' then 3 else 4 end")
+                        ->orderBy('created_at');
+                },
+            ])
+            ->orderBy('opened_at')
+            ->first();
+
+        return view('kitchen.current', [
+            'order' => $order,
+        ]);
+    }
+
     public function index()
     {
         $items = OrderItem::query()
@@ -52,6 +87,7 @@ class KitchenDashboardController extends Controller
     {
         $validated = $request->validate([
             'status' => ['required', 'in:'.OrderItem::STATUS_PREPARING.','.OrderItem::STATUS_READY],
+            'redirect_to' => ['nullable', 'in:kitchen.current,kitchen.dashboard'],
         ]);
 
         if ($orderItem->menuItem()->where('production_area', MenuItem::AREA_KITCHEN)->doesntExist()) {
@@ -88,7 +124,7 @@ class KitchenDashboardController extends Controller
         });
 
         return redirect()
-            ->route('kitchen.dashboard')
+            ->route($validated['redirect_to'] ?? 'kitchen.dashboard')
             ->with('success', 'Status pozycji został zaktualizowany.');
     }
 

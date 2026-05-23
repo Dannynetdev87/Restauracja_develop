@@ -55,7 +55,11 @@
         </div>
 
         @if($selectedTable)
-            <form method="POST" action="{{ route('waiter.orders.store', $selectedTable) }}" class="grid gap-6 lg:grid-cols-[1fr_320px]">
+            @php
+                $activeOrderTotal = $activeOrder ? $activeOrder->items->sum(fn ($item) => $item->subtotal()) : 0;
+            @endphp
+
+            <form method="POST" action="{{ route('waiter.orders.store', $selectedTable) }}" class="grid gap-6 lg:grid-cols-[1fr_320px]" data-order-form data-current-total="{{ $activeOrderTotal }}">
                 @csrf
 
                 <div class="space-y-6">
@@ -105,6 +109,8 @@
                                                        min="0"
                                                        max="99"
                                                        inputmode="numeric"
+                                                       data-order-quantity
+                                                       data-price="{{ $item->price }}"
                                                        class="mt-1 w-full rounded-md border border-brand-dark/20 bg-white px-3 py-2 text-sm font-bold text-brand-dark focus:border-brand-dark focus:outline-none">
                                             </div>
                                         </div>
@@ -134,6 +140,21 @@
                         </div>
                     @endif
 
+                    <div class="mt-5 space-y-3 border-t border-brand-dark/10 pt-4 text-sm text-brand-dark">
+                        <div class="flex justify-between gap-4">
+                            <span>Aktualny rachunek</span>
+                            <strong>{{ number_format($activeOrderTotal, 2, ',', ' ') }} zł</strong>
+                        </div>
+                        <div class="flex justify-between gap-4">
+                            <span>Nowe pozycje</span>
+                            <strong><span data-selected-total>0,00</span> zł</strong>
+                        </div>
+                        <div class="flex justify-between gap-4 border-t border-brand-dark/10 pt-3 text-base">
+                            <span>Razem po dodaniu</span>
+                            <strong><span data-grand-total>{{ number_format($activeOrderTotal, 2, ',', ' ') }}</span> zł</strong>
+                        </div>
+                    </div>
+
                     <button type="submit" class="mt-5 w-full rounded-md bg-brand-dark px-4 py-3 text-sm font-bold text-brand-light hover:bg-brand-accent">
                         Zapisz pozycje
                     </button>
@@ -145,4 +166,48 @@
             </div>
         @endif
     </section>
+
+    @if($selectedTable)
+        <script>
+            document.addEventListener('DOMContentLoaded', () => {
+                const form = document.querySelector('[data-order-form]');
+
+                if (!form) {
+                    return;
+                }
+
+                const currentTotal = Number.parseFloat(form.dataset.currentTotal || '0');
+                const selectedTotalElement = form.querySelector('[data-selected-total]');
+                const grandTotalElement = form.querySelector('[data-grand-total]');
+                const quantityInputs = form.querySelectorAll('[data-order-quantity]');
+                const formatter = new Intl.NumberFormat('pl-PL', {
+                    minimumFractionDigits: 2,
+                    maximumFractionDigits: 2,
+                });
+
+                const updateTotals = () => {
+                    let selectedTotal = 0;
+
+                    quantityInputs.forEach((input) => {
+                        const quantity = Number.parseInt(input.value || '0', 10);
+                        const price = Number.parseFloat(input.dataset.price || '0');
+
+                        if (quantity > 0 && price > 0) {
+                            selectedTotal += quantity * price;
+                        }
+                    });
+
+                    selectedTotalElement.textContent = formatter.format(selectedTotal);
+                    grandTotalElement.textContent = formatter.format(currentTotal + selectedTotal);
+                };
+
+                quantityInputs.forEach((input) => {
+                    input.addEventListener('input', updateTotals);
+                    input.addEventListener('change', updateTotals);
+                });
+
+                updateTotals();
+            });
+        </script>
+    @endif
 </x-app>

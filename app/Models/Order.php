@@ -33,6 +33,15 @@ class Order extends Model
         ];
     }
 
+    public function canAcceptItems(): bool
+    {
+        return in_array($this->status, [
+            self::STATUS_OPEN,
+            self::STATUS_IN_PROGRESS,
+            self::STATUS_READY,
+        ], true);
+    }
+
     protected $fillable = [
         'restaurant_table_id',
         'waiter_id',

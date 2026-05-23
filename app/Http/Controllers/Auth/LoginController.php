@@ -59,8 +59,8 @@ class LoginController extends Controller
         return match ($user->role) {
             User::ROLE_ADMIN => route('admin.dashboard'),
             User::ROLE_MANAGER => route('manager.dashboard'),
-            User::ROLE_KITCHEN => route('kitchen.dashboard'),
-            User::ROLE_BAR => route('bar.dashboard'),
+            User::ROLE_KITCHEN => route('kitchen.current'),
+            User::ROLE_BAR => route('bar.current'),
             default => route('waiter.dashboard'),
         };
     }

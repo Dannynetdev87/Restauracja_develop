@@ -11,6 +11,41 @@ use Illuminate\Validation\ValidationException;
 
 class BarDashboardController extends Controller
 {
+    public function current()
+    {
+        $order = Order::query()
+            ->whereHas('items', function ($query) {
+                $query
+                    ->whereIn('status', [
+                        OrderItem::STATUS_NEW,
+                        OrderItem::STATUS_PREPARING,
+                        OrderItem::STATUS_READY,
+                    ])
+                    ->whereHas('menuItem', fn ($query) => $query->where('production_area', MenuItem::AREA_BAR));
+            })
+            ->with([
+                'table',
+                'items' => function ($query) {
+                    $query
+                        ->whereIn('status', [
+                            OrderItem::STATUS_NEW,
+                            OrderItem::STATUS_PREPARING,
+                            OrderItem::STATUS_READY,
+                        ])
+                        ->whereHas('menuItem', fn ($query) => $query->where('production_area', MenuItem::AREA_BAR))
+                        ->with('menuItem')
+                        ->orderByRaw("case status when 'preparing' then 1 when 'new' then 2 when 'ready' then 3 else 4 end")
+                        ->orderBy('created_at');
+                },
+            ])
+            ->orderBy('opened_at')
+            ->first();
+
+        return view('bar.current', [
+            'order' => $order,
+        ]);
+    }
+
     public function index()
     {
         $items = OrderItem::query()
@@ -51,6 +86,7 @@ class BarDashboardController extends Controller
     {
         $validated = $request->validate([
             'status' => ['required', 'in:'.OrderItem::STATUS_PREPARING.','.OrderItem::STATUS_READY],
+            'redirect_to' => ['nullable', 'in:bar.current,bar.dashboard'],
         ]);
 
         if ($orderItem->menuItem()->where('production_area', MenuItem::AREA_BAR)->doesntExist()) {
@@ -87,7 +123,7 @@ class BarDashboardController extends Controller
         });
 
         return redirect()
-            ->route('bar.dashboard')
+            ->route($validated['redirect_to'] ?? 'bar.dashboard')
             ->with('success', 'Status napoju został zaktualizowany.');
     }
 

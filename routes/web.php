@@ -7,6 +7,7 @@ use App\Http\Controllers\MenuCategoryController;
 use App\Http\Controllers\MenuItemController;
 use App\Http\Controllers\MenuManagementController;
 use App\Http\Controllers\RestaurantTableController;
+use App\Http\Controllers\WaiterBillController;
 use App\Http\Controllers\WaiterOrderController;
 use App\Http\Controllers\WaiterTableController;
 use App\Models\MenuCategory;
@@ -31,8 +32,8 @@ Route::middleware('auth')->group(function () {
         return match ($user->role) {
             User::ROLE_ADMIN => redirect()->route('admin.dashboard'),
             User::ROLE_MANAGER => redirect()->route('manager.dashboard'),
-            User::ROLE_KITCHEN => redirect()->route('kitchen.dashboard'),
-            User::ROLE_BAR => redirect()->route('bar.dashboard'),
+            User::ROLE_KITCHEN => redirect()->route('kitchen.current'),
+            User::ROLE_BAR => redirect()->route('bar.current'),
             default => redirect()->route('waiter.dashboard'),
         };
     })->name('dashboard');
@@ -49,15 +50,19 @@ Route::middleware('auth')->group(function () {
         Route::get('/waiter/orders/create', [WaiterOrderController::class, 'create'])->name('waiter.orders.create');
         Route::post('/waiter/tables/{restaurantTable}/orders', [WaiterOrderController::class, 'store'])->name('waiter.orders.store');
         Route::get('/waiter/orders/{order}', [WaiterOrderController::class, 'show'])->name('waiter.orders.show');
+        Route::get('/waiter/orders/{order}/bill', [WaiterBillController::class, 'show'])->name('waiter.orders.bill');
+        Route::post('/waiter/orders/{order}/payments', [WaiterBillController::class, 'storePayment'])->name('waiter.orders.payments.store');
         Route::patch('/waiter/order-items/{orderItem}/deliver', [WaiterOrderController::class, 'deliverItem'])->name('waiter.order-items.deliver');
     });
 
     Route::middleware('role:kuchnia')->group(function () {
+        Route::get('/kitchen/current', [KitchenDashboardController::class, 'current'])->name('kitchen.current');
         Route::get('/kitchen/dashboard', [KitchenDashboardController::class, 'index'])->name('kitchen.dashboard');
         Route::patch('/kitchen/order-items/{orderItem}/status', [KitchenDashboardController::class, 'updateStatus'])->name('kitchen.order-items.status');
     });
 
     Route::middleware('role:bar')->group(function () {
+        Route::get('/bar/current', [BarDashboardController::class, 'current'])->name('bar.current');
         Route::get('/bar/dashboard', [BarDashboardController::class, 'index'])->name('bar.dashboard');
         Route::patch('/bar/order-items/{orderItem}/status', [BarDashboardController::class, 'updateStatus'])->name('bar.order-items.status');
     });
