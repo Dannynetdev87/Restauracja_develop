@@ -20,13 +20,8 @@
 
                 <div class="flex flex-col gap-2 items-end">
                     <span class="rounded-full bg-green-100 px-3 py-1 text-xs font-bold text-green-800">
-                        {{ $order->status }}
+                        Status: {{ $order->status }}
                     </span>
-
-                    <a href="{{ route('waiter.orders.receipt', $order) }}" target="_blank"
-                       class="px-4 py-2 text-sm font-bold bg-brand-dark text-white rounded hover:bg-brand-accent transition">
-                        🖨️ Drukuj rachunek
-                    </a>
                 </div>
             </div>
 
@@ -67,14 +62,11 @@
             </div>
 
             <div class="mt-8 pt-6 border-t border-gray-100 flex justify-end">
-                @if($order->status !== 'zamknięte')
-                    <form action="{{ route('waiter.orders.finish', $order) }}" method="POST">
-                        @csrf
-                        <button type="submit"
-                                class="px-6 py-3 bg-green-600 text-white font-bold rounded-lg hover:bg-green-700 transition shadow-md">
-                            ✅ Zakończ zamówienie i generuj rachunek
-                        </button>
-                    </form>
+                @if($order->status !== \App\Models\Order::STATUS_CLOSED)
+                    <a href="{{ route('waiter.orders.final-receipt', $order) }}"
+                       class="px-6 py-3 bg-green-600 text-white font-bold rounded-lg hover:bg-green-700 transition shadow-md">
+                        ✅ Podsumuj i zakończ zamówienie
+                    </a>
                 @else
                     <div class="px-6 py-3 bg-gray-100 text-gray-600 font-bold rounded-lg">
                         Zamówienie jest już zamknięte
