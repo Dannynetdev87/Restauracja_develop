@@ -6,7 +6,7 @@
             <span class="text-sm font-bold uppercase text-brand-accent">Panel kelnera</span>
             <h1 class="text-3xl font-black text-brand-dark">Stoliki</h1>
             <p class="text-brand-accent max-w-3xl">
-                Wybierz wolny stolik, aby rozpocząć obsługę i utworzyć zamówienie. Stolik zajęty, zarezerwowany lub nieaktywny nie może przyjąć nowego zamówienia.
+                Wybierz wolny stolik, aby rozpocząć zamówienie. Przy zajętym stoliku możesz wrócić do aktywnego zamówienia i dodać kolejne pozycje.
             </p>
         </div>
 
@@ -26,6 +26,7 @@
             @forelse($tables as $table)
                 @php
                     $activeOrder = $table->activeOrders->first();
+                    $isOwnActiveOrder = $activeOrder && $activeOrder->waiter_id === auth()->id();
                     $canOpenOrder = $table->status === \App\Models\RestaurantTable::STATUS_FREE && $activeOrder === null;
                     $badgeClass = match ($table->status) {
                         \App\Models\RestaurantTable::STATUS_FREE => 'bg-green-100 text-green-800',
@@ -35,31 +36,46 @@
                     };
                 @endphp
 
-                <article class="rounded-lg border border-brand-dark/15 bg-white p-5 shadow-sm">
-                    <div class="flex items-start justify-between gap-4">
-                        <div>
-                            <h2 class="text-2xl font-black text-brand-dark">Stolik {{ $table->number }}</h2>
-                            <p class="mt-1 text-sm text-brand-accent">Miejsca: {{ $table->seats }}</p>
+                <article class="rounded-lg border border-brand-dark/15 bg-white p-5 shadow-sm flex flex-col justify-between">
+                    <div>
+                        <div class="flex items-start justify-between gap-4">
+                            <div>
+                                <h2 class="text-2xl font-black text-brand-dark">Stolik {{ $table->number }}</h2>
+                                <p class="mt-1 text-sm text-brand-accent">Miejsca: {{ $table->seats }}</p>
+                            </div>
+                            <span class="rounded-full px-3 py-1 text-xs font-bold {{ $badgeClass }}">
+                                {{ $statuses[$table->status] ?? $table->status }}
+                            </span>
                         </div>
-                        <span class="rounded-full px-3 py-1 text-xs font-bold {{ $badgeClass }}">
-                            {{ $statuses[$table->status] ?? $table->status }}
-                        </span>
-                    </div>
 
-                    @if($activeOrder)
-                        <div class="mt-4 rounded-md bg-brand-light px-3 py-2 text-sm text-brand-dark">
-                            Aktywne zamówienie #{{ $activeOrder->id }}
-                        </div>
-                    @endif
+                        @if($activeOrder)
+                            <div class="mt-4 rounded-md bg-brand-light px-3 py-2 text-sm text-brand-dark">
+                                Aktywne zamówienie #{{ $activeOrder->id }}
+                            </div>
+                        @endif
+                    </div>
 
                     <div class="mt-5">
                         @if($canOpenOrder)
-                            <form method="POST" action="{{ route('waiter.orders.store', $table) }}">
-                                @csrf
-                                <button type="submit" class="w-full rounded-md bg-brand-dark px-4 py-2 text-sm font-bold text-brand-light hover:bg-brand-accent">
-                                    Rozpocznij zamówienie
-                                </button>
-                            </form>
+                            <a href="{{ route('waiter.orders.create', ['table_id' => $table->id]) }}"
+                               class="block w-full rounded-md bg-brand-dark px-4 py-2 text-center text-sm font-bold text-brand-light hover:bg-brand-accent">
+                                Rozpocznij zamówienie
+                            </a>
+                        @elseif($isOwnActiveOrder)
+                            <div class="grid gap-2">
+                                <a href="{{ route('waiter.orders.show', $activeOrder) }}"
+                                   class="block w-full rounded-md border border-brand-dark/20 bg-white px-4 py-2 text-center text-sm font-bold text-brand-dark hover:bg-brand-light">
+                                    Zobacz zamówienie
+                                </a>
+                                <a href="{{ route('waiter.orders.create', ['table_id' => $table->id]) }}"
+                                   class="block w-full rounded-md bg-brand-dark px-4 py-2 text-center text-sm font-bold text-brand-light hover:bg-brand-accent">
+                                    Dodaj pozycje
+                                </a>
+                            </div>
+                        @elseif($activeOrder)
+                            <button type="button" disabled class="w-full cursor-not-allowed rounded-md bg-gray-200 px-4 py-2 text-sm font-bold text-gray-600">
+                                Obsługuje inny kelner
+                            </button>
                         @else
                             <button type="button" disabled class="w-full cursor-not-allowed rounded-md bg-gray-200 px-4 py-2 text-sm font-bold text-gray-600">
                                 Niedostępny

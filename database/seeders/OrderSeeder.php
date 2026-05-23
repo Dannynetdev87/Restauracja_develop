@@ -23,39 +23,81 @@ class OrderSeeder extends Seeder
 
         $waiter = User::where('role', User::ROLE_WAITER)->firstOrFail();
 
-        $occupiedTable = RestaurantTable::where('number', 2)->firstOrFail();
-        $freeTable = RestaurantTable::where('number', 3)->firstOrFail();
+        $table2 = RestaurantTable::where('number', 2)->firstOrFail();
+        $table3 = RestaurantTable::where('number', 3)->firstOrFail();
+        $table4 = RestaurantTable::where('number', 4)->firstOrFail();
+        $table7 = RestaurantTable::where('number', 7)->firstOrFail();
+        $table12 = RestaurantTable::where('number', 12)->firstOrFail();
 
-        $activeOrder = Order::create([
-            'restaurant_table_id' => $occupiedTable->id,
+        $smallActiveOrder = Order::create([
+            'restaurant_table_id' => $table7->id,
             'waiter_id' => $waiter->id,
             'status' => Order::STATUS_IN_PROGRESS,
-            'opened_at' => now()->subMinutes(35),
+            'opened_at' => now()->subMinutes(20),
         ]);
+        $this->addItem($smallActiveOrder, 'Tradycyjna zupa pomidorowa z makaronem', 1, OrderItem::STATUS_PREPARING, null, $waiter);
+        $this->addItem($smallActiveOrder, 'Pizza Margherita', 1, OrderItem::STATUS_NEW, 'Dodatkowy ser.', $waiter);
+        $this->addItem($smallActiveOrder, 'Lemoniada domowa 0.4L', 2, OrderItem::STATUS_READY, null, $waiter);
 
-        $this->addItem($activeOrder, 'Kotlet schabowy', 2, OrderItem::STATUS_PREPARING, 'Bez surowki dla jednej porcji.', $waiter);
-        $this->addItem($activeOrder, 'Lemoniada domowa', 2, OrderItem::STATUS_READY, null, $waiter);
+        $mediumActiveOrder = Order::create([
+            'restaurant_table_id' => $table2->id,
+            'waiter_id' => $waiter->id,
+            'status' => Order::STATUS_IN_PROGRESS,
+            'opened_at' => now()->subMinutes(45),
+        ]);
+        $this->addItem($mediumActiveOrder, 'Kotlet schabowy smazony na smalcu', 2, OrderItem::STATUS_PREPARING, 'Bez surowki.', $waiter);
+        $this->addItem($mediumActiveOrder, 'Rosol z wiejskiej kury z makaronem', 2, OrderItem::STATUS_PREPARING, null, $waiter);
+        $this->addItem($mediumActiveOrder, 'Pierogi ruskie ze skwarkami i cebula', 2, OrderItem::STATUS_NEW, null, $waiter);
+        $this->addItem($mediumActiveOrder, 'Coca-Cola 0.25L', 4, OrderItem::STATUS_READY, 'Z lodem i cytryna.', $waiter);
 
-        $closedOrder = Order::create([
-            'restaurant_table_id' => $freeTable->id,
+        $vipActiveOrder = Order::create([
+            'restaurant_table_id' => $table12->id,
+            'waiter_id' => $waiter->id,
+            'status' => Order::STATUS_IN_PROGRESS,
+            'opened_at' => now()->subMinutes(60),
+        ]);
+        $this->addItem($vipActiveOrder, 'Stek wolowy z maslem czosnkowym', 3, OrderItem::STATUS_PREPARING, 'Medium rare.', $waiter);
+        $this->addItem($vipActiveOrder, 'Pol kaczki pieczonej z jablkami', 2, OrderItem::STATUS_NEW, null, $waiter);
+        $this->addItem($vipActiveOrder, 'Aperol Spritz', 4, OrderItem::STATUS_PREPARING, 'Duzo lodu.', $waiter);
+        $this->addItem($vipActiveOrder, 'Piwo IPA rzemieslnicze 0.5L', 3, OrderItem::STATUS_READY, null, $waiter);
+        $this->addItem($vipActiveOrder, 'Woda mineralna Perlage 0.3L', 6, OrderItem::STATUS_READY, null, $waiter);
+        $this->addItem($vipActiveOrder, 'Szarlotka domowa na cieplo', 3, OrderItem::STATUS_NEW, 'Z lodami.', $waiter);
+
+        $paidFamilyOrder = Order::create([
+            'restaurant_table_id' => $table4->id,
             'waiter_id' => $waiter->id,
             'status' => Order::STATUS_PAID,
-            'opened_at' => now()->subHours(3),
-            'closed_at' => now()->subHours(2),
-            'paid_at' => now()->subHours(2),
+            'opened_at' => now()->subDays(3),
+            'closed_at' => now()->subDays(3)->addHours(2),
+            'paid_at' => now()->subDays(3)->addHours(2),
         ]);
+        $this->addItem($paidFamilyOrder, 'Kotlet schabowy smazony na smalcu', 5, OrderItem::STATUS_DELIVERED, null, $waiter);
+        $this->addItem($paidFamilyOrder, 'Rosol z wiejskiej kury z makaronem', 5, OrderItem::STATUS_DELIVERED, null, $waiter);
+        $this->addPayment($paidFamilyOrder, Payment::METHOD_CARD);
 
-        $this->addItem($closedOrder, 'Rosol z makaronem', 1, OrderItem::STATUS_DELIVERED, null, $waiter);
-        $this->addItem($closedOrder, 'Pierogi ruskie', 1, OrderItem::STATUS_DELIVERED, null, $waiter);
-        $this->addItem($closedOrder, 'Kawa czarna', 2, OrderItem::STATUS_DELIVERED, null, $waiter);
-
-        Payment::create([
-            'order_id' => $closedOrder->id,
-            'amount' => $closedOrder->total(),
-            'payment_method' => Payment::METHOD_CARD,
-            'status' => Payment::STATUS_PAID,
-            'paid_at' => $closedOrder->paid_at,
+        $paidCoffeeOrder = Order::create([
+            'restaurant_table_id' => $table4->id,
+            'waiter_id' => $waiter->id,
+            'status' => Order::STATUS_PAID,
+            'opened_at' => now()->subDays(1),
+            'closed_at' => now()->subDays(1)->addHour(),
+            'paid_at' => now()->subDays(1)->addHour(),
         ]);
+        $this->addItem($paidCoffeeOrder, 'Sernik tradycyjny puszysty', 4, OrderItem::STATUS_DELIVERED, null, $waiter);
+        $this->addItem($paidCoffeeOrder, 'Kawa czarna Americano', 4, OrderItem::STATUS_DELIVERED, null, $waiter);
+        $this->addPayment($paidCoffeeOrder, Payment::METHOD_CASH);
+
+        $paidSimpleOrder = Order::create([
+            'restaurant_table_id' => $table3->id,
+            'waiter_id' => $waiter->id,
+            'status' => Order::STATUS_PAID,
+            'opened_at' => now()->subHours(4),
+            'closed_at' => now()->subHours(3),
+            'paid_at' => now()->subHours(3),
+        ]);
+        $this->addItem($paidSimpleOrder, 'Pierogi z kapusta i lesnymi grzybami', 1, OrderItem::STATUS_DELIVERED, null, $waiter);
+        $this->addItem($paidSimpleOrder, 'Herbata w dzbanku', 1, OrderItem::STATUS_DELIVERED, null, $waiter);
+        $this->addPayment($paidSimpleOrder, Payment::METHOD_BLIK);
     }
 
     private function addItem(
@@ -82,6 +124,17 @@ class OrderSeeder extends Seeder
             'changed_by' => $changedBy->id,
             'old_status' => null,
             'new_status' => $status,
+        ]);
+    }
+
+    private function addPayment(Order $order, string $method): void
+    {
+        Payment::create([
+            'order_id' => $order->id,
+            'amount' => $order->total(),
+            'payment_method' => $method,
+            'status' => Payment::STATUS_PAID,
+            'paid_at' => $order->paid_at,
         ]);
     }
 }

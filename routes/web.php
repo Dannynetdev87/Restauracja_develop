@@ -1,6 +1,8 @@
 <?php
 
 use App\Http\Controllers\Auth\LoginController;
+use App\Http\Controllers\BarDashboardController;
+use App\Http\Controllers\KitchenDashboardController;
 use App\Http\Controllers\MenuCategoryController;
 use App\Http\Controllers\MenuItemController;
 use App\Http\Controllers\MenuManagementController;
@@ -44,23 +46,21 @@ Route::middleware('auth')->group(function () {
 
     Route::middleware('role:kelner')->group(function () {
         Route::get('/waiter/tables', [WaiterTableController::class, 'index'])->name('waiter.tables.index');
+        Route::get('/waiter/orders/create', [WaiterOrderController::class, 'create'])->name('waiter.orders.create');
         Route::post('/waiter/tables/{restaurantTable}/orders', [WaiterOrderController::class, 'store'])->name('waiter.orders.store');
         Route::get('/waiter/orders/{order}', [WaiterOrderController::class, 'show'])->name('waiter.orders.show');
+        Route::patch('/waiter/order-items/{orderItem}/deliver', [WaiterOrderController::class, 'deliverItem'])->name('waiter.order-items.deliver');
     });
 
-    Route::get('/kitchen/dashboard', function () {
-        return view('dashboard', [
-            'title' => 'Panel kuchni',
-            'description' => 'Podgląd pozycji do przygotowania oraz zmiana statusów zamówień.',
-        ]);
-    })->middleware('role:kuchnia')->name('kitchen.dashboard');
+    Route::middleware('role:kuchnia')->group(function () {
+        Route::get('/kitchen/dashboard', [KitchenDashboardController::class, 'index'])->name('kitchen.dashboard');
+        Route::patch('/kitchen/order-items/{orderItem}/status', [KitchenDashboardController::class, 'updateStatus'])->name('kitchen.order-items.status');
+    });
 
-    Route::get('/bar/dashboard', function () {
-        return view('dashboard', [
-            'title' => 'Panel baru',
-            'description' => 'Podgląd napojów do przygotowania i obsługa statusów baru.',
-        ]);
-    })->middleware('role:bar')->name('bar.dashboard');
+    Route::middleware('role:bar')->group(function () {
+        Route::get('/bar/dashboard', [BarDashboardController::class, 'index'])->name('bar.dashboard');
+        Route::patch('/bar/order-items/{orderItem}/status', [BarDashboardController::class, 'updateStatus'])->name('bar.order-items.status');
+    });
 
     Route::get('/admin/dashboard', function () {
         return view('dashboard', [
