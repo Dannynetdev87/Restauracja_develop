@@ -55,6 +55,15 @@
                             </span>
                         </div>
 
+                    @if($activeOrder)
+                        <div class="mt-4 rounded-md bg-brand-light px-3 py-2 text-sm text-brand-dark">
+                            Aktywne zamówienie #{{ $activeOrder->id }}
+                        </div>
+                        <a href="{{ route('waiter.orders.show', $activeOrder) }}"
+                           class="mt-2 block w-full text-center rounded-md bg-brand-accent px-4 py-2 text-sm font-bold text-white hover:bg-brand-dark transition">
+                            Zarządzaj zamówieniem
+                        </a>
+                    @endif
                         @if($activeOrder)
                             <div class="mt-4 rounded-md bg-brand-light px-3 py-2 text-sm font-bold text-brand-dark">
                                 Aktywne zamówienie #{{ $activeOrder->id }}

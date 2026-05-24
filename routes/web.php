@@ -73,6 +73,9 @@ Route::middleware('auth')->group(function () {
         Route::get('/waiter/orders/create', [WaiterOrderController::class, 'create'])->name('waiter.orders.create');
         Route::post('/waiter/tables/{restaurantTable}/orders', [WaiterOrderController::class, 'store'])->name('waiter.orders.store');
         Route::get('/waiter/orders/{order}', [WaiterOrderController::class, 'show'])->name('waiter.orders.show');
+
+        Route::get('/waiter/orders/{order}/receipt', [WaiterOrderController::class, 'receipt'])->name('waiter.orders.receipt');
+        Route::post('/waiter/orders/{order}/finish', [WaiterOrderController::class, 'finish'])->name('waiter.orders.finish');
     });
 
     /*
@@ -139,3 +142,26 @@ Route::middleware('auth')->group(function () {
         Route::delete('/manager/menu/items/{menuItem}', [MenuItemController::class, 'destroy'])->name('manager.menu-items.destroy');
     });
 });
+
+Route::middleware('role:kelner')->group(function () {
+    Route::get('/waiter/tables', [WaiterTableController::class, 'index'])->name('waiter.tables.index');
+    Route::post('/waiter/tables/{restaurantTable}/orders', [WaiterOrderController::class, 'store'])->name('waiter.orders.store');
+    Route::get('/waiter/orders/{order}', [WaiterOrderController::class, 'show'])->name('waiter.orders.show');
+
+    Route::get('/waiter/orders/{order}/receipt', [WaiterOrderController::class, 'receipt'])->name('waiter.orders.receipt');
+    Route::get('/waiter/orders/{order}/final-receipt', [WaiterOrderController::class, 'showReceipt'])->name('waiter.orders.final-receipt');
+    Route::post('/waiter/orders/{order}/finish', [WaiterOrderController::class, 'finish'])->name('waiter.orders.finish');
+});
+
+Route::get('/menu', function () {
+    return view('menu', [
+        'categories' => MenuCategory::query()
+            ->where('is_active', true)
+            ->with(['availableItems' => fn ($query) => $query->orderBy('name')])
+            ->orderBy('sort_order')
+            ->orderBy('name')
+            ->get(),
+    ]);
+})->name('menu.index');
+
+
