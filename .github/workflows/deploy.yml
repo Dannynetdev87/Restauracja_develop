@@ -8,6 +8,8 @@ on:
 jobs:
   deploy:
     runs-on: ubuntu-latest
+    env:
+      DEPLOY_PATH: /opt/wdrozenie-docker/restauracja/Restauracja_develop
 
     steps:
       - name: Checkout repository
@@ -15,38 +17,83 @@ jobs:
 
       - name: Setup SSH
         run: |
+          set -euo pipefail
+
+          SERVER_PORT="${{ secrets.SERVER_PORT }}"
+          SERVER_PORT="${SERVER_PORT:-22}"
+
           mkdir -p ~/.ssh
           echo "${{ secrets.SERVER_SSH_KEY }}" > ~/.ssh/deploy_key
           chmod 600 ~/.ssh/deploy_key
-          ssh-keyscan -H "${{ secrets.SERVER_HOST }}" >> ~/.ssh/known_hosts
+          ssh-keyscan -p "$SERVER_PORT" -H "${{ secrets.SERVER_HOST }}" >> ~/.ssh/known_hosts
+
+      - name: Verify SSH and server tools
+        run: |
+          set -euo pipefail
+
+          SERVER_PORT="${{ secrets.SERVER_PORT }}"
+          SERVER_PORT="${SERVER_PORT:-22}"
+
+          ssh -p "$SERVER_PORT" -i ~/.ssh/deploy_key "${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }}" "DEPLOY_PATH='$DEPLOY_PATH' bash -s" <<'EOF'
+            set -e
+            mkdir -p "$DEPLOY_PATH"
+            cd "$DEPLOY_PATH"
+            command -v rsync
+            command -v docker
+            docker compose version
+            test -f .env
+            test -f Dockerfile
+            test -f docker-compose.yml -o -f docker-compose.yaml
+          EOF
 
       - name: Sync files to server
         run: |
+          set -euo pipefail
+
+          SERVER_PORT="${{ secrets.SERVER_PORT }}"
+          SERVER_PORT="${SERVER_PORT:-22}"
+
           rsync -az --delete \
-            -e "ssh -i ~/.ssh/deploy_key" \
+            -e "ssh -p $SERVER_PORT -i ~/.ssh/deploy_key" \
+            --exclude=".github/" \
             --exclude=".git/" \
             --exclude=".env" \
+            --exclude="Dockerfile" \
+            --exclude="docker-compose.yml" \
+            --exclude="docker-compose.yaml" \
             --exclude="vendor/" \
             --exclude="node_modules/" \
             --exclude="public/build/" \
-            --exclude="storage/logs/" \
-            --exclude="storage/framework/cache/" \
-            --exclude="storage/framework/sessions/" \
-            --exclude="storage/framework/views/" \
+            --exclude="storage/" \
             ./ \
-            ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }}:/opt/wdrozenie-docker/restauracja/Restauracja_develop/
+            "${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }}:$DEPLOY_PATH/"
 
       - name: Run deploy commands
         run: |
-          ssh -i ~/.ssh/deploy_key ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }} << 'EOF'
+          set -euo pipefail
+
+          SERVER_PORT="${{ secrets.SERVER_PORT }}"
+          SERVER_PORT="${SERVER_PORT:-22}"
+
+          ssh -p "$SERVER_PORT" -i ~/.ssh/deploy_key "${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }}" "DEPLOY_PATH='$DEPLOY_PATH' SERVER_USER='${{ secrets.SERVER_USER }}' bash -s" <<'EOF'
             set -e
-            cd /opt/wdrozenie-docker/restauracja/Restauracja_develop
+            cd "$DEPLOY_PATH"
 
             docker run --rm -v "$PWD":/app -w /app composer:2 composer install --no-dev --optimize-autoloader
             docker run --rm -v "$PWD":/app -w /app node:24 npm ci
             docker run --rm -v "$PWD":/app -w /app node:24 npm run build
 
-            chown -R wollekd:wdrozenie-docker vendor node_modules public/build storage bootstrap/cache
+            mkdir -p \
+              storage/app/private \
+              storage/app/public \
+              storage/framework/cache/data \
+              storage/framework/sessions \
+              storage/framework/testing \
+              storage/framework/views \
+              storage/logs \
+              bootstrap/cache \
+              public/build
+            chown -R "${{ secrets.SERVER_USER }}":wdrozenie-docker vendor node_modules public/build storage bootstrap/cache
 
             docker compose up -d --build --force-recreate
             docker exec restauracja-app php artisan migrate --force
