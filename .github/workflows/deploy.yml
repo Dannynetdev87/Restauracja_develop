@@ -63,6 +63,18 @@ jobs:
             ./ \
             "${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }}:$DEPLOY_PATH/"
 
+          ssh -p "$SERVER_PORT" -i ~/.ssh/deploy_key "${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }}" "DEPLOY_PATH='$DEPLOY_PATH' bash -s" <<EOF
+            set -e
+            cd "\$DEPLOY_PATH"
+            {
+              echo "repository=${{ github.repository }}"
+              echo "ref=${{ github.ref_name }}"
+              echo "sha=${{ github.sha }}"
+              echo "run_id=${{ github.run_id }}"
+              echo "deployed_at_utc=$(date -u +'%Y-%m-%dT%H:%M:%SZ')"
+            } > .deploy-info
+          EOF
+
       - name: Verify synced deploy files
         run: |
           set -euo pipefail
@@ -88,10 +100,6 @@ jobs:
             set -e
             cd "$DEPLOY_PATH"
 
-            docker run --rm -v "$PWD":/app -w /app composer:2 composer install --no-dev --optimize-autoloader
-            docker run --rm -v "$PWD":/app -w /app node:24 npm ci
-            docker run --rm -v "$PWD":/app -w /app node:24 npm run build
-
             mkdir -p \
               storage/app/private \
               storage/app/public \
@@ -102,9 +110,28 @@ jobs:
               storage/logs \
               bootstrap/cache \
               public/build
-            chown -R "${{ secrets.SERVER_USER }}":wdrozenie-docker vendor node_modules public/build storage bootstrap/cache
 
-            docker compose up -d --build --force-recreate
+            USER_ID="$(id -u)"
+            GROUP_ID="$(id -g)"
+
+            docker run --rm --user "$USER_ID:$GROUP_ID" \
+              -e COMPOSER_CACHE_DIR=/tmp/composer-cache \
+              -v "$PWD":/app -w /app \
+              composer:2 composer install --no-dev --optimize-autoloader
+
+            docker run --rm --user "$USER_ID:$GROUP_ID" \
+              -e npm_config_cache=/tmp/.npm \
+              -v "$PWD":/app -w /app \
+              node:24 npm ci
+
+            docker run --rm --user "$USER_ID:$GROUP_ID" \
+              -e npm_config_cache=/tmp/.npm \
+              -v "$PWD":/app -w /app \
+              node:24 npm run build
+
+            chmod -R ug+rwX vendor node_modules public/build storage bootstrap/cache
+
+            docker compose up -d --build --force-recreate --remove-orphans
             docker exec restauracja-app php artisan migrate --force
             docker exec restauracja-app php artisan optimize:clear
 
