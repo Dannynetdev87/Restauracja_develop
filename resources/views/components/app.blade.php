@@ -9,7 +9,15 @@
 </head>
 <body class="site-body">
 
-<div class="bg-brand-dark text-white text-xs py-2 px-4 flex justify-between items-center border-b border-white/10">
+@php
+    $activeNavClass = 'font-bold text-brand-dark border-b-2 border-brand-accent';
+    $user = auth()->user();
+    $isProductionRole = $user && ($user->worksInKitchen() || $user->worksAtBar());
+    $productionCurrentRoute = $user?->worksInKitchen() ? 'kitchen.current' : 'bar.current';
+    $productionDashboardRoute = $user?->worksInKitchen() ? 'kitchen.dashboard' : 'bar.dashboard';
+@endphp
+
+<div class="bg-brand-dark text-white text-xs py-2 px-4 flex flex-col gap-1 sm:flex-row sm:justify-between sm:items-center border-b border-white/10">
     @auth
         <span>Zalogowano jako: <strong class="uppercase text-brand-light">{{ auth()->user()->full_name }}</strong></span>
         <span>Rola: <strong class="uppercase text-brand-light">{{ auth()->user()->role }}</strong></span>
@@ -21,29 +29,28 @@
 
 <header class="main-header">
     <div class="header-container">
-
-        <a href="{{ route('home') }}" class="site-logo">
+        <a href="{{ $isProductionRole ? route($productionCurrentRoute) : route('home') }}" class="site-logo">
             Smak<span class="logo-accent">Przeszłości</span>
         </a>
 
-        @php
-            $activeNavClass = 'font-bold text-brand-dark border-b-2 border-brand-accent';
-        @endphp
-
         <nav class="main-nav">
-            <a href="{{ route('home') }}" class="nav-link {{ request()->routeIs('home') ? $activeNavClass : '' }}">Start</a>
-            <a href="{{ route('menu.index') }}" class="nav-link {{ request()->routeIs('menu.index') ? $activeNavClass : '' }}">Menu</a>
-
             @auth
-                <a href="{{ route('dashboard') }}" class="nav-link {{ request()->routeIs('dashboard', 'admin.dashboard', 'manager.dashboard', 'waiter.dashboard', 'waiter.tables.*', 'waiter.orders.*', 'kitchen.dashboard', 'bar.dashboard') ? $activeNavClass : '' }}">Panel</a>
+                @if($isProductionRole)
+                    <a href="{{ route($productionCurrentRoute) }}" class="nav-link {{ request()->routeIs($productionCurrentRoute) ? $activeNavClass : '' }}">Aktualne</a>
+                    <a href="{{ route($productionDashboardRoute) }}" class="nav-link {{ request()->routeIs($productionDashboardRoute) ? $activeNavClass : '' }}">Dashboard</a>
+                @else
+                    <a href="{{ route('home') }}" class="nav-link {{ request()->routeIs('home') ? $activeNavClass : '' }}">Start</a>
+                    <a href="{{ route('menu.index') }}" class="nav-link {{ request()->routeIs('menu.index') ? $activeNavClass : '' }}">Menu</a>
+                    <a href="{{ route('dashboard') }}" class="nav-link {{ request()->routeIs('dashboard', 'admin.dashboard', 'manager.dashboard', 'waiter.dashboard', 'waiter.tables.*', 'waiter.orders.*') ? $activeNavClass : '' }}">Panel</a>
 
-                @if(auth()->user()->isManager() || auth()->user()->isAdmin())
-                    <a href="{{ route('manager.podglad') }}" class="nav-link {{ request()->routeIs('manager.podglad', 'manager.menu-categories.*', 'manager.menu-items.*') ? $activeNavClass : '' }}">
-                        Zarządzanie menu
-                    </a>
-                    <a href="{{ route('manager.tables.index') }}" class="nav-link {{ request()->routeIs('manager.tables.*') ? $activeNavClass : '' }}">
-                        Stoliki
-                    </a>
+                    @if(auth()->user()->isManager() || auth()->user()->isAdmin())
+                        <a href="{{ route('manager.podglad') }}" class="nav-link {{ request()->routeIs('manager.podglad', 'manager.menu-categories.*', 'manager.menu-items.*') ? $activeNavClass : '' }}">
+                            Zarządzanie menu
+                        </a>
+                        <a href="{{ route('manager.tables.index') }}" class="nav-link {{ request()->routeIs('manager.tables.*') ? $activeNavClass : '' }}">
+                            Stoliki
+                        </a>
+                    @endif
                 @endif
 
                 <form method="POST" action="{{ route('logout') }}">
@@ -53,12 +60,13 @@
                     </button>
                 </form>
             @else
+                <a href="{{ route('home') }}" class="nav-link {{ request()->routeIs('home') ? $activeNavClass : '' }}">Start</a>
+                <a href="{{ route('menu.index') }}" class="nav-link {{ request()->routeIs('menu.index') ? $activeNavClass : '' }}">Menu</a>
                 <a href="{{ route('login') }}" class="bg-brand-dark text-brand-light font-bold px-5 py-2.5 rounded-xl transition hover:bg-brand-accent shadow-sm text-sm">
                     Zaloguj się
                 </a>
             @endauth
         </nav>
-
     </div>
 </header>
 

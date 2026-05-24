@@ -2,184 +2,236 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Order;
-use App\Models\RestaurantTable;
-use App\Models\MenuItem;
 use App\Models\MenuCategory;
+use App\Models\MenuItem;
+use App\Models\Order;
+use App\Models\OrderItem;
+use App\Models\RestaurantTable;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Validation\ValidationException;
 
 class WaiterOrderController extends Controller
 {
-    /**
-     * Ekran główny All-In-One (formularz z makiety)
-     */
     public function create(Request $request)
     {
-    }
-
-    public function show(Order $order)
-    {
-        if ($order->waiter_id !== request()->user()->id) {
-            abort(403);
-        }
-        return view('waiter.orders.show', ['order' => $order->load(['table', 'items.menuItem'])]);
-    }
-
-    public function receipt(Order $order)
-    {
-    }
-
-    /**
-     * Wyświetla podsumowanie rachunku przed ostatecznym zamknięciem.
-     */
-    public function showReceipt(Order $order)
-    {
-        if ($order->waiter_id !== request()->user()->id) {
-            abort(403);
-        }
-        $order->load(['table', 'items.menuItem']);
-        return view('waiter.orders.final-receipt', ['order' => $order]);
-    }
-
-    /**
-     * Zamyka zamówienie i zwalnia stolik.
-     */
-    public function finish(Order $order)
-    {
-        if ($order->waiter_id !== request()->user()->id) {
-            abort(403, 'Brak uprawnień.');
-        }
-
-        DB::transaction(function () use ($order) {
-            $order->update(['status' => Order::STATUS_CLOSED, 'closed_at' => now()]);
-            $order->table->update(['status' => RestaurantTable::STATUS_FREE]);
-        });
-
-        return redirect()->route('waiter.tables.index')
-            ->with('success', 'Zamówienie zostało zakończone i stolik zwolniony.');
-        $tables = RestaurantTable::where('status', '!=', 'nieaktywny')
-            ->orderBy('number')
-            ->get();
-
-        // Pobieramy menu z aktywnymi kategoriami i dostępnymi daniami
-        $categories = MenuCategory::where('is_active', true)
-            ->with(['items' => function($query) {
-                $query->where('available', true);
-            }])
-            ->orderBy('sort_order')
-            ->get();
-
-        $selectedTableId = $request->query('table_id');
+        $selectedTable = null;
         $activeOrder = null;
 
-        // Jeżeli przekazano stolik, sprawdzamy czy ma już aktywne zamówienie (kontekst dobitki)
-        if ($selectedTableId) {
-            $activeOrder = Order::where('restaurant_table_id', $selectedTableId)
-                ->whereIn('status', ['open', 'in_progress', 'ready', 'served'])
-                ->with('items.menuItem')
-                ->first();
+        if ($request->filled('table_id')) {
+            $selectedTable = RestaurantTable::query()
+                ->with(['activeOrders' => fn ($query) => $query->with('items')->latest('opened_at')])
+                ->whereKey($request->integer('table_id'))
+                ->where('status', '!=', RestaurantTable::STATUS_INACTIVE)
+                ->firstOrFail();
+
+            $activeOrder = $selectedTable->activeOrders->first();
         }
 
-        return view('waiter.orders.create', compact('tables', 'categories', 'selectedTableId', 'activeOrder'));
+        return view('waiter.orders.create', [
+            'tables' => RestaurantTable::query()
+                ->where('status', '!=', RestaurantTable::STATUS_INACTIVE)
+                ->with(['activeOrders' => fn ($query) => $query->latest('opened_at')])
+                ->orderBy('number')
+                ->get(),
+            'categories' => MenuCategory::query()
+                ->where('is_active', true)
+                ->with(['availableItems' => fn ($query) => $query->orderBy('name')])
+                ->orderBy('sort_order')
+                ->orderBy('name')
+                ->get(),
+            'selectedTable' => $selectedTable,
+            'activeOrder' => $activeOrder,
+        ]);
     }
 
-    /**
-     * Zapis nowego zamówienia LUB aktualizacja istniejącego (Dobitka)
-     */
     public function store(Request $request, RestaurantTable $restaurantTable)
     {
-        $request->validate([
-            'items' => 'required|array|min:1',
-            'items.*.menu_item_id' => 'required|exists:menu_items,id',
-            'items.*.quantity' => 'required|integer|min:1|max:99',
-            'items.*.notes' => 'nullable|string|max:500',
+        $validated = $request->validate([
+            'items' => ['required', 'array'],
+            'items.*.quantity' => ['nullable', 'integer', 'min:0', 'max:99'],
+            'items.*.notes' => ['nullable', 'string', 'max:500'],
         ]);
 
-        try {
-            $result = DB::transaction(function () use ($request, $restaurantTable) {
-                // Blokada pesymistyczna wiersza stolika na czas operacji DB
-                $table = RestaurantTable::lockForUpdate()->find($restaurantTable->id);
-
-                // Szukamy istniejącego, otwartego zamówienia dla tego stolika
-                $order = Order::where('restaurant_table_id', $table->id)
-                    ->whereIn('status', ['open', 'in_progress', 'ready', 'served'])
-                    ->first();
-
-                // Jeżeli zamówienie nie istnieje (stolik jest wolny), tworzymy nowy nagłówek
-                if (!$order) {
-                    $order = Order::create([
-                        'restaurant_table_id' => $table->id,
-                        'waiter_id' => auth()->id(), // Przypisanie zalogowanego kelnera
-                        'status' => 'open',
-                        'opened_at' => now(),
-                    ]);
-
-                    // Automatyczna zmiana statusu stolika na zajęty
-                    $table->update(['status' => 'zajety']);
-                    $isNewOrder = true;
-                } else {
-                    $isNewOrder = false;
+        $selectedItems = collect($validated['items'])
+            ->map(function (array $item, string|int $menuItemId): ?array {
+                if (! ctype_digit((string) $menuItemId)) {
+                    return null;
                 }
 
-                // Zapis lub naddanie pozycji z ilościami i nowymi notatkami kelnera dla kuchni/baru
-                foreach ($request->items as $data) {
-                    $menuItem = MenuItem::find($data['menu_item_id']);
+                $quantity = (int) ($item['quantity'] ?? 0);
 
-                    // Sprawdzamy, czy dana pozycja z dokładnie taką samą notatką już leży w zamówieniu
-                    // (Jeżeli tak - zwiększamy ilość, jeżeli nie lub ma inną notatkę - tworzymy nowy bon do kuchni)
-                    $existingItem = $order->items()
-                        ->where('menu_item_id', $menuItem->id)
-                        ->where('status', 'new') // Tylko jeśli zamówienie nie poszło jeszcze w produkcję
-                        ->where('notes', $data['notes'] ?? null)
-                        ->first();
-
-                    if ($existingItem) {
-                        $existingItem->increment('quantity', $data['quantity']);
-                    } else {
-                        $order->items()->create([
-                            'menu_item_id' => $menuItem->id,
-                            'quantity' => $data['quantity'],
-                            'unit_price' => $menuItem->price, // Zamrożenie ceny w historii rachunku
-                            'notes' => $data['notes'] ?? null,
-                            'status' => 'new', // Status pozycji "NEW" trafia na ekrany kuchni/baru
-                        ]);
-                    }
+                if ($quantity < 1) {
+                    return null;
                 }
+
+                $notes = trim((string) ($item['notes'] ?? ''));
 
                 return [
-                    'success' => true,
-                    'order' => $order,
-                    'isNew' => $isNewOrder
+                    'menu_item_id' => (int) $menuItemId,
+                    'quantity' => $quantity,
+                    'notes' => $notes !== '' ? $notes : null,
                 ];
-            });
+            })
+            ->filter()
+            ->values();
 
-            if (!$result['success']) {
-                return redirect()->back()->with('error', $result['message']);
+        if ($selectedItems->isEmpty()) {
+            throw ValidationException::withMessages([
+                'items' => 'Wybierz przynajmniej jedną pozycję menu i podaj ilość większą od zera.',
+            ]);
+        }
+
+        $menuItems = MenuItem::query()
+            ->whereIn('id', $selectedItems->pluck('menu_item_id'))
+            ->where('available', true)
+            ->get()
+            ->keyBy('id');
+
+        if ($menuItems->count() !== $selectedItems->pluck('menu_item_id')->unique()->count()) {
+            throw ValidationException::withMessages([
+                'items' => 'Wybrano pozycję menu, która nie istnieje albo nie jest obecnie dostępna.',
+            ]);
+        }
+
+        $order = DB::transaction(function () use ($restaurantTable, $selectedItems, $menuItems) {
+            $table = RestaurantTable::query()
+                ->lockForUpdate()
+                ->findOrFail($restaurantTable->id);
+
+            $order = Order::query()
+                ->where('restaurant_table_id', $table->id)
+                ->whereIn('status', Order::activeStatuses())
+                ->latest('opened_at')
+                ->first();
+
+            if ($order && $order->waiter_id !== request()->user()->id) {
+                throw ValidationException::withMessages([
+                    'table' => 'Ten stolik ma aktywne zamówienie przypisane do innego kelnera.',
+                ]);
             }
 
-            $message = $result['isNew']
-                ? "Zamówienie #{$result['order']->id} zostało pomyślnie otwarte!"
-                : "Pomyślnie dodano nowe pozycje do zamówienia #{$result['order']->id}!";
+            if ($order && ! $order->canAcceptItems()) {
+                throw ValidationException::withMessages([
+                    'table' => 'Do wydanego zamówienia nie można już dodawać pozycji. Wystaw rachunek albo przyjmij płatność.',
+                ]);
+            }
 
-            return redirect()
-                ->route('waiter.tables.index') // Powrót na kafelki sali restauracyjnej
-                ->with('success', $message);
+            if (! $order) {
+                if (! $table->canOpenOrder()) {
+                    throw ValidationException::withMessages([
+                        'table' => 'Zamówienie można rozpocząć tylko dla wolnego stolika bez aktywnego zamówienia.',
+                    ]);
+                }
 
-        } catch (\Exception $e) {
-            return redirect()->back()->with('error', 'Wystąpił błąd podczas procesowania zamówienia: ' . $e->getMessage());
-        }
+                $order = Order::create([
+                    'restaurant_table_id' => $table->id,
+                    'waiter_id' => request()->user()->id,
+                    'status' => Order::STATUS_OPEN,
+                    'opened_at' => now(),
+                ]);
+
+                $table->update([
+                    'status' => RestaurantTable::STATUS_OCCUPIED,
+                ]);
+            }
+
+            foreach ($selectedItems as $selectedItem) {
+                $menuItem = $menuItems->get($selectedItem['menu_item_id']);
+
+                $orderItem = $order->items()
+                    ->where('menu_item_id', $menuItem->id)
+                    ->where('status', OrderItem::STATUS_NEW)
+                    ->where('notes', $selectedItem['notes'])
+                    ->first();
+
+                if ($orderItem) {
+                    $orderItem->increment('quantity', $selectedItem['quantity']);
+
+                    continue;
+                }
+
+                $orderItem = $order->items()->create([
+                    'menu_item_id' => $menuItem->id,
+                    'quantity' => $selectedItem['quantity'],
+                    'unit_price' => $menuItem->price,
+                    'notes' => $selectedItem['notes'],
+                    'status' => OrderItem::STATUS_NEW,
+                ]);
+
+                $orderItem->statusHistory()->create([
+                    'changed_by' => request()->user()->id,
+                    'old_status' => null,
+                    'new_status' => OrderItem::STATUS_NEW,
+                ]);
+            }
+
+            return $order;
+        });
+
+        return redirect()
+            ->route('waiter.orders.show', $order)
+            ->with('success', 'Pozycje zostały zapisane w zamówieniu.');
     }
 
-    /**
-     * NOWOŚĆ: Wyświetlenie szczegółów i bonu zamówienia (Widok show.blade.php)
-     */
     public function show(Order $order)
     {
-        // Eager loading relacji, by zapobiec problemowi zapytań N+1
-        $order->load(['table', 'items.menuItem']);
+        if ($order->waiter_id !== request()->user()->id) {
+            abort(403);
+        }
 
-        // Przekazujemy dane zamówienia do Twojego pierwotnego widoku kelnerskiego
-        return view('waiter.orders.show', compact('order'));
+        return view('waiter.orders.show', [
+            'order' => $order->load(['table', 'items.menuItem']),
+        ]);
+    }
+
+    public function deliverItem(OrderItem $orderItem)
+    {
+        $orderItem->load('order.items');
+
+        if ($orderItem->order->waiter_id !== request()->user()->id) {
+            abort(403);
+        }
+
+        if ($orderItem->status !== OrderItem::STATUS_READY) {
+            throw ValidationException::withMessages([
+                'status' => 'Dostarczyć można tylko pozycję oznaczoną jako gotowa.',
+            ]);
+        }
+
+        $order = DB::transaction(function () use ($orderItem) {
+            $orderItem->refresh();
+            $oldStatus = $orderItem->status;
+
+            if ($oldStatus !== OrderItem::STATUS_READY) {
+                throw ValidationException::withMessages([
+                    'status' => 'Dostarczyć można tylko pozycję oznaczoną jako gotowa.',
+                ]);
+            }
+
+            $orderItem->update([
+                'status' => OrderItem::STATUS_DELIVERED,
+            ]);
+
+            $orderItem->statusHistory()->create([
+                'changed_by' => request()->user()->id,
+                'old_status' => $oldStatus,
+                'new_status' => OrderItem::STATUS_DELIVERED,
+            ]);
+
+            $order = $orderItem->order()->with('items')->firstOrFail();
+
+            if ($order->items->isNotEmpty() && $order->items->every(fn (OrderItem $item) => $item->status === OrderItem::STATUS_DELIVERED)) {
+                $order->update([
+                    'status' => Order::STATUS_SERVED,
+                ]);
+            }
+
+            return $order;
+        });
+
+        return redirect()
+            ->route('waiter.orders.show', $order)
+            ->with('success', 'Pozycja została oznaczona jako dostarczona.');
     }
 }

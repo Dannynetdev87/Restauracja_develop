@@ -45,14 +45,14 @@
     }
 
     .header-container {
-        @apply max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex justify-between items-center;
+        @apply max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 min-h-20 py-4 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4;
     }
 
-    .site-logo { @apply text-2xl font-black tracking-tight text-brand-dark; }
+    .site-logo { @apply text-xl sm:text-2xl font-black tracking-tight text-brand-dark; }
     .logo-accent { @apply text-brand-accent; }
 
-    .main-nav { @apply flex items-center gap-8 font-medium; }
-    .nav-link { @apply text-brand-accent hover:text-brand-dark transition; }
+    .main-nav { @apply flex flex-wrap items-center gap-3 sm:gap-6 lg:gap-8 font-medium; }
+    .nav-link { @apply text-sm sm:text-base text-brand-accent hover:text-brand-dark transition; }
 
     /* Dropdown dla konta */
     .dropdown-wrapper { @apply relative py-2; }
