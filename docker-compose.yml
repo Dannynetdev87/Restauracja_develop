@@ -1,0 +1,21 @@
+services:
+  restauracja-app:
+    container_name: restauracja-app
+    build:
+      context: .
+      dockerfile: Dockerfile
+    env_file:
+      - .env
+    working_dir: /var/www/html
+    command: php artisan serve --host=0.0.0.0 --port=8000
+    ports:
+      - "8001:8000"
+    volumes:
+      - ./:/var/www/html
+    networks:
+      - restaurant_network
+    restart: unless-stopped
+
+networks:
+  restaurant_network:
+    external: true

@@ -42,8 +42,6 @@ jobs:
             command -v docker
             docker compose version
             test -f .env
-            test -f Dockerfile
-            test -f docker-compose.yml -o -f docker-compose.yaml
           EOF
 
       - name: Sync files to server
@@ -58,15 +56,26 @@ jobs:
             --exclude=".github/" \
             --exclude=".git/" \
             --exclude=".env" \
-            --exclude="Dockerfile" \
-            --exclude="docker-compose.yml" \
-            --exclude="docker-compose.yaml" \
             --exclude="vendor/" \
             --exclude="node_modules/" \
             --exclude="public/build/" \
             --exclude="storage/" \
             ./ \
             "${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }}:$DEPLOY_PATH/"
+
+      - name: Verify synced deploy files
+        run: |
+          set -euo pipefail
+
+          SERVER_PORT="${{ secrets.SERVER_PORT }}"
+          SERVER_PORT="${SERVER_PORT:-22}"
+
+          ssh -p "$SERVER_PORT" -i ~/.ssh/deploy_key "${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }}" "DEPLOY_PATH='$DEPLOY_PATH' bash -s" <<'EOF'
+            set -e
+            cd "$DEPLOY_PATH"
+            test -f Dockerfile
+            test -f docker-compose.yml
+          EOF
 
       - name: Run deploy commands
         run: |
