@@ -8,9 +8,14 @@ class WaiterTableController extends Controller
 {
     public function index()
     {
+        $waiterId = request()->user()->id;
+
         return view('waiter.tables.index', [
             'tables' => RestaurantTable::query()
-                ->with(['activeOrders' => fn ($query) => $query->latest('opened_at')])
+                ->visibleForWaiter($waiterId)
+                ->with(['activeOrders' => fn ($query) => $query
+                    ->where('waiter_id', $waiterId)
+                    ->latest('opened_at')])
                 ->orderBy('number')
                 ->get(),
             'statuses' => $this->statuses(),

@@ -7,5 +7,6 @@
         'description' => 'Podgląd pozycji przypisanych do baru oraz zmiana statusów przygotowania.',
         'queueDescription' => 'Zamówienia zawierające napoje do obsłużenia.',
         'statusRouteName' => 'bar.order-items.status',
+        'cancelRouteName' => 'bar.order-items.cancel',
     ])
 </x-app>

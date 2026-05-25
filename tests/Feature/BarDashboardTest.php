@@ -175,6 +175,33 @@ class BarDashboardTest extends TestCase
         ]);
     }
 
+    public function test_bar_user_can_cancel_item_and_history_is_saved(): void
+    {
+        $barUser = User::factory()->create(['role' => User::ROLE_BAR]);
+        $order = $this->createOrder(status: Order::STATUS_OPEN);
+        $orderItem = $this->createOrderItem($order, 'Brakujaca lemoniada testowa', MenuItem::AREA_BAR);
+
+        $this
+            ->actingAs($barUser)
+            ->patch(route('bar.order-items.cancel', $orderItem))
+            ->assertRedirect(route('bar.dashboard'));
+
+        $this->assertDatabaseHas('order_items', [
+            'id' => $orderItem->id,
+            'status' => OrderItem::STATUS_CANCELLED,
+        ]);
+        $this->assertDatabaseHas('orders', [
+            'id' => $order->id,
+            'status' => Order::STATUS_IN_PROGRESS,
+        ]);
+        $this->assertDatabaseHas('order_item_status_histories', [
+            'order_item_id' => $orderItem->id,
+            'changed_by' => $barUser->id,
+            'old_status' => OrderItem::STATUS_NEW,
+            'new_status' => OrderItem::STATUS_CANCELLED,
+        ]);
+    }
+
     public function test_bar_user_cannot_skip_status_transition(): void
     {
         $barUser = User::factory()->create(['role' => User::ROLE_BAR]);

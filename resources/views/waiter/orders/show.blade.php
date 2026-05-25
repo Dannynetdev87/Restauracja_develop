@@ -53,6 +53,7 @@
                 <div class="mt-6 divide-y divide-brand-dark/10">
                     @forelse($order->items as $item)
                         @php
+                            $isCancelled = $item->status === \App\Models\OrderItem::STATUS_CANCELLED;
                             $statusLabel = match ($item->status) {
                                 \App\Models\OrderItem::STATUS_NEW => 'Nowe',
                                 \App\Models\OrderItem::STATUS_PREPARING => 'W przygotowaniu',
@@ -70,14 +71,14 @@
                             };
                         @endphp
 
-                        <div class="grid gap-4 py-4 md:grid-cols-[72px_1fr_160px] md:items-start">
-                            <div class="w-fit rounded-md bg-brand-dark px-3 py-2 text-sm font-black text-brand-light">
+                        <div class="grid gap-4 py-4 md:grid-cols-[72px_1fr_160px] md:items-start {{ $isCancelled ? 'opacity-70' : '' }}">
+                            <div class="w-fit rounded-md px-3 py-2 text-sm font-black text-brand-light {{ $isCancelled ? 'bg-gray-500' : 'bg-brand-dark' }}">
                                 {{ $item->quantity }}x
                             </div>
 
                             <div>
                                 <div class="flex flex-wrap items-center gap-2">
-                                    <h3 class="font-black text-brand-dark">{{ $item->menuItem->name }}</h3>
+                                    <h3 class="font-black text-brand-dark {{ $isCancelled ? 'line-through' : '' }}">{{ $item->menuItem->name }}</h3>
                                     <span class="rounded-md px-2.5 py-1 text-xs font-bold {{ $statusClass }}">
                                         {{ $statusLabel }}
                                     </span>
@@ -102,7 +103,9 @@
 
                             <div class="text-left md:text-right">
                                 <p class="text-sm text-brand-accent">{{ number_format($item->unit_price, 2, ',', ' ') }} zł / szt.</p>
-                                <p class="mt-1 text-lg font-black text-brand-dark">{{ number_format($item->subtotal(), 2, ',', ' ') }} zł</p>
+                                <p class="mt-1 text-lg font-black text-brand-dark">
+                                    {{ $isCancelled ? '0,00' : number_format($item->subtotal(), 2, ',', ' ') }} zł
+                                </p>
                             </div>
                         </div>
                     @empty
@@ -122,7 +125,7 @@
                     </div>
                     <div class="flex justify-between gap-4">
                         <span>Liczba pozycji</span>
-                        <strong>{{ $order->items->sum('quantity') }}</strong>
+                        <strong>{{ $order->items->where('status', '!=', \App\Models\OrderItem::STATUS_CANCELLED)->sum('quantity') }}</strong>
                     </div>
                     <div class="flex justify-between gap-4 border-t border-brand-dark/10 pt-3 text-lg">
                         <span>Razem</span>

@@ -7,5 +7,6 @@
         'description' => 'Podgląd pozycji przypisanych do kuchni oraz zmiana statusów przygotowania.',
         'queueDescription' => 'Zamówienia zawierające pozycje kuchenne do obsłużenia.',
         'statusRouteName' => 'kitchen.order-items.status',
+        'cancelRouteName' => 'kitchen.order-items.cancel',
     ])
 </x-app>

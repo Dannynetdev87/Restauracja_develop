@@ -34,6 +34,37 @@ class WaiterBillingTest extends TestCase
             ->assertSee('Zatwierdź płatność');
     }
 
+    public function test_cancelled_items_are_excluded_from_bill_total_and_payment_amount(): void
+    {
+        $waiter = User::factory()->create(['role' => User::ROLE_WAITER]);
+        $order = $this->createOrder($waiter, Order::STATUS_SERVED);
+        $this->createOrderItem($order, 'Danie rozliczane', 2, 20.00);
+        $this->createOrderItem($order, 'Danie anulowane', 3, 50.00, OrderItem::STATUS_CANCELLED);
+
+        $this
+            ->actingAs($waiter)
+            ->get(route('waiter.orders.bill', $order))
+            ->assertOk()
+            ->assertSee('Danie anulowane')
+            ->assertSee('Anulowane')
+            ->assertSee('40,00 zł')
+            ->assertDontSee('150,00 zł');
+
+        $this
+            ->actingAs($waiter)
+            ->post(route('waiter.orders.payments.store', $order), [
+                'payment_method' => Payment::METHOD_CARD,
+            ])
+            ->assertRedirect(route('waiter.orders.bill', $order));
+
+        $this->assertDatabaseHas('payments', [
+            'order_id' => $order->id,
+            'amount' => '40.00',
+            'payment_method' => Payment::METHOD_CARD,
+            'status' => Payment::STATUS_PAID,
+        ]);
+    }
+
     public function test_waiter_cannot_see_other_waiters_bill(): void
     {
         $waiter = User::factory()->create(['role' => User::ROLE_WAITER]);

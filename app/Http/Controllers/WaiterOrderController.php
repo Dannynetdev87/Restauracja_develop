@@ -15,14 +15,18 @@ class WaiterOrderController extends Controller
 {
     public function create(Request $request)
     {
+        $waiterId = $request->user()->id;
         $selectedTable = null;
         $activeOrder = null;
 
         if ($request->filled('table_id')) {
             $selectedTable = RestaurantTable::query()
-                ->with(['activeOrders' => fn ($query) => $query->with('items')->latest('opened_at')])
+                ->visibleForWaiter($waiterId)
+                ->with(['activeOrders' => fn ($query) => $query
+                    ->where('waiter_id', $waiterId)
+                    ->with('items')
+                    ->latest('opened_at')])
                 ->whereKey($request->integer('table_id'))
-                ->where('status', '!=', RestaurantTable::STATUS_INACTIVE)
                 ->firstOrFail();
 
             $activeOrder = $selectedTable->activeOrders->first();
@@ -30,8 +34,10 @@ class WaiterOrderController extends Controller
 
         return view('waiter.orders.create', [
             'tables' => RestaurantTable::query()
-                ->where('status', '!=', RestaurantTable::STATUS_INACTIVE)
-                ->with(['activeOrders' => fn ($query) => $query->latest('opened_at')])
+                ->visibleForWaiter($waiterId)
+                ->with(['activeOrders' => fn ($query) => $query
+                    ->where('waiter_id', $waiterId)
+                    ->latest('opened_at')])
                 ->orderBy('number')
                 ->get(),
             'categories' => MenuCategory::query()
@@ -221,7 +227,11 @@ class WaiterOrderController extends Controller
 
             $order = $orderItem->order()->with('items')->firstOrFail();
 
-            if ($order->items->isNotEmpty() && $order->items->every(fn (OrderItem $item) => $item->status === OrderItem::STATUS_DELIVERED)) {
+            $billableItems = $order->items->where('status', '!=', OrderItem::STATUS_CANCELLED);
+            $billableItemsDelivered = $billableItems->isNotEmpty()
+                && $billableItems->every(fn (OrderItem $item) => $item->status === OrderItem::STATUS_DELIVERED);
+
+            if ($order->items->isNotEmpty() && $billableItemsDelivered) {
                 $order->update([
                     'status' => Order::STATUS_SERVED,
                 ]);

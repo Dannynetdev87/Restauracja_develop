@@ -97,6 +97,17 @@
                                             Gotowe do odbioru
                                         </span>
                                     @endif
+
+                                    @if(in_array($item->status, [\App\Models\OrderItem::STATUS_NEW, \App\Models\OrderItem::STATUS_PREPARING], true))
+                                        <form method="POST" action="{{ route('kitchen.order-items.cancel', $item) }}" class="mt-2">
+                                            @csrf
+                                            @method('PATCH')
+                                            <input type="hidden" name="redirect_to" value="kitchen.current">
+                                            <button type="submit" class="w-full rounded-md border border-red-200 bg-red-50 px-4 py-2 text-sm font-bold text-red-800 hover:bg-red-100">
+                                                Nie można przygotować
+                                            </button>
+                                        </form>
+                                    @endif
                                 </div>
                             </div>
                         </article>

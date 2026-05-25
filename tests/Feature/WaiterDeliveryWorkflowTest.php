@@ -95,6 +95,24 @@ class WaiterDeliveryWorkflowTest extends TestCase
         ]);
     }
 
+    public function test_cancelled_items_do_not_block_marking_order_as_served(): void
+    {
+        $waiter = User::factory()->create(['role' => User::ROLE_WAITER]);
+        $order = $this->createOrder($waiter, Order::STATUS_READY);
+        $readyItem = $this->createOrderItem($order, OrderItem::STATUS_READY, 'Pozycja gotowa');
+        $this->createOrderItem($order, OrderItem::STATUS_CANCELLED, 'Pozycja anulowana');
+
+        $this
+            ->actingAs($waiter)
+            ->patch(route('waiter.order-items.deliver', $readyItem))
+            ->assertRedirect(route('waiter.orders.show', $order));
+
+        $this->assertDatabaseHas('orders', [
+            'id' => $order->id,
+            'status' => Order::STATUS_SERVED,
+        ]);
+    }
+
     public function test_ready_item_has_delivery_action_on_order_page(): void
     {
         $waiter = User::factory()->create(['role' => User::ROLE_WAITER]);

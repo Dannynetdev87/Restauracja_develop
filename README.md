@@ -67,6 +67,9 @@ Po uruchomieniu seederów dostępne są konta testowe:
 admin@example.com / password
 manager@example.com / password
 kelner@example.com / password
+kelner1@example.com / password
+kelner2@example.com / password
+kelner3@example.com / password
 kuchnia@example.com / password
 bar@example.com / password
 ```

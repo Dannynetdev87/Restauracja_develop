@@ -33,6 +33,77 @@ class WaiterTableWorkflowTest extends TestCase
             ->assertSee('Rozpocznij zamówienie');
     }
 
+    public function test_waiter_sees_free_tables_and_only_own_occupied_tables(): void
+    {
+        $waiter = User::factory()->create(['role' => User::ROLE_WAITER]);
+        $otherWaiter = User::factory()->create(['role' => User::ROLE_WAITER]);
+
+        $freeTable = RestaurantTable::create([
+            'number' => 930,
+            'seats' => 2,
+            'status' => RestaurantTable::STATUS_FREE,
+        ]);
+        $ownTable = RestaurantTable::create([
+            'number' => 931,
+            'seats' => 4,
+            'status' => RestaurantTable::STATUS_OCCUPIED,
+        ]);
+        $otherTable = RestaurantTable::create([
+            'number' => 932,
+            'seats' => 4,
+            'status' => RestaurantTable::STATUS_OCCUPIED,
+        ]);
+
+        Order::create([
+            'restaurant_table_id' => $ownTable->id,
+            'waiter_id' => $waiter->id,
+            'status' => Order::STATUS_OPEN,
+            'opened_at' => now(),
+        ]);
+        Order::create([
+            'restaurant_table_id' => $otherTable->id,
+            'waiter_id' => $otherWaiter->id,
+            'status' => Order::STATUS_OPEN,
+            'opened_at' => now(),
+        ]);
+
+        $this
+            ->actingAs($waiter)
+            ->get(route('waiter.tables.index'))
+            ->assertOk()
+            ->assertSee('Stolik 930')
+            ->assertSee('Stolik 931')
+            ->assertDontSee('Stolik 932');
+
+        $this->assertTrue($freeTable->fresh()->isFree());
+    }
+
+    public function test_waiter_dashboard_redirects_to_table_list(): void
+    {
+        $waiter = User::factory()->create(['role' => User::ROLE_WAITER]);
+
+        $this
+            ->actingAs($waiter)
+            ->get(route('waiter.dashboard'))
+            ->assertRedirect(route('waiter.tables.index'));
+    }
+
+    public function test_waiter_user_is_redirected_to_table_list_after_login(): void
+    {
+        $waiter = User::factory()->create([
+            'email' => 'waiter-tables@example.com',
+            'password' => 'password',
+            'role' => User::ROLE_WAITER,
+        ]);
+
+        $this
+            ->post(route('login'), [
+                'login' => $waiter->email,
+                'password' => 'password',
+            ])
+            ->assertRedirect(route('waiter.tables.index'));
+    }
+
     public function test_waiter_can_open_order_for_free_table_with_items(): void
     {
         $waiter = User::factory()->create(['role' => User::ROLE_WAITER]);

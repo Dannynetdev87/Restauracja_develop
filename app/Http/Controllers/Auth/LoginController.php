@@ -61,7 +61,7 @@ class LoginController extends Controller
             User::ROLE_MANAGER => route('manager.dashboard'),
             User::ROLE_KITCHEN => route('kitchen.current'),
             User::ROLE_BAR => route('bar.current'),
-            default => route('waiter.dashboard'),
+            default => route('waiter.tables.index'),
         };
     }
 }

@@ -175,6 +175,66 @@ class KitchenDashboardTest extends TestCase
         ]);
     }
 
+    public function test_kitchen_user_can_cancel_item_and_history_is_saved(): void
+    {
+        $kitchenUser = User::factory()->create(['role' => User::ROLE_KITCHEN]);
+        $order = $this->createOrder(status: Order::STATUS_OPEN);
+        $orderItem = $this->createOrderItem($order, 'Brakujacy kotlet testowy', MenuItem::AREA_KITCHEN);
+
+        $this
+            ->actingAs($kitchenUser)
+            ->patch(route('kitchen.order-items.cancel', $orderItem))
+            ->assertRedirect(route('kitchen.dashboard'));
+
+        $this->assertDatabaseHas('order_items', [
+            'id' => $orderItem->id,
+            'status' => OrderItem::STATUS_CANCELLED,
+        ]);
+        $this->assertDatabaseHas('orders', [
+            'id' => $order->id,
+            'status' => Order::STATUS_IN_PROGRESS,
+        ]);
+        $this->assertDatabaseHas('order_item_status_histories', [
+            'order_item_id' => $orderItem->id,
+            'changed_by' => $kitchenUser->id,
+            'old_status' => OrderItem::STATUS_NEW,
+            'new_status' => OrderItem::STATUS_CANCELLED,
+        ]);
+    }
+
+    public function test_waiter_sees_cancelled_kitchen_item_and_bill_excludes_it(): void
+    {
+        $kitchenUser = User::factory()->create(['role' => User::ROLE_KITCHEN]);
+        $order = $this->createOrder(status: Order::STATUS_READY);
+        $billableItem = $this->createOrderItem($order, 'Dostarczone danie testowe', MenuItem::AREA_KITCHEN, OrderItem::STATUS_DELIVERED);
+        $cancelledItem = $this->createOrderItem($order, 'Brakujace danie testowe', MenuItem::AREA_KITCHEN);
+        $waiter = $order->waiter;
+
+        $this
+            ->actingAs($kitchenUser)
+            ->patch(route('kitchen.order-items.cancel', $cancelledItem))
+            ->assertRedirect(route('kitchen.dashboard'));
+
+        $this
+            ->actingAs($waiter)
+            ->get(route('waiter.orders.show', $order))
+            ->assertOk()
+            ->assertSee('Brakujace danie testowe')
+            ->assertSee('Anulowane')
+            ->assertSee('0,00');
+
+        $this
+            ->actingAs($waiter)
+            ->get(route('waiter.orders.bill', $order))
+            ->assertOk()
+            ->assertSee('Brakujace danie testowe')
+            ->assertSee('Anulowane')
+            ->assertSee('30,00')
+            ->assertDontSee('60,00');
+
+        $this->assertEquals($billableItem->subtotal(), $order->fresh()->load('items')->total());
+    }
+
     public function test_kitchen_user_cannot_skip_status_transition(): void
     {
         $kitchenUser = User::factory()->create(['role' => User::ROLE_KITCHEN]);

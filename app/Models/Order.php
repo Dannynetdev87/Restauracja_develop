@@ -80,6 +80,7 @@ class Order extends Model
     public function total(): float
     {
         return $this->items
+            ->where('status', '!=', OrderItem::STATUS_CANCELLED)
             ->sum(fn (OrderItem $item) => $item->quantity * $item->unit_price);
     }
 

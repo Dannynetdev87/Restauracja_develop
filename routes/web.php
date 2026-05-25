@@ -3,6 +3,8 @@
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\BarDashboardController;
 use App\Http\Controllers\KitchenDashboardController;
+use App\Http\Controllers\ManagerDashboardController;
+use App\Http\Controllers\ManagerOrderHistoryController;
 use App\Http\Controllers\MenuCategoryController;
 use App\Http\Controllers\MenuItemController;
 use App\Http\Controllers\MenuManagementController;
@@ -34,15 +36,12 @@ Route::middleware('auth')->group(function () {
             User::ROLE_MANAGER => redirect()->route('manager.dashboard'),
             User::ROLE_KITCHEN => redirect()->route('kitchen.current'),
             User::ROLE_BAR => redirect()->route('bar.current'),
-            default => redirect()->route('waiter.dashboard'),
+            default => redirect()->route('waiter.tables.index'),
         };
     })->name('dashboard');
 
     Route::get('/waiter/dashboard', function () {
-        return view('dashboard', [
-            'title' => 'Panel kelnera',
-            'description' => 'Obsługa stolików, przyjmowanie zamówień i zamykanie rachunków.',
-        ]);
+        return redirect()->route('waiter.tables.index');
     })->middleware('role:kelner')->name('waiter.dashboard');
 
     Route::middleware('role:kelner')->group(function () {
@@ -59,12 +58,14 @@ Route::middleware('auth')->group(function () {
         Route::get('/kitchen/current', [KitchenDashboardController::class, 'current'])->name('kitchen.current');
         Route::get('/kitchen/dashboard', [KitchenDashboardController::class, 'index'])->name('kitchen.dashboard');
         Route::patch('/kitchen/order-items/{orderItem}/status', [KitchenDashboardController::class, 'updateStatus'])->name('kitchen.order-items.status');
+        Route::patch('/kitchen/order-items/{orderItem}/cancel', [KitchenDashboardController::class, 'cancel'])->name('kitchen.order-items.cancel');
     });
 
     Route::middleware('role:bar')->group(function () {
         Route::get('/bar/current', [BarDashboardController::class, 'current'])->name('bar.current');
         Route::get('/bar/dashboard', [BarDashboardController::class, 'index'])->name('bar.dashboard');
         Route::patch('/bar/order-items/{orderItem}/status', [BarDashboardController::class, 'updateStatus'])->name('bar.order-items.status');
+        Route::patch('/bar/order-items/{orderItem}/cancel', [BarDashboardController::class, 'cancel'])->name('bar.order-items.cancel');
     });
 
     Route::get('/admin/dashboard', function () {
@@ -75,9 +76,8 @@ Route::middleware('auth')->group(function () {
     })->middleware('role:admin')->name('admin.dashboard');
 
     Route::middleware('role:manager,admin')->group(function () {
-        Route::get('/manager/dashboard', function () {
-            return view('index');
-        })->name('manager.dashboard');
+        Route::get('/manager/dashboard', [ManagerDashboardController::class, 'index'])->name('manager.dashboard');
+        Route::get('/manager/orders/history', [ManagerOrderHistoryController::class, 'index'])->name('manager.orders.history');
 
         Route::get('/manager/menu', [MenuManagementController::class, 'index'])->name('manager.podglad');
 

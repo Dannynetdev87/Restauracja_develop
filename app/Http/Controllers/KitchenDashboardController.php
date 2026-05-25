@@ -128,6 +128,47 @@ class KitchenDashboardController extends Controller
             ->with('success', 'Status pozycji został zaktualizowany.');
     }
 
+    public function cancel(Request $request, OrderItem $orderItem)
+    {
+        $validated = $request->validate([
+            'redirect_to' => ['nullable', 'in:kitchen.current,kitchen.dashboard'],
+        ]);
+
+        if ($orderItem->menuItem()->where('production_area', MenuItem::AREA_KITCHEN)->doesntExist()) {
+            abort(404);
+        }
+
+        DB::transaction(function () use ($orderItem) {
+            $orderItem->refresh();
+            $oldStatus = $orderItem->status;
+
+            if (! in_array($oldStatus, [
+                OrderItem::STATUS_NEW,
+                OrderItem::STATUS_PREPARING,
+            ], true)) {
+                throw ValidationException::withMessages([
+                    'status' => 'Anulować można tylko pozycję nową albo w przygotowaniu.',
+                ]);
+            }
+
+            $orderItem->update([
+                'status' => OrderItem::STATUS_CANCELLED,
+            ]);
+
+            $orderItem->statusHistory()->create([
+                'changed_by' => request()->user()->id,
+                'old_status' => $oldStatus,
+                'new_status' => OrderItem::STATUS_CANCELLED,
+            ]);
+
+            $this->syncOrderStatus($orderItem->order()->with('items')->firstOrFail());
+        });
+
+        return redirect()
+            ->route($validated['redirect_to'] ?? 'kitchen.dashboard')
+            ->with('success', 'Pozycja została oznaczona jako niemożliwa do przygotowania.');
+    }
+
     private function syncOrderStatus(Order $order): void
     {
         if ($order->status === Order::STATUS_OPEN) {
@@ -136,7 +177,9 @@ class KitchenDashboardController extends Controller
 
         $order->loadMissing('items');
 
-        if ($order->items->isNotEmpty() && $order->items->every(fn (OrderItem $item) => in_array($item->status, [
+        $activeItems = $order->items->where('status', '!=', OrderItem::STATUS_CANCELLED);
+
+        if ($activeItems->isNotEmpty() && $activeItems->every(fn (OrderItem $item) => in_array($item->status, [
             OrderItem::STATUS_READY,
             OrderItem::STATUS_DELIVERED,
         ], true))) {

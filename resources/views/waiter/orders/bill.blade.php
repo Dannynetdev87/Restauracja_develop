@@ -52,13 +52,24 @@
 
                 <div class="divide-y divide-brand-dark/10">
                     @forelse($order->items as $item)
-                        <div class="grid gap-4 py-4 md:grid-cols-[72px_1fr_150px_150px] md:items-start">
-                            <div class="w-fit rounded-md bg-brand-dark px-3 py-2 text-sm font-black text-brand-light">
+                        @php
+                            $isCancelled = $item->status === \App\Models\OrderItem::STATUS_CANCELLED;
+                        @endphp
+
+                        <div class="grid gap-4 py-4 md:grid-cols-[72px_1fr_150px_150px] md:items-start {{ $isCancelled ? 'opacity-70' : '' }}">
+                            <div class="w-fit rounded-md px-3 py-2 text-sm font-black text-brand-light {{ $isCancelled ? 'bg-gray-500' : 'bg-brand-dark' }}">
                                 {{ $item->quantity }}x
                             </div>
 
                             <div>
-                                <h3 class="font-black text-brand-dark">{{ $item->menuItem->name }}</h3>
+                                <div class="flex flex-wrap items-center gap-2">
+                                    <h3 class="font-black text-brand-dark {{ $isCancelled ? 'line-through' : '' }}">{{ $item->menuItem->name }}</h3>
+                                    @if($isCancelled)
+                                        <span class="rounded-md bg-red-100 px-2.5 py-1 text-xs font-bold text-red-800">
+                                            Anulowane
+                                        </span>
+                                    @endif
+                                </div>
                                 @if($item->notes)
                                     <p class="mt-2 rounded-md bg-brand-light px-3 py-2 text-sm text-brand-dark">
                                         {{ $item->notes }}
@@ -73,7 +84,9 @@
 
                             <div class="text-left md:text-right">
                                 <span class="block text-xs font-bold uppercase text-brand-accent">Suma</span>
-                                <strong class="text-lg text-brand-dark">{{ number_format($item->subtotal(), 2, ',', ' ') }} zł</strong>
+                                <strong class="text-lg text-brand-dark">
+                                    {{ $isCancelled ? '0,00' : number_format($item->subtotal(), 2, ',', ' ') }} zł
+                                </strong>
                             </div>
                         </div>
                     @empty
@@ -89,7 +102,7 @@
                 <div class="mt-4 space-y-3 text-sm text-brand-dark">
                     <div class="flex justify-between gap-4">
                         <span>Liczba pozycji</span>
-                        <strong>{{ $order->items->sum('quantity') }}</strong>
+                        <strong>{{ $order->items->where('status', '!=', \App\Models\OrderItem::STATUS_CANCELLED)->sum('quantity') }}</strong>
                     </div>
                     <div class="flex justify-between gap-4 border-t border-brand-dark/10 pt-3 text-lg">
                         <span>Razem</span>
