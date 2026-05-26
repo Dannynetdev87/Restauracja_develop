@@ -129,7 +129,18 @@ jobs:
               -v "$PWD":/app -w /app \
               node:24 npm run build
 
-            chmod -R ug+rwX vendor node_modules public/build storage bootstrap/cache
+            chmod -R ug+rwX \
+              vendor \
+              node_modules \
+              public/build \
+              bootstrap/cache \
+              storage/app \
+              storage/framework/cache \
+              storage/framework/sessions \
+              storage/framework/testing \
+              storage/logs
+
+            chmod ug+rwX storage storage/framework storage/framework/views 2>/dev/null || true
 
             docker compose up -d --build --force-recreate --remove-orphans
             docker exec restauracja-app php artisan migrate --force
