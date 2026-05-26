@@ -64,7 +64,7 @@ class BarDashboardTest extends TestCase
             ->assertSee('2 pozycje')
             ->assertSee('Czasowa lemoniada testowa')
             ->assertSee('Czasowa kawa testowa')
-            ->assertSee('Wpłynęło')
+            ->assertSee('Godzina złożenia')
             ->assertSee('15:18')
             ->assertSee('15:22')
             ->assertSee('Czeka')

@@ -2,6 +2,17 @@
     <x-slot:title>Stoliki kelnera - SmakPrzeszłości</x-slot>
 
     <section class="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
+        <div class="mb-8 flex flex-wrap justify-center gap-4">
+            <a href="{{ route('waiter.dashboard') }}"
+               class="min-w-40 rounded-xl bg-brand-dark px-8 py-4 text-center text-sm font-black uppercase tracking-wide text-brand-light shadow-sm transition hover:bg-brand-accent">
+                Dashboard
+            </a>
+            <a href="{{ route('waiter.tables.index') }}"
+               class="min-w-40 rounded-xl bg-brand-dark px-8 py-4 text-center text-sm font-black uppercase tracking-wide text-brand-light shadow-sm transition hover:bg-brand-accent">
+                Stoliki
+            </a>
+        </div>
+
         <div class="flex flex-col gap-2 mb-8">
             <span class="text-sm font-bold uppercase text-brand-accent">Panel kelnera</span>
             <h1 class="text-3xl font-black text-brand-dark">Stoliki</h1>

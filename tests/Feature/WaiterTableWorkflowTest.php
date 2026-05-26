@@ -28,6 +28,8 @@ class WaiterTableWorkflowTest extends TestCase
             ->actingAs($waiter)
             ->get(route('waiter.tables.index'))
             ->assertOk()
+            ->assertSee('Dashboard')
+            ->assertSee('Stoliki')
             ->assertSee('Stolik 920')
             ->assertSee('Wolny')
             ->assertSee('Rozpocznij zamówienie');
@@ -120,27 +122,33 @@ class WaiterTableWorkflowTest extends TestCase
 
         $this
             ->actingAs($waiter)
-            ->get(route('waiter.tables.index'))
+            ->get(route('waiter.dashboard'))
             ->assertOk()
+            ->assertSee('W realizacji')
+            ->assertSee('Anulowane / braki')
+            ->assertSee('Do odbioru')
             ->assertSee('Stolik 933')
-            ->assertSee('Aktywne zamówienie #'.$order->id)
-            ->assertSee('Gotowe')
-            ->assertSee('W przygotowaniu')
-            ->assertSee('Gotowe do dostarczenia: 2')
+            ->assertSee('2x Gotowy schabowy testowy')
+            ->assertSee('Stan: Gotowe do dostarczenia')
             ->assertSee('Gotowy schabowy testowy')
-            ->assertSee('Anulowane / braki: 1')
+            ->assertSee('1x Brakujacy kompot testowy')
             ->assertSee('Brakujacy kompot testowy')
-            ->assertSee('Zobacz zamówienie');
+            ->assertSee('1x Zupa w trakcie testowa')
+            ->assertSee('Twoja strefa operacyjna')
+            ->assertSee('Dzisiejsza zmiana');
     }
 
-    public function test_waiter_dashboard_redirects_to_table_list(): void
+    public function test_waiter_dashboard_is_available(): void
     {
         $waiter = User::factory()->create(['role' => User::ROLE_WAITER]);
 
         $this
             ->actingAs($waiter)
             ->get(route('waiter.dashboard'))
-            ->assertRedirect(route('waiter.tables.index'));
+            ->assertOk()
+            ->assertSee('Dashboard')
+            ->assertSee('Stoliki')
+            ->assertSee('W realizacji');
     }
 
     public function test_waiter_user_is_redirected_to_table_list_after_login(): void
@@ -156,7 +164,7 @@ class WaiterTableWorkflowTest extends TestCase
                 'login' => $waiter->email,
                 'password' => 'password',
             ])
-            ->assertRedirect(route('waiter.tables.index'));
+            ->assertRedirect(route('waiter.dashboard'));
     }
 
     public function test_waiter_can_open_order_for_free_table_with_items(): void

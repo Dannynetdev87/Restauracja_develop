@@ -33,7 +33,7 @@ class KitchenDashboardController extends Controller
                             OrderItem::STATUS_READY,
                         ])
                         ->whereHas('menuItem', fn ($query) => $query->where('production_area', MenuItem::AREA_KITCHEN))
-                        ->with(['menuItem', 'statusHistory'])
+                        ->with(['menuItem', 'statusHistory' => fn ($query) => $query->orderBy('created_at')])
                         ->orderByRaw("case status when 'preparing' then 1 when 'new' then 2 when 'ready' then 3 else 4 end")
                         ->orderBy('created_at');
                 },
@@ -49,7 +49,7 @@ class KitchenDashboardController extends Controller
     public function index()
     {
         $items = OrderItem::query()
-            ->with(['order.table', 'menuItem', 'statusHistory'])
+            ->with(['order.table', 'menuItem', 'statusHistory' => fn ($query) => $query->orderBy('created_at')])
             ->whereHas('menuItem', fn ($query) => $query->where('production_area', MenuItem::AREA_KITCHEN))
             ->whereIn('status', [
                 OrderItem::STATUS_NEW,

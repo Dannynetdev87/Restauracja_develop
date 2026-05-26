@@ -157,11 +157,11 @@ class KitchenDashboardTest extends TestCase
             ->assertSee('Zamówienie #'.$order->id)
             ->assertSee('Stolik '.$order->table->number)
             ->assertSee('Czasowe danie testowe')
-            ->assertSee('Wpłynęło')
+            ->assertSee('Godzina złożenia')
             ->assertSee('13:43')
             ->assertSee('Czeka')
             ->assertSee('17 min')
-            ->assertSee('Rozpoczęto przygotowanie')
+            ->assertSee('Start przygotowania')
             ->assertSee('14:00');
 
         $this->travelBack();

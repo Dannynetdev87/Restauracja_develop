@@ -37,13 +37,13 @@ Route::middleware('auth')->group(function () {
             User::ROLE_MANAGER => redirect()->route('manager.dashboard'),
             User::ROLE_KITCHEN => redirect()->route('kitchen.current'),
             User::ROLE_BAR => redirect()->route('bar.current'),
-            default => redirect()->route('waiter.tables.index'),
+            default => redirect()->route('waiter.dashboard'),
         };
     })->name('dashboard');
 
-    Route::get('/waiter/dashboard', function () {
-        return redirect()->route('waiter.tables.index');
-    })->middleware('role:kelner')->name('waiter.dashboard');
+    Route::get('/waiter/dashboard', [WaiterTableController::class, 'dashboard'])
+        ->middleware('role:kelner')
+        ->name('waiter.dashboard');
 
     Route::get('/schedule', [ScheduleController::class, 'index'])->name('schedule.index');
 
