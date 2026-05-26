@@ -28,7 +28,9 @@ class KitchenDashboardTest extends TestCase
             ->assertOk()
             ->assertSee('Schabowy testowy')
             ->assertDontSee('Lemoniada testowa')
-            ->assertSee('Rozpocznij przygotowanie');
+            ->assertSee('Rozpocznij przygotowanie')
+            ->assertSee('data-auto-refresh', false)
+            ->assertSee('data-refresh-interval="8000"', false);
 
         $this->assertSame(OrderItem::STATUS_NEW, $kitchenItem->fresh()->status);
         $this->assertSame(OrderItem::STATUS_NEW, $barItem->fresh()->status);
@@ -56,6 +58,8 @@ class KitchenDashboardTest extends TestCase
             ->assertSee('>Dashboard</a>', false)
             ->assertDontSee('>Start</a>', false)
             ->assertDontSee('>Menu</a>', false)
+            ->assertSee('data-auto-refresh', false)
+            ->assertSee('data-refresh-interval="8000"', false)
             ->assertSee('Pełny dashboard');
     }
 
@@ -124,6 +128,43 @@ class KitchenDashboardTest extends TestCase
             'old_status' => OrderItem::STATUS_NEW,
             'new_status' => OrderItem::STATUS_PREPARING,
         ]);
+    }
+
+    public function test_kitchen_dashboard_shows_item_timing_and_preparation_start(): void
+    {
+        $this->travelTo(now()->setTime(14, 0));
+
+        $kitchenUser = User::factory()->create(['role' => User::ROLE_KITCHEN]);
+        $order = $this->createOrder(status: Order::STATUS_OPEN);
+        $orderItem = $this->createOrderItem(
+            order: $order,
+            name: 'Czasowe danie testowe',
+            productionArea: MenuItem::AREA_KITCHEN,
+            createdAt: now()->subMinutes(17),
+        );
+
+        $this
+            ->actingAs($kitchenUser)
+            ->patch(route('kitchen.order-items.status', $orderItem), [
+                'status' => OrderItem::STATUS_PREPARING,
+            ])
+            ->assertRedirect(route('kitchen.dashboard'));
+
+        $this
+            ->actingAs($kitchenUser)
+            ->get(route('kitchen.dashboard'))
+            ->assertOk()
+            ->assertSee('Zamówienie #'.$order->id)
+            ->assertSee('Stolik '.$order->table->number)
+            ->assertSee('Czasowe danie testowe')
+            ->assertSee('Wpłynęło')
+            ->assertSee('13:43')
+            ->assertSee('Czeka')
+            ->assertSee('17 min')
+            ->assertSee('Rozpoczęto przygotowanie')
+            ->assertSee('14:00');
+
+        $this->travelBack();
     }
 
     public function test_kitchen_current_view_can_keep_user_on_current_view_after_status_change(): void
@@ -296,6 +337,7 @@ class KitchenDashboardTest extends TestCase
         string $productionArea,
         string $status = OrderItem::STATUS_NEW,
         ?string $notes = null,
+        $createdAt = null,
     ): OrderItem {
         $category = MenuCategory::firstOrCreate(
             ['name' => 'Testowa kategoria kuchni'],
@@ -310,7 +352,7 @@ class KitchenDashboardTest extends TestCase
             'available' => true,
         ]);
 
-        return OrderItem::create([
+        $orderItem = OrderItem::create([
             'order_id' => $order->id,
             'menu_item_id' => $menuItem->id,
             'quantity' => 1,
@@ -318,5 +360,14 @@ class KitchenDashboardTest extends TestCase
             'notes' => $notes,
             'status' => $status,
         ]);
+
+        if ($createdAt !== null) {
+            $orderItem->forceFill([
+                'created_at' => $createdAt,
+                'updated_at' => $createdAt,
+            ])->save();
+        }
+
+        return $orderItem;
     }
 }

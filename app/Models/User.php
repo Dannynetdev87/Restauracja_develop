@@ -40,6 +40,11 @@ class User extends Authenticatable
         return $this->hasMany(Order::class, 'waiter_id');
     }
 
+    public function schedules(): HasMany
+    {
+        return $this->hasMany(Schedule::class);
+    }
+
     public function isManager(): bool
     {
         return $this->role === self::ROLE_MANAGER;

@@ -78,6 +78,61 @@ class WaiterTableWorkflowTest extends TestCase
         $this->assertTrue($freeTable->fresh()->isFree());
     }
 
+    public function test_waiter_table_panel_shows_active_order_status_and_item_alerts(): void
+    {
+        $waiter = User::factory()->create(['role' => User::ROLE_WAITER]);
+        $table = RestaurantTable::create([
+            'number' => 933,
+            'seats' => 4,
+            'status' => RestaurantTable::STATUS_OCCUPIED,
+        ]);
+        $order = Order::create([
+            'restaurant_table_id' => $table->id,
+            'waiter_id' => $waiter->id,
+            'status' => Order::STATUS_READY,
+            'opened_at' => now(),
+        ]);
+
+        OrderItem::create([
+            'order_id' => $order->id,
+            'menu_item_id' => $this->createMenuItem(name: 'Gotowy schabowy testowy')->id,
+            'quantity' => 2,
+            'unit_price' => 25.00,
+            'notes' => null,
+            'status' => OrderItem::STATUS_READY,
+        ]);
+        OrderItem::create([
+            'order_id' => $order->id,
+            'menu_item_id' => $this->createMenuItem(name: 'Brakujacy kompot testowy')->id,
+            'quantity' => 1,
+            'unit_price' => 12.00,
+            'notes' => null,
+            'status' => OrderItem::STATUS_CANCELLED,
+        ]);
+        OrderItem::create([
+            'order_id' => $order->id,
+            'menu_item_id' => $this->createMenuItem(name: 'Zupa w trakcie testowa')->id,
+            'quantity' => 1,
+            'unit_price' => 18.00,
+            'notes' => null,
+            'status' => OrderItem::STATUS_PREPARING,
+        ]);
+
+        $this
+            ->actingAs($waiter)
+            ->get(route('waiter.tables.index'))
+            ->assertOk()
+            ->assertSee('Stolik 933')
+            ->assertSee('Aktywne zamówienie #'.$order->id)
+            ->assertSee('Gotowe')
+            ->assertSee('W przygotowaniu')
+            ->assertSee('Gotowe do dostarczenia: 2')
+            ->assertSee('Gotowy schabowy testowy')
+            ->assertSee('Anulowane / braki: 1')
+            ->assertSee('Brakujacy kompot testowy')
+            ->assertSee('Zobacz zamówienie');
+    }
+
     public function test_waiter_dashboard_redirects_to_table_list(): void
     {
         $waiter = User::factory()->create(['role' => User::ROLE_WAITER]);

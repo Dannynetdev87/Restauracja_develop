@@ -9,6 +9,7 @@ use App\Http\Controllers\MenuCategoryController;
 use App\Http\Controllers\MenuItemController;
 use App\Http\Controllers\MenuManagementController;
 use App\Http\Controllers\RestaurantTableController;
+use App\Http\Controllers\ScheduleController;
 use App\Http\Controllers\WaiterBillController;
 use App\Http\Controllers\WaiterOrderController;
 use App\Http\Controllers\WaiterTableController;
@@ -44,6 +45,8 @@ Route::middleware('auth')->group(function () {
         return redirect()->route('waiter.tables.index');
     })->middleware('role:kelner')->name('waiter.dashboard');
 
+    Route::get('/schedule', [ScheduleController::class, 'index'])->name('schedule.index');
+
     Route::middleware('role:kelner')->group(function () {
         Route::get('/waiter/tables', [WaiterTableController::class, 'index'])->name('waiter.tables.index');
         Route::get('/waiter/orders/create', [WaiterOrderController::class, 'create'])->name('waiter.orders.create');
@@ -78,6 +81,10 @@ Route::middleware('auth')->group(function () {
     Route::middleware('role:manager,admin')->group(function () {
         Route::get('/manager/dashboard', [ManagerDashboardController::class, 'index'])->name('manager.dashboard');
         Route::get('/manager/orders/history', [ManagerOrderHistoryController::class, 'index'])->name('manager.orders.history');
+        Route::post('/manager/schedules', [ScheduleController::class, 'store'])->name('manager.schedules.store');
+        Route::get('/manager/schedules/{schedule}/edit', [ScheduleController::class, 'edit'])->name('manager.schedules.edit');
+        Route::put('/manager/schedules/{schedule}', [ScheduleController::class, 'update'])->name('manager.schedules.update');
+        Route::delete('/manager/schedules/{schedule}', [ScheduleController::class, 'destroy'])->name('manager.schedules.destroy');
 
         Route::get('/manager/menu', [MenuManagementController::class, 'index'])->name('manager.podglad');
 

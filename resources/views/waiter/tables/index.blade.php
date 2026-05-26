@@ -6,7 +6,7 @@
             <span class="text-sm font-bold uppercase text-brand-accent">Panel kelnera</span>
             <h1 class="text-3xl font-black text-brand-dark">Stoliki</h1>
             <p class="text-brand-accent max-w-3xl">
-                Wybierz wolny stolik, aby rozpocząć zamówienie. Przy zajętym stoliku możesz wrócić do aktywnego zamówienia i dodać kolejne pozycje.
+                Wybierz wolny stolik, aby rozpocząć zamówienie. Przy zajętym stoliku możesz wrócić do aktywnego zamówienia, sprawdzić status pozycji i dodać kolejne dania.
             </p>
         </div>
 
@@ -28,6 +28,23 @@
                     $activeOrder = $table->activeOrders->first();
                     $isOwnActiveOrder = $activeOrder && $activeOrder->waiter_id === auth()->id();
                     $canOpenOrder = $table->status === \App\Models\RestaurantTable::STATUS_FREE && $activeOrder === null;
+                    $orderStatusLabels = [
+                        \App\Models\Order::STATUS_OPEN => 'Otwarte',
+                        \App\Models\Order::STATUS_IN_PROGRESS => 'W przygotowaniu',
+                        \App\Models\Order::STATUS_READY => 'Gotowe',
+                        \App\Models\Order::STATUS_SERVED => 'Wydane',
+                    ];
+                    $orderStatusClass = match ($activeOrder?->status) {
+                        \App\Models\Order::STATUS_READY => 'bg-green-100 text-green-800',
+                        \App\Models\Order::STATUS_SERVED => 'bg-brand-light text-brand-dark',
+                        \App\Models\Order::STATUS_IN_PROGRESS => 'bg-yellow-100 text-yellow-800',
+                        default => 'bg-gray-100 text-gray-700',
+                    };
+                    $readyItems = $activeOrder?->items->where('status', \App\Models\OrderItem::STATUS_READY) ?? collect();
+                    $cancelledItems = $activeOrder?->items->where('status', \App\Models\OrderItem::STATUS_CANCELLED) ?? collect();
+                    $preparingItems = $activeOrder?->items->where('status', \App\Models\OrderItem::STATUS_PREPARING) ?? collect();
+                    $newItems = $activeOrder?->items->where('status', \App\Models\OrderItem::STATUS_NEW) ?? collect();
+                    $deliveredItems = $activeOrder?->items->where('status', \App\Models\OrderItem::STATUS_DELIVERED) ?? collect();
                     $badgeClass = match ($table->status) {
                         \App\Models\RestaurantTable::STATUS_FREE => 'bg-green-100 text-green-800',
                         \App\Models\RestaurantTable::STATUS_OCCUPIED => 'bg-yellow-100 text-yellow-800',
@@ -49,8 +66,51 @@
                         </div>
 
                         @if($activeOrder)
-                            <div class="mt-4 rounded-md bg-brand-light px-3 py-2 text-sm text-brand-dark">
-                                Aktywne zamówienie #{{ $activeOrder->id }}
+                            <div class="mt-4 space-y-3 rounded-lg border border-brand-dark/10 bg-brand-light p-3 text-sm text-brand-dark">
+                                <div class="flex flex-wrap items-center justify-between gap-2">
+                                    <div>
+                                        <p class="font-black">Aktywne zamówienie #{{ $activeOrder->id }}</p>
+                                        <p class="mt-1 text-xs text-brand-accent">
+                                            Otwarte {{ $activeOrder->opened_at->format('H:i') }}
+                                        </p>
+                                    </div>
+                                    <span class="rounded-md px-2.5 py-1 text-xs font-bold {{ $orderStatusClass }}">
+                                        {{ $orderStatusLabels[$activeOrder->status] ?? $activeOrder->status }}
+                                    </span>
+                                </div>
+
+                                <div class="grid grid-cols-2 gap-2 text-xs sm:grid-cols-3">
+                                    <div class="rounded-md bg-white px-2.5 py-2">
+                                        <span class="block font-bold text-brand-accent">Nowe</span>
+                                        <strong class="text-brand-dark">{{ $newItems->sum('quantity') }}</strong>
+                                    </div>
+                                    <div class="rounded-md bg-white px-2.5 py-2">
+                                        <span class="block font-bold text-brand-accent">W przygotowaniu</span>
+                                        <strong class="text-brand-dark">{{ $preparingItems->sum('quantity') }}</strong>
+                                    </div>
+                                    <div class="rounded-md bg-white px-2.5 py-2">
+                                        <span class="block font-bold text-brand-accent">Dostarczone</span>
+                                        <strong class="text-brand-dark">{{ $deliveredItems->sum('quantity') }}</strong>
+                                    </div>
+                                </div>
+
+                                @if($readyItems->isNotEmpty())
+                                    <div class="rounded-md border border-green-700/20 bg-green-50 px-3 py-2 text-green-800">
+                                        <p class="font-black">Gotowe do dostarczenia: {{ $readyItems->sum('quantity') }}</p>
+                                        <p class="mt-1 text-xs">
+                                            {{ $readyItems->pluck('menuItem.name')->filter()->take(2)->implode(', ') }}
+                                        </p>
+                                    </div>
+                                @endif
+
+                                @if($cancelledItems->isNotEmpty())
+                                    <div class="rounded-md border border-red-700/20 bg-red-50 px-3 py-2 text-red-800">
+                                        <p class="font-black">Anulowane / braki: {{ $cancelledItems->sum('quantity') }}</p>
+                                        <p class="mt-1 text-xs">
+                                            {{ $cancelledItems->pluck('menuItem.name')->filter()->take(2)->implode(', ') }}
+                                        </p>
+                                    </div>
+                                @endif
                             </div>
                         @endif
                     </div>

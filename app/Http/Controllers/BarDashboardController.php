@@ -33,7 +33,7 @@ class BarDashboardController extends Controller
                             OrderItem::STATUS_READY,
                         ])
                         ->whereHas('menuItem', fn ($query) => $query->where('production_area', MenuItem::AREA_BAR))
-                        ->with('menuItem')
+                        ->with(['menuItem', 'statusHistory'])
                         ->orderByRaw("case status when 'preparing' then 1 when 'new' then 2 when 'ready' then 3 else 4 end")
                         ->orderBy('created_at');
                 },
@@ -49,7 +49,7 @@ class BarDashboardController extends Controller
     public function index()
     {
         $items = OrderItem::query()
-            ->with(['order.table', 'menuItem'])
+            ->with(['order.table', 'menuItem', 'statusHistory'])
             ->whereHas('menuItem', fn ($query) => $query->where('production_area', MenuItem::AREA_BAR))
             ->whereIn('status', [
                 OrderItem::STATUS_NEW,

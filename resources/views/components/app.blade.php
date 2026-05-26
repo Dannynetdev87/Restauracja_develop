@@ -38,10 +38,12 @@
                 @if($isProductionRole)
                     <a href="{{ route($productionCurrentRoute) }}" class="nav-link {{ request()->routeIs($productionCurrentRoute) ? $activeNavClass : '' }}">Aktualne</a>
                     <a href="{{ route($productionDashboardRoute) }}" class="nav-link {{ request()->routeIs($productionDashboardRoute) ? $activeNavClass : '' }}">Dashboard</a>
+                    <a href="{{ route('schedule.index') }}" class="nav-link {{ request()->routeIs('schedule.index') ? $activeNavClass : '' }}">Grafik</a>
                 @else
                     <a href="{{ route('home') }}" class="nav-link {{ request()->routeIs('home') ? $activeNavClass : '' }}">Start</a>
                     <a href="{{ route('menu.index') }}" class="nav-link {{ request()->routeIs('menu.index') ? $activeNavClass : '' }}">Menu</a>
                     <a href="{{ route('dashboard') }}" class="nav-link {{ request()->routeIs('dashboard', 'admin.dashboard', 'manager.dashboard', 'waiter.dashboard', 'waiter.tables.*', 'waiter.orders.*') ? $activeNavClass : '' }}">Panel</a>
+                    <a href="{{ route('schedule.index') }}" class="nav-link {{ request()->routeIs('schedule.index', 'manager.schedules.*') ? $activeNavClass : '' }}">Grafik</a>
 
                     @if(auth()->user()->isManager() || auth()->user()->isAdmin())
                         <a href="{{ route('manager.podglad') }}" class="nav-link {{ request()->routeIs('manager.podglad', 'manager.menu-categories.*', 'manager.menu-items.*') ? $activeNavClass : '' }}">
@@ -79,6 +81,78 @@
         &copy; 2026 SmakPrzeszłości. Panel: <span class="uppercase font-bold text-white">{{ auth()->user()->role ?? 'Gość' }}</span>
     </div>
 </footer>
+
+<script>
+    (() => {
+        const setupAutoRefresh = () => {
+            document.querySelectorAll('[data-auto-refresh]').forEach((container) => {
+                if (container.dataset.refreshReady === 'true' || !container.id) {
+                    return;
+                }
+
+                container.dataset.refreshReady = 'true';
+
+                const refreshUrl = container.dataset.refreshUrl || window.location.href;
+                const refreshInterval = Number.parseInt(container.dataset.refreshInterval || '8000', 10);
+                let pending = false;
+                let paused = false;
+
+                container.addEventListener('focusin', () => {
+                    paused = true;
+                });
+
+                container.addEventListener('focusout', () => {
+                    paused = false;
+                });
+
+                const refresh = async () => {
+                    if (pending || paused || document.hidden) {
+                        return;
+                    }
+
+                    pending = true;
+
+                    try {
+                        const response = await fetch(refreshUrl, {
+                            cache: 'no-store',
+                            headers: {
+                                'X-Requested-With': 'XMLHttpRequest',
+                            },
+                        });
+
+                        if (!response.ok) {
+                            return;
+                        }
+
+                        const html = await response.text();
+                        const documentSnapshot = new DOMParser().parseFromString(html, 'text/html');
+                        const freshContainer = documentSnapshot.getElementById(container.id);
+
+                        if (!freshContainer) {
+                            return;
+                        }
+
+                        container.innerHTML = freshContainer.innerHTML;
+
+                        const indicator = container.querySelector('[data-refresh-indicator]');
+                        if (indicator) {
+                            indicator.textContent = `Odświeżono ${new Date().toLocaleTimeString('pl-PL', {
+                                hour: '2-digit',
+                                minute: '2-digit',
+                            })}`;
+                        }
+                    } finally {
+                        pending = false;
+                    }
+                };
+
+                window.setInterval(refresh, refreshInterval);
+            });
+        };
+
+        document.addEventListener('DOMContentLoaded', setupAutoRefresh);
+    })();
+</script>
 
 </body>
 </html>

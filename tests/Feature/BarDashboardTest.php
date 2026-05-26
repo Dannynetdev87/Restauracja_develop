@@ -28,10 +28,50 @@ class BarDashboardTest extends TestCase
             ->assertOk()
             ->assertSee('Lemoniada testowa')
             ->assertDontSee('Schabowy testowy')
-            ->assertSee('Rozpocznij przygotowanie');
+            ->assertSee('Rozpocznij przygotowanie')
+            ->assertSee('data-auto-refresh', false)
+            ->assertSee('data-refresh-interval="8000"', false);
 
         $this->assertSame(OrderItem::STATUS_NEW, $barItem->fresh()->status);
         $this->assertSame(OrderItem::STATUS_NEW, $kitchenItem->fresh()->status);
+    }
+
+    public function test_bar_dashboard_groups_items_by_order_and_shows_waiting_time(): void
+    {
+        $this->travelTo(now()->setTime(15, 30));
+
+        $barUser = User::factory()->create(['role' => User::ROLE_BAR]);
+        $order = $this->createOrder(status: Order::STATUS_OPEN);
+        $this->createOrderItem(
+            order: $order,
+            name: 'Czasowa lemoniada testowa',
+            productionArea: MenuItem::AREA_BAR,
+            createdAt: now()->subMinutes(12),
+        );
+        $this->createOrderItem(
+            order: $order,
+            name: 'Czasowa kawa testowa',
+            productionArea: MenuItem::AREA_BAR,
+            createdAt: now()->subMinutes(8),
+        );
+
+        $this
+            ->actingAs($barUser)
+            ->get(route('bar.dashboard'))
+            ->assertOk()
+            ->assertSee('Zamówienie #'.$order->id)
+            ->assertSee('Stolik '.$order->table->number)
+            ->assertSee('2 pozycje')
+            ->assertSee('Czasowa lemoniada testowa')
+            ->assertSee('Czasowa kawa testowa')
+            ->assertSee('Wpłynęło')
+            ->assertSee('15:18')
+            ->assertSee('15:22')
+            ->assertSee('Czeka')
+            ->assertSee('12 min')
+            ->assertSee('8 min');
+
+        $this->travelBack();
     }
 
     public function test_bar_user_can_see_current_oldest_bar_order(): void
@@ -56,6 +96,8 @@ class BarDashboardTest extends TestCase
             ->assertSee('>Dashboard</a>', false)
             ->assertDontSee('>Start</a>', false)
             ->assertDontSee('>Menu</a>', false)
+            ->assertSee('data-auto-refresh', false)
+            ->assertSee('data-refresh-interval="8000"', false)
             ->assertSee('Pełny dashboard');
     }
 
@@ -263,6 +305,7 @@ class BarDashboardTest extends TestCase
         string $productionArea,
         string $status = OrderItem::STATUS_NEW,
         ?string $notes = null,
+        $createdAt = null,
     ): OrderItem {
         $category = MenuCategory::firstOrCreate(
             ['name' => 'Testowa kategoria baru'],
@@ -277,7 +320,7 @@ class BarDashboardTest extends TestCase
             'available' => true,
         ]);
 
-        return OrderItem::create([
+        $orderItem = OrderItem::create([
             'order_id' => $order->id,
             'menu_item_id' => $menuItem->id,
             'quantity' => 1,
@@ -285,5 +328,14 @@ class BarDashboardTest extends TestCase
             'notes' => $notes,
             'status' => $status,
         ]);
+
+        if ($createdAt !== null) {
+            $orderItem->forceFill([
+                'created_at' => $createdAt,
+                'updated_at' => $createdAt,
+            ])->save();
+        }
+
+        return $orderItem;
     }
 }

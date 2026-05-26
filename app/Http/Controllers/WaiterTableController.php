@@ -15,6 +15,7 @@ class WaiterTableController extends Controller
                 ->visibleForWaiter($waiterId)
                 ->with(['activeOrders' => fn ($query) => $query
                     ->where('waiter_id', $waiterId)
+                    ->with(['items.menuItem'])
                     ->latest('opened_at')])
                 ->orderBy('number')
                 ->get(),

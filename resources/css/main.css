@@ -54,6 +54,15 @@
     .main-nav { @apply flex flex-wrap items-center gap-3 sm:gap-6 lg:gap-8 font-medium; }
     .nav-link { @apply text-sm sm:text-base text-brand-accent hover:text-brand-dark transition; }
 
+    .btn-production-cancel {
+        @apply w-full rounded-md border border-red-300 bg-red-50 px-4 py-2 text-sm font-bold text-red-800 transition-colors;
+    }
+
+    .btn-production-cancel:hover,
+    .btn-production-cancel:focus-visible {
+        @apply border-red-700 bg-red-700 text-white;
+    }
+
     /* Dropdown dla konta */
     .dropdown-wrapper { @apply relative py-2; }
     .dropdown-trigger { @apply flex items-center gap-1 text-brand-accent hover:text-brand-dark transition focus:outline-none; }

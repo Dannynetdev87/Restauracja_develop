@@ -1,7 +1,13 @@
 <x-app>
     <x-slot:title>Aktualne zamówienie kuchni - SmakPrzeszłości</x-slot>
 
-    <section class="w-full max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
+    <section
+        id="production-current-refresh"
+        class="w-full max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-10"
+        data-auto-refresh
+        data-refresh-url="{{ url()->current() }}"
+        data-refresh-interval="8000"
+    >
         @if(session('success'))
             <div class="mb-6 rounded-lg border border-green-700 bg-green-50 px-4 py-3 text-sm font-semibold text-green-800">
                 {{ session('success') }}
@@ -21,6 +27,9 @@
                 <p class="mt-2 max-w-3xl text-sm text-brand-accent">
                     Widok pokazuje najstarsze aktywne zamówienie z pozycjami kuchennymi. Pełną kolejkę znajdziesz w dashboardzie.
                 </p>
+                <span data-refresh-indicator class="mt-3 inline-flex rounded-md bg-white px-3 py-1 text-xs font-bold text-brand-dark">
+                    Odświeżanie co 8 s
+                </span>
             </div>
 
             <a href="{{ route('kitchen.dashboard') }}"
@@ -103,7 +112,7 @@
                                             @csrf
                                             @method('PATCH')
                                             <input type="hidden" name="redirect_to" value="kitchen.current">
-                                            <button type="submit" class="w-full rounded-md border border-red-200 bg-red-50 px-4 py-2 text-sm font-bold text-red-800 hover:bg-red-100">
+                                            <button type="submit" class="btn-production-cancel">
                                                 Nie można przygotować
                                             </button>
                                         </form>
