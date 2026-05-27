@@ -40,6 +40,7 @@ Wersja funkcjonalnie domyka Sprint 1 i Sprint 2. Dodatkowo zawiera istotne eleme
 - dashboard managera liczony z bazy danych,
 - historia zamówień managera z filtrami,
 - grafik pracy personelu z widokiem tygodniowym i miesięcznym,
+- grafik obejmujący role operacyjne: `manager`, `kelner`, `kuchnia`, `bar`,
 - testy feature dla głównych procesów.
 
 ## Role użytkowników
@@ -49,6 +50,7 @@ Wersja funkcjonalnie domyka Sprint 1 i Sprint 2. Dodatkowo zawiera istotne eleme
 - dostęp do panelu administratora,
 - dostęp do funkcji managera,
 - możliwość wejścia w zarządzanie menu, stolikami, historię zamówień i grafik.
+- konto administratora jest kontem systemowym i nie jest przypisywane do zmian w grafiku pracy.
 
 ### Manager
 

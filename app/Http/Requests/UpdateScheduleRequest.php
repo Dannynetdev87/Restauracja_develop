@@ -3,6 +3,7 @@
 namespace App\Http\Requests;
 
 use App\Models\Schedule;
+use App\Models\User;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\Validator;
@@ -23,7 +24,9 @@ class UpdateScheduleRequest extends FormRequest
             'user_id' => [
                 'required',
                 'integer',
-                Rule::exists('users', 'id')->where('is_active', true),
+                Rule::exists('users', 'id')
+                    ->where('is_active', true)
+                    ->whereIn('role', User::SCHEDULABLE_ROLES),
             ],
             'date' => ['required', 'date'],
             'start_time' => ['required', 'date_format:H:i'],

@@ -26,6 +26,13 @@ class User extends Authenticatable
 
     public const ROLE_BAR = 'bar';
 
+    public const SCHEDULABLE_ROLES = [
+        self::ROLE_MANAGER,
+        self::ROLE_WAITER,
+        self::ROLE_KITCHEN,
+        self::ROLE_BAR,
+    ];
+
     protected function casts(): array
     {
         return [

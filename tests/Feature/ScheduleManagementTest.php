@@ -32,6 +32,25 @@ class ScheduleManagementTest extends TestCase
             ->assertSee('Dodaj dyżur');
     }
 
+    public function test_manager_schedule_form_excludes_admin_accounts(): void
+    {
+        $manager = User::factory()->create(['role' => User::ROLE_MANAGER]);
+        $admin = User::factory()->create(['name' => 'Administrator Systemu', 'role' => User::ROLE_ADMIN]);
+        $waiter = User::factory()->create(['name' => 'Kelner Operacyjny', 'role' => User::ROLE_WAITER]);
+
+        $this->createSchedule($admin, '2026-05-25', '08:00', '16:00', 'Zmiana techniczna');
+        $this->createSchedule($waiter, '2026-05-25', '10:00', '18:00', 'Zmiana sali');
+
+        $this
+            ->actingAs($manager)
+            ->get(route('schedule.index', ['view' => 'week', 'date' => '2026-05-25']))
+            ->assertOk()
+            ->assertSee('Kelner Operacyjny')
+            ->assertSee('Zmiana sali')
+            ->assertDontSee('Administrator Systemu')
+            ->assertDontSee('Zmiana techniczna');
+    }
+
     public function test_employee_can_only_see_own_read_only_schedule(): void
     {
         $waiter = User::factory()->create(['role' => User::ROLE_WAITER]);
@@ -91,6 +110,28 @@ class ScheduleManagementTest extends TestCase
             'start_time' => '10:00',
             'end_time' => '18:00',
             'notes' => 'Sala A',
+        ]);
+    }
+
+    public function test_manager_cannot_create_schedule_for_admin_account(): void
+    {
+        $manager = User::factory()->create(['role' => User::ROLE_MANAGER]);
+        $admin = User::factory()->create(['role' => User::ROLE_ADMIN]);
+
+        $this
+            ->actingAs($manager)
+            ->post(route('manager.schedules.store'), [
+                'user_id' => $admin->id,
+                'date' => '2026-05-25',
+                'start_time' => '10:00',
+                'end_time' => '18:00',
+                'notes' => 'Niepoprawny dyzur admina',
+            ])
+            ->assertSessionHasErrors('user_id');
+
+        $this->assertDatabaseMissing('schedules', [
+            'user_id' => $admin->id,
+            'date' => '2026-05-25',
         ]);
     }
 

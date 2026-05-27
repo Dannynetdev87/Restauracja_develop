@@ -92,6 +92,7 @@ class ScheduleController extends Controller
         $employees = $isManagerOrAdmin
             ? User::query()
                 ->where('is_active', true)
+                ->whereIn('role', User::SCHEDULABLE_ROLES)
                 ->orderBy('role')
                 ->orderBy('name')
                 ->get()
@@ -100,6 +101,13 @@ class ScheduleController extends Controller
         $schedules = Schedule::query()
             ->with('user')
             ->whereBetween('date', [$rangeStart->toDateString(), $rangeEnd->toDateString()])
+            ->when(
+                $isManagerOrAdmin,
+                fn ($query) => $query->whereHas(
+                    'user',
+                    fn ($userQuery) => $userQuery->whereIn('role', User::SCHEDULABLE_ROLES),
+                ),
+            )
             ->when(! $isManagerOrAdmin, fn ($query) => $query->where('user_id', $user->id))
             ->orderBy('date')
             ->orderBy('start_time')
