@@ -22,6 +22,7 @@ class WaiterTableWorkflowTest extends TestCase
             'number' => 920,
             'seats' => 4,
             'status' => RestaurantTable::STATUS_FREE,
+            'assigned_waiter_id' => $waiter->id,
         ]);
 
         $this
@@ -44,16 +45,25 @@ class WaiterTableWorkflowTest extends TestCase
             'number' => 930,
             'seats' => 2,
             'status' => RestaurantTable::STATUS_FREE,
+            'assigned_waiter_id' => $waiter->id,
         ]);
         $ownTable = RestaurantTable::create([
             'number' => 931,
             'seats' => 4,
             'status' => RestaurantTable::STATUS_OCCUPIED,
+            'assigned_waiter_id' => $waiter->id,
         ]);
         $otherTable = RestaurantTable::create([
             'number' => 932,
             'seats' => 4,
             'status' => RestaurantTable::STATUS_OCCUPIED,
+            'assigned_waiter_id' => $otherWaiter->id,
+        ]);
+        RestaurantTable::create([
+            'number' => 934,
+            'seats' => 2,
+            'status' => RestaurantTable::STATUS_FREE,
+            'assigned_waiter_id' => null,
         ]);
 
         Order::create([
@@ -75,9 +85,21 @@ class WaiterTableWorkflowTest extends TestCase
             ->assertOk()
             ->assertSee('Stolik 930')
             ->assertSee('Stolik 931')
-            ->assertDontSee('Stolik 932');
+            ->assertDontSee('Stolik 932')
+            ->assertDontSee('Stolik 934');
 
         $this->assertTrue($freeTable->fresh()->isFree());
+    }
+
+    public function test_waiter_without_assigned_tables_sees_empty_state(): void
+    {
+        $waiter = User::factory()->create(['role' => User::ROLE_WAITER]);
+
+        $this
+            ->actingAs($waiter)
+            ->get(route('waiter.tables.index'))
+            ->assertOk()
+            ->assertSee('Nie masz aktualnie przypisanych stolików');
     }
 
     public function test_waiter_table_panel_shows_active_order_status_and_item_alerts(): void
@@ -87,6 +109,7 @@ class WaiterTableWorkflowTest extends TestCase
             'number' => 933,
             'seats' => 4,
             'status' => RestaurantTable::STATUS_OCCUPIED,
+            'assigned_waiter_id' => $waiter->id,
         ]);
         $order = Order::create([
             'restaurant_table_id' => $table->id,
@@ -174,6 +197,7 @@ class WaiterTableWorkflowTest extends TestCase
             'number' => 921,
             'seats' => 2,
             'status' => RestaurantTable::STATUS_FREE,
+            'assigned_waiter_id' => $waiter->id,
         ]);
         $menuItem = $this->createMenuItem(price: 36.50);
 
@@ -222,6 +246,7 @@ class WaiterTableWorkflowTest extends TestCase
             'number' => 925,
             'seats' => 4,
             'status' => RestaurantTable::STATUS_FREE,
+            'assigned_waiter_id' => $waiter->id,
         ]);
         $menuItem = $this->createMenuItem(name: 'Testowy rosół');
 
@@ -234,6 +259,39 @@ class WaiterTableWorkflowTest extends TestCase
             ->assertSee('Zapisz pozycje');
     }
 
+    public function test_waiter_cannot_open_order_form_for_other_waiters_table(): void
+    {
+        $waiter = User::factory()->create(['role' => User::ROLE_WAITER]);
+        $otherWaiter = User::factory()->create(['role' => User::ROLE_WAITER]);
+        $table = RestaurantTable::create([
+            'number' => 929,
+            'seats' => 4,
+            'status' => RestaurantTable::STATUS_FREE,
+            'assigned_waiter_id' => $otherWaiter->id,
+        ]);
+
+        $this
+            ->actingAs($waiter)
+            ->get(route('waiter.orders.create', ['table_id' => $table->id]))
+            ->assertNotFound();
+    }
+
+    public function test_waiter_cannot_open_order_form_for_unassigned_table(): void
+    {
+        $waiter = User::factory()->create(['role' => User::ROLE_WAITER]);
+        $table = RestaurantTable::create([
+            'number' => 935,
+            'seats' => 4,
+            'status' => RestaurantTable::STATUS_FREE,
+            'assigned_waiter_id' => null,
+        ]);
+
+        $this
+            ->actingAs($waiter)
+            ->get(route('waiter.orders.create', ['table_id' => $table->id]))
+            ->assertNotFound();
+    }
+
     public function test_waiter_order_form_shows_current_and_selected_total_summary(): void
     {
         $waiter = User::factory()->create(['role' => User::ROLE_WAITER]);
@@ -241,6 +299,7 @@ class WaiterTableWorkflowTest extends TestCase
             'number' => 928,
             'seats' => 4,
             'status' => RestaurantTable::STATUS_OCCUPIED,
+            'assigned_waiter_id' => $waiter->id,
         ]);
         $order = Order::create([
             'restaurant_table_id' => $table->id,
@@ -276,6 +335,34 @@ class WaiterTableWorkflowTest extends TestCase
             'number' => 922,
             'seats' => 4,
             'status' => RestaurantTable::STATUS_RESERVED,
+            'assigned_waiter_id' => $waiter->id,
+        ]);
+        $menuItem = $this->createMenuItem();
+
+        $this
+            ->actingAs($waiter)
+            ->post(route('waiter.orders.store', $table), [
+                'items' => [
+                    $menuItem->id => ['quantity' => 1],
+                ],
+            ])
+            ->assertSessionHasErrors('table');
+
+        $this->assertDatabaseMissing('orders', [
+            'restaurant_table_id' => $table->id,
+            'waiter_id' => $waiter->id,
+        ]);
+    }
+
+    public function test_waiter_cannot_submit_order_for_other_waiters_table(): void
+    {
+        $waiter = User::factory()->create(['role' => User::ROLE_WAITER]);
+        $otherWaiter = User::factory()->create(['role' => User::ROLE_WAITER]);
+        $table = RestaurantTable::create([
+            'number' => 936,
+            'seats' => 4,
+            'status' => RestaurantTable::STATUS_FREE,
+            'assigned_waiter_id' => $otherWaiter->id,
         ]);
         $menuItem = $this->createMenuItem();
 
@@ -301,6 +388,7 @@ class WaiterTableWorkflowTest extends TestCase
             'number' => 923,
             'seats' => 4,
             'status' => RestaurantTable::STATUS_OCCUPIED,
+            'assigned_waiter_id' => $waiter->id,
         ]);
         $order = Order::create([
             'restaurant_table_id' => $table->id,
@@ -334,6 +422,7 @@ class WaiterTableWorkflowTest extends TestCase
             'number' => 926,
             'seats' => 2,
             'status' => RestaurantTable::STATUS_FREE,
+            'assigned_waiter_id' => $waiter->id,
         ]);
         $menuItem = $this->createMenuItem();
 
@@ -359,6 +448,7 @@ class WaiterTableWorkflowTest extends TestCase
             'number' => 927,
             'seats' => 2,
             'status' => RestaurantTable::STATUS_FREE,
+            'assigned_waiter_id' => $waiter->id,
         ]);
         $menuItem = $this->createMenuItem(available: false);
 
@@ -385,6 +475,7 @@ class WaiterTableWorkflowTest extends TestCase
             'number' => 924,
             'seats' => 4,
             'status' => RestaurantTable::STATUS_OCCUPIED,
+            'assigned_waiter_id' => $otherWaiter->id,
         ]);
         $order = Order::create([
             'restaurant_table_id' => $table->id,

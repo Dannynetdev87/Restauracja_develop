@@ -185,7 +185,7 @@
                                 </span>
                             @endif
                         @empty
-                            <span class="text-sm font-bold text-brand-accent">Brak stolików do wyświetlenia.</span>
+                            <span class="text-sm font-bold text-brand-accent">Nie masz aktualnie przypisanych stolików. Skontaktuj się z managerem.</span>
                         @endforelse
                     </div>
                 </section>

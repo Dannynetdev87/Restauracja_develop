@@ -7,6 +7,7 @@
             <h1 class="text-3xl font-black text-brand-dark">Zarządzanie stolikami</h1>
             <p class="text-brand-accent max-w-3xl">
                 Stolik z historią zamówień nie powinien być usuwany. W takim przypadku ustaw status nieaktywny, aby zachować spójność danych.
+                Przypisany kelner decyduje o tym, kto widzi stolik w swoim panelu.
             </p>
         </div>
 
@@ -59,6 +60,18 @@
                         </select>
                     </div>
 
+                    <div>
+                        <label for="assigned_waiter_id" class="block text-sm font-bold text-brand-dark">Przypisany kelner</label>
+                        <select id="assigned_waiter_id" name="assigned_waiter_id" class="mt-1 w-full rounded-md border border-brand-dark/20 px-3 py-2">
+                            <option value="">Bez przypisania</option>
+                            @foreach($waiters as $waiter)
+                                <option value="{{ $waiter->id }}" @selected((int) old('assigned_waiter_id') === $waiter->id)>
+                                    {{ $waiter->name }} ({{ $waiter->email }})
+                                </option>
+                            @endforeach
+                        </select>
+                    </div>
+
                     <button type="submit" class="rounded-md bg-brand-dark px-4 py-2 text-sm font-bold text-brand-light hover:bg-brand-accent">
                         Dodaj stolik
                     </button>
@@ -75,6 +88,7 @@
                                 <th class="py-3 pr-4">Numer</th>
                                 <th class="py-3 pr-4">Miejsca</th>
                                 <th class="py-3 pr-4">Status</th>
+                                <th class="py-3 pr-4">Kelner</th>
                                 <th class="py-3 pr-4">Zamówienia</th>
                                 <th class="py-3 pr-4 text-right">Akcje</th>
                             </tr>
@@ -88,6 +102,14 @@
                                         <span class="rounded-full px-3 py-1 text-xs font-bold {{ $table->status === 'wolny' ? 'bg-green-100 text-green-800' : ($table->status === 'nieaktywny' ? 'bg-gray-200 text-gray-700' : 'bg-yellow-100 text-yellow-800') }}">
                                             {{ $statuses[$table->status] ?? $table->status }}
                                         </span>
+                                    </td>
+                                    <td class="py-3 pr-4">
+                                        @if($table->assignedWaiter)
+                                            <span class="font-bold text-brand-dark">{{ $table->assignedWaiter->name }}</span>
+                                            <span class="mt-1 block text-xs text-brand-accent">{{ $table->assignedWaiter->email }}</span>
+                                        @else
+                                            <span class="text-brand-accent">Bez przypisania</span>
+                                        @endif
                                     </td>
                                     <td class="py-3 pr-4">{{ $table->orders_count }}</td>
                                     <td class="py-3 pr-4">
@@ -107,7 +129,7 @@
                                 </tr>
                             @empty
                                 <tr>
-                                    <td colspan="5" class="py-5 text-center text-brand-accent">Brak stolików w bazie.</td>
+                                    <td colspan="6" class="py-5 text-center text-brand-accent">Brak stolików w bazie.</td>
                                 </tr>
                             @endforelse
                         </tbody>

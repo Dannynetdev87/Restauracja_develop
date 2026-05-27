@@ -18,6 +18,7 @@ class WaiterTableController extends Controller
         $activeOrders = Order::query()
             ->where('waiter_id', $waiterId)
             ->whereIn('status', Order::activeStatuses())
+            ->whereHas('table', fn ($query) => $query->where('assigned_waiter_id', $waiterId))
             ->with(['table', 'items.menuItem', 'items.statusHistory'])
             ->orderBy('opened_at')
             ->get();

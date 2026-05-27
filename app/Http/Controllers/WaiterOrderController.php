@@ -30,6 +30,13 @@ class WaiterOrderController extends Controller
                 ->firstOrFail();
 
             $activeOrder = $selectedTable->activeOrders->first();
+
+            $canUseSelectedTable = ($selectedTable->status === RestaurantTable::STATUS_FREE && $activeOrder === null)
+                || ($activeOrder && $activeOrder->canAcceptItems());
+
+            if (! $canUseSelectedTable) {
+                abort(404);
+            }
         }
 
         return view('waiter.orders.create', [
@@ -104,6 +111,12 @@ class WaiterOrderController extends Controller
             $table = RestaurantTable::query()
                 ->lockForUpdate()
                 ->findOrFail($restaurantTable->id);
+
+            if ($table->assigned_waiter_id !== request()->user()->id) {
+                throw ValidationException::withMessages([
+                    'table' => 'Ten stolik nie jest przypisany do zalogowanego kelnera.',
+                ]);
+            }
 
             $order = Order::query()
                 ->where('restaurant_table_id', $table->id)

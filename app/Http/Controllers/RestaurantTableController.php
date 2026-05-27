@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Http\Requests\StoreRestaurantTableRequest;
 use App\Http\Requests\UpdateRestaurantTableRequest;
 use App\Models\RestaurantTable;
+use App\Models\User;
 
 class RestaurantTableController extends Controller
 {
@@ -12,10 +13,12 @@ class RestaurantTableController extends Controller
     {
         return view('manager.tables.index', [
             'tables' => RestaurantTable::query()
+                ->with('assignedWaiter')
                 ->withCount('orders')
                 ->orderBy('number')
                 ->get(),
             'statuses' => $this->statuses(),
+            'waiters' => $this->waiters(),
         ]);
     }
 
@@ -33,6 +36,7 @@ class RestaurantTableController extends Controller
         return view('manager.tables.edit', [
             'table' => $restaurantTable,
             'statuses' => $this->statuses(),
+            'waiters' => $this->waiters(),
         ]);
     }
 
@@ -68,5 +72,14 @@ class RestaurantTableController extends Controller
             RestaurantTable::STATUS_RESERVED => 'Zarezerwowany',
             RestaurantTable::STATUS_INACTIVE => 'Nieaktywny',
         ];
+    }
+
+    private function waiters()
+    {
+        return User::query()
+            ->where('role', User::ROLE_WAITER)
+            ->where('is_active', true)
+            ->orderBy('name')
+            ->get();
     }
 }

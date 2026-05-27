@@ -156,7 +156,7 @@
                 </article>
             @empty
                 <div class="rounded-lg border border-brand-dark/15 bg-white p-8 text-center text-brand-accent sm:col-span-2 xl:col-span-3">
-                    Brak stolików w bazie.
+                    Nie masz aktualnie przypisanych stolików. Skontaktuj się z managerem.
                 </div>
             @endforelse
         </div>

@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class RestaurantTable extends Model
@@ -21,12 +22,19 @@ class RestaurantTable extends Model
         'number',
         'seats',
         'status',
+        'assigned_waiter_id',
     ];
 
     protected $casts = [
         'number' => 'integer',
         'seats' => 'integer',
+        'assigned_waiter_id' => 'integer',
     ];
+
+    public function assignedWaiter(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'assigned_waiter_id');
+    }
 
     public function orders(): HasMany
     {
@@ -50,19 +58,7 @@ class RestaurantTable extends Model
 
     public function scopeVisibleForWaiter(Builder $query, int $waiterId): Builder
     {
-        return $query->where(function (Builder $query) use ($waiterId) {
-            $query
-                ->where('status', self::STATUS_FREE)
-                ->orWhere(function (Builder $query) use ($waiterId) {
-                    $query
-                        ->where('status', self::STATUS_OCCUPIED)
-                        ->whereHas('orders', function (Builder $query) use ($waiterId) {
-                            $query
-                                ->whereIn('status', Order::activeStatuses())
-                                ->where('waiter_id', $waiterId);
-                        });
-                });
-        });
+        return $query->where('assigned_waiter_id', $waiterId);
     }
 
     protected function status(): Attribute

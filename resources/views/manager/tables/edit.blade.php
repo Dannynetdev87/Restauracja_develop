@@ -41,6 +41,18 @@
                     </select>
                 </div>
 
+                <div>
+                    <label for="assigned_waiter_id" class="block text-sm font-bold text-brand-dark">Przypisany kelner</label>
+                    <select id="assigned_waiter_id" name="assigned_waiter_id" class="mt-1 w-full rounded-md border border-brand-dark/20 px-3 py-2">
+                        <option value="">Bez przypisania</option>
+                        @foreach($waiters as $waiter)
+                            <option value="{{ $waiter->id }}" @selected((int) old('assigned_waiter_id', $table->assigned_waiter_id) === $waiter->id)>
+                                {{ $waiter->name }} ({{ $waiter->email }})
+                            </option>
+                        @endforeach
+                    </select>
+                </div>
+
                 <button type="submit" class="rounded-md bg-brand-dark px-4 py-2 text-sm font-bold text-brand-light hover:bg-brand-accent">
                     Zapisz zmiany
                 </button>

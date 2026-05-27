@@ -3,6 +3,7 @@
 namespace App\Http\Requests;
 
 use App\Models\RestaurantTable;
+use App\Models\User;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
@@ -26,6 +27,13 @@ class UpdateRestaurantTableRequest extends FormRequest
                 Rule::unique('restaurant_tables', 'number')->ignore($restaurantTable),
             ],
             'seats' => ['required', 'integer', 'min:1', 'max:50'],
+            'assigned_waiter_id' => [
+                'nullable',
+                'integer',
+                Rule::exists('users', 'id')
+                    ->where('role', User::ROLE_WAITER)
+                    ->where('is_active', true),
+            ],
             'status' => [
                 'required',
                 Rule::in([

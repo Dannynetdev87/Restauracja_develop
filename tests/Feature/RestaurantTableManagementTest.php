@@ -15,6 +15,7 @@ class RestaurantTableManagementTest extends TestCase
     public function test_manager_can_create_restaurant_table(): void
     {
         $manager = User::factory()->create(['role' => User::ROLE_MANAGER]);
+        $waiter = User::factory()->create(['role' => User::ROLE_WAITER]);
 
         $response = $this
             ->actingAs($manager)
@@ -22,6 +23,7 @@ class RestaurantTableManagementTest extends TestCase
                 'number' => 910,
                 'seats' => 4,
                 'status' => RestaurantTable::STATUS_FREE,
+                'assigned_waiter_id' => $waiter->id,
             ]);
 
         $response->assertRedirect(route('manager.tables.index'));
@@ -30,6 +32,7 @@ class RestaurantTableManagementTest extends TestCase
             'number' => 910,
             'seats' => 4,
             'status' => RestaurantTable::STATUS_FREE,
+            'assigned_waiter_id' => $waiter->id,
         ]);
     }
 
@@ -64,10 +67,12 @@ class RestaurantTableManagementTest extends TestCase
     public function test_manager_can_update_restaurant_table(): void
     {
         $manager = User::factory()->create(['role' => User::ROLE_MANAGER]);
+        $waiter = User::factory()->create(['role' => User::ROLE_WAITER]);
         $table = RestaurantTable::create([
             'number' => 911,
             'seats' => 2,
             'status' => RestaurantTable::STATUS_FREE,
+            'assigned_waiter_id' => null,
         ]);
 
         $response = $this
@@ -76,6 +81,7 @@ class RestaurantTableManagementTest extends TestCase
                 'number' => 912,
                 'seats' => 6,
                 'status' => RestaurantTable::STATUS_RESERVED,
+                'assigned_waiter_id' => $waiter->id,
             ]);
 
         $response->assertRedirect(route('manager.tables.index'));
@@ -85,6 +91,49 @@ class RestaurantTableManagementTest extends TestCase
             'number' => 912,
             'seats' => 6,
             'status' => RestaurantTable::STATUS_RESERVED,
+            'assigned_waiter_id' => $waiter->id,
+        ]);
+    }
+
+    public function test_manager_can_see_assigned_waiter_on_table_list(): void
+    {
+        $manager = User::factory()->create(['role' => User::ROLE_MANAGER]);
+        $waiter = User::factory()->create([
+            'name' => 'Kelner Przypisany',
+            'role' => User::ROLE_WAITER,
+        ]);
+        RestaurantTable::create([
+            'number' => 915,
+            'seats' => 4,
+            'status' => RestaurantTable::STATUS_FREE,
+            'assigned_waiter_id' => $waiter->id,
+        ]);
+
+        $this
+            ->actingAs($manager)
+            ->get(route('manager.tables.index'))
+            ->assertOk()
+            ->assertSee('Kelner Przypisany')
+            ->assertSee('Przypisany kelner');
+    }
+
+    public function test_manager_cannot_assign_table_to_non_waiter(): void
+    {
+        $manager = User::factory()->create(['role' => User::ROLE_MANAGER]);
+        $kitchenUser = User::factory()->create(['role' => User::ROLE_KITCHEN]);
+
+        $this
+            ->actingAs($manager)
+            ->post(route('manager.tables.store'), [
+                'number' => 916,
+                'seats' => 4,
+                'status' => RestaurantTable::STATUS_FREE,
+                'assigned_waiter_id' => $kitchenUser->id,
+            ])
+            ->assertSessionHasErrors('assigned_waiter_id');
+
+        $this->assertDatabaseMissing('restaurant_tables', [
+            'number' => 916,
         ]);
     }
 
