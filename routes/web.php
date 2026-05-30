@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\BarDashboardController;
+use App\Http\Controllers\GuestTableController;
 use App\Http\Controllers\KitchenDashboardController;
 use App\Http\Controllers\ManagerDashboardController;
 use App\Http\Controllers\ManagerOrderHistoryController;
@@ -17,9 +18,7 @@ use App\Models\MenuCategory;
 use App\Models\User;
 use Illuminate\Support\Facades\Route;
 
-Route::get('/', function () {
-    return view('index');
-})->name('home');
+Route::get('/', [GuestTableController::class, 'index'])->name('home');
 
 Route::middleware('guest')->group(function () {
     Route::get('/login', [LoginController::class, 'create'])->name('login');

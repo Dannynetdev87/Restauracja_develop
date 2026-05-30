@@ -14,30 +14,21 @@
                     </a>
                 </div>
 
-                @php
-                    $mockupTables = [
-                        ['number' => 1, 'seats' => 2, 'status' => 'wolny', 'class' => 'status-free'],
-                        ['number' => 2, 'seats' => 4, 'status' => 'zajęty', 'class' => 'status-occupied'],
-                        ['number' => 3, 'seats' => 4, 'status' => 'wolny', 'class' => 'status-free'],
-                        ['number' => 4, 'seats' => 6, 'status' => 'zarezerwowany', 'class' => 'status-reserved'],
-                    ];
-                @endphp
-
                 <div class="tables-grid">
-                    @foreach($mockupTables as $table)
+                    @forelse($tables as $table)
                         <div class="table-card">
                             <div>
-                                <div class="table-number">
-                                    Stolik nr {{ $table['number'] }}
-                                </div>
-                                <div class="table-seats">Miejsca: <strong class="text-brand-dark">{{ $table['seats'] }}</strong></div>
+                                <div class="table-number">Stolik nr {{ $table->number }}</div>
+                                <div class="table-seats">Miejsca: <strong class="text-brand-dark">{{ $table->seats }}</strong></div>
                             </div>
 
-                            <span class="status-badge {{ $table['class'] }}">
-                                {{ $table['status'] }}
+                            <span class="status-badge {{ $table->status_class }}">
+                                {{ $table->status_label }}
                             </span>
                         </div>
-                    @endforeach
+                    @empty
+                        <p class="text-brand-accent text-sm col-span-full">Brak stolików do wyświetlenia.</p>
+                    @endforelse
                 </div>
             </section>
         @else
@@ -60,18 +51,58 @@
             </section>
         @endif
     @else
-        <section class="welcome-section">
-            <span class="welcome-badge">Witaj w SmakPrzeszłości</span>
+        <section class="max-w-7xl mx-auto py-12 px-4 sm:px-6 lg:px-8">
+            <div class="text-center mb-10">
+                <span class="welcome-badge">Witaj w SmakPrzeszłości</span>
+                <h1 class="welcome-title mt-4">Dostępność stolików</h1>
+                <p class="welcome-desc">
+                    Sprawdź aktualny status stolików i orientacyjny czas oczekiwania bez podglądu szczegółów zamówień.
+                </p>
+            </div>
 
-            <h1 class="welcome-title">
-                Odkryj menu naszej restauracji
-            </h1>
+            <div class="flex flex-wrap justify-center gap-4 mb-8">
+                <span class="flex items-center gap-2 text-sm text-brand-dark">
+                    <span class="inline-block w-3 h-3 rounded-full bg-emerald-500"></span> Wolny
+                </span>
+                <span class="flex items-center gap-2 text-sm text-brand-dark">
+                    <span class="inline-block w-3 h-3 rounded-full bg-amber-500"></span> Zajęty
+                </span>
+                <span class="flex items-center gap-2 text-sm text-brand-dark">
+                    <span class="inline-block w-3 h-3 rounded-full bg-blue-500"></span> Zarezerwowany
+                </span>
+                <span class="flex items-center gap-2 text-sm text-brand-dark">
+                    <span class="inline-block w-3 h-3 rounded-full bg-slate-400"></span> Nieaktywny
+                </span>
+            </div>
 
-            <p class="welcome-desc">
-                Przeglądaj kartę dań online. Aby obsługiwać stoliki, zamówienia lub panel managera, zaloguj się na konto pracownika.
-            </p>
+            <div class="tables-grid">
+                @forelse($tables as $table)
+                    <div class="table-card">
+                        <div class="flex flex-col gap-1">
+                            <div class="table-number">Stolik nr {{ $table->number }}</div>
+                            <div class="table-seats">
+                                Miejsca: <strong class="text-brand-dark">{{ $table->seats }}</strong>
+                            </div>
 
-            <div class="welcome-actions">
+                            @if($table->waiting_minutes !== null)
+                                <div class="mt-1 text-xs text-brand-accent">
+                                    Czas oczekiwania: <strong>{{ $table->waiting_minutes }} min</strong>
+                                </div>
+                            @endif
+                        </div>
+
+                        <span class="status-badge {{ $table->status_class }}">
+                            {{ $table->status_label }}
+                        </span>
+                    </div>
+                @empty
+                    <p class="text-brand-accent text-sm col-span-full text-center">
+                        Brak stolików do wyświetlenia.
+                    </p>
+                @endforelse
+            </div>
+
+            <div class="welcome-actions mt-10">
                 <a href="{{ route('menu.index') }}" class="btn-welcome-primary">
                     Zobacz menu
                 </a>

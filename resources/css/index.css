@@ -40,4 +40,5 @@
     .status-free { @apply bg-emerald-50 text-emerald-700 border border-emerald-200; }
     .status-occupied { @apply bg-amber-50 text-amber-700 border border-amber-200; }
     .status-reserved { @apply bg-blue-50 text-blue-700 border border-blue-200; }
+    .status-inactive { @apply bg-slate-100 text-slate-600 border border-slate-200; }
 }
