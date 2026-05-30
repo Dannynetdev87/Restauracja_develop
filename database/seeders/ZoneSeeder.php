@@ -23,34 +23,73 @@ class ZoneSeeder extends Seeder
         $zones = [
             'Sala główna' => [
                 'assigned_waiter_id' => $waiters['kelner@example.com'] ?? null,
-                'tables' => [1, 2, 3, 4, 5],
+                'tables' => [1, 2, 3, 4],
+                'legacy_names' => [],
             ],
-            'Antresola' => [
+            'Sala boczna' => [
                 'assigned_waiter_id' => $waiters['kelner1@example.com'] ?? null,
-                'tables' => [6, 7, 8, 9],
+                'tables' => [5, 6],
+                'legacy_names' => ['Antresola'],
+            ],
+            'Taras' => [
+                'assigned_waiter_id' => $waiters['kelner2@example.com'] ?? null,
+                'tables' => [7, 8, 9, 10],
+                'legacy_names' => [],
             ],
             'Ogródek' => [
-                'assigned_waiter_id' => $waiters['kelner2@example.com'] ?? null,
-                'tables' => [10, 11, 12],
+                'assigned_waiter_id' => $waiters['kelner3@example.com'] ?? null,
+                'tables' => [11, 12],
+                'legacy_names' => [],
             ],
             'Sala rodzinna' => [
-                'assigned_waiter_id' => $waiters['kelner3@example.com'] ?? null,
+                'assigned_waiter_id' => null,
                 'tables' => [13, 14, 15],
+                'legacy_names' => [],
             ],
         ];
 
+        RestaurantTable::query()
+            ->whereIn('number', collect($zones)->flatMap(fn (array $zoneData) => $zoneData['tables'])->all())
+            ->update(['zone_id' => null]);
+
         foreach ($zones as $name => $zoneData) {
-            $zone = Zone::updateOrCreate(
-                ['name' => $name],
-                [
-                    'assigned_waiter_id' => $zoneData['assigned_waiter_id'],
-                    'is_active' => true,
-                ],
-            );
+            $zone = $this->zoneFor($name, $zoneData['legacy_names']);
+
+            $zone->fill([
+                'name' => $name,
+                'assigned_waiter_id' => $zoneData['assigned_waiter_id'],
+                'is_active' => true,
+            ])->save();
+
+            Zone::query()
+                ->whereIn('name', $zoneData['legacy_names'])
+                ->whereKeyNot($zone->id)
+                ->get()
+                ->each(function (Zone $legacyZone) use ($zone): void {
+                    RestaurantTable::query()
+                        ->where('zone_id', $legacyZone->id)
+                        ->update(['zone_id' => $zone->id]);
+
+                    $legacyZone->delete();
+                });
 
             RestaurantTable::query()
                 ->whereIn('number', $zoneData['tables'])
                 ->update(['zone_id' => $zone->id]);
         }
+    }
+
+    private function zoneFor(string $name, array $legacyNames): Zone
+    {
+        $zone = Zone::query()->where('name', $name)->first();
+
+        if ($zone) {
+            return $zone;
+        }
+
+        return Zone::query()
+            ->whereIn('name', $legacyNames)
+            ->first()
+            ?? new Zone(['name' => $name]);
     }
 }
