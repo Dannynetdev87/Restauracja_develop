@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Order;
+use App\Models\OrderItem;
 use App\Models\Payment;
 use App\Models\RestaurantTable;
 use Illuminate\Http\Request;
@@ -17,7 +18,7 @@ class WaiterBillController extends Controller
         $this->authorizeWaiterOrder($order);
 
         return view('waiter.orders.bill', [
-            'order' => $order->load(['table', 'waiter', 'items.menuItem', 'payments']),
+            'order' => $order->load(['table', 'waiter', 'items.menuItem', 'items.payments', 'payments.orderItems']),
             'paymentMethods' => $this->paymentMethods(),
         ]);
     }
@@ -28,11 +29,14 @@ class WaiterBillController extends Controller
 
         $validated = $request->validate([
             'payment_method' => ['required', Rule::in(array_keys($this->paymentMethods()))],
+            'item_ids' => ['required', 'array', 'min:1'],
+            'item_ids.*' => ['required', 'integer', Rule::exists('order_items', 'id')],
+            'tip_amount' => ['nullable', 'numeric', 'min:0', 'max:9999.99'],
         ]);
 
-        DB::transaction(function () use ($order, $validated) {
+        $orderFullyPaid = DB::transaction(function () use ($order, $validated): bool {
             $order = Order::query()
-                ->with(['items', 'payments', 'table'])
+                ->with('table')
                 ->lockForUpdate()
                 ->findOrFail($order->id);
 
@@ -40,9 +44,9 @@ class WaiterBillController extends Controller
                 abort(403);
             }
 
-            if ($order->payments()->where('status', Payment::STATUS_PAID)->exists()) {
+            if (in_array($order->status, [Order::STATUS_PAID, Order::STATUS_CLOSED, Order::STATUS_CANCELLED], true)) {
                 throw ValidationException::withMessages([
-                    'payment_method' => 'To zamówienie zostało już opłacone.',
+                    'payment_method' => 'To zamówienie jest już rozliczone albo zamknięte.',
                 ]);
             }
 
@@ -52,37 +56,89 @@ class WaiterBillController extends Controller
                 ]);
             }
 
-            $total = $order->total();
+            $selectedItemIds = collect($validated['item_ids'])
+                ->map(fn ($id) => (int) $id)
+                ->unique()
+                ->values();
 
-            if ($total <= 0) {
+            $itemsToPay = OrderItem::query()
+                ->where('order_id', $order->id)
+                ->whereIn('id', $selectedItemIds)
+                ->with(['menuItem', 'payments'])
+                ->lockForUpdate()
+                ->get();
+
+            if ($itemsToPay->count() !== $selectedItemIds->count()) {
                 throw ValidationException::withMessages([
-                    'payment_method' => 'Nie można opłacić pustego zamówienia.',
+                    'item_ids' => 'Wybrano pozycję spoza tego zamówienia.',
+                ]);
+            }
+
+            if ($itemsToPay->contains(fn (OrderItem $item) => $item->status === OrderItem::STATUS_CANCELLED)) {
+                throw ValidationException::withMessages([
+                    'item_ids' => 'Nie można opłacić anulowanych pozycji.',
+                ]);
+            }
+
+            $paidItem = $itemsToPay->first(fn (OrderItem $item) => $item->isPaid());
+
+            if ($paidItem) {
+                throw ValidationException::withMessages([
+                    'item_ids' => 'Pozycja '.$paidItem->menuItem->name.' została już opłacona.',
+                ]);
+            }
+
+            $amount = $itemsToPay->sum(fn (OrderItem $item) => $item->subtotal());
+
+            if ($amount <= 0) {
+                throw ValidationException::withMessages([
+                    'item_ids' => 'Suma wybranych pozycji musi być większa od zera.',
                 ]);
             }
 
             $paidAt = now();
+            $tipAmount = round((float) ($validated['tip_amount'] ?? 0), 2);
 
-            $order->payments()->create([
-                'amount' => $total,
+            $payment = $order->payments()->create([
+                'amount' => $amount,
+                'tip_amount' => $tipAmount,
                 'payment_method' => $validated['payment_method'],
                 'status' => Payment::STATUS_PAID,
                 'paid_at' => $paidAt,
             ]);
 
-            $order->update([
-                'status' => Order::STATUS_PAID,
-                'paid_at' => $paidAt,
-                'closed_at' => $paidAt,
-            ]);
+            $payment->orderItems()->attach($itemsToPay->pluck('id')->all());
 
-            $order->table->update([
-                'status' => RestaurantTable::STATUS_FREE,
-            ]);
+            $hasUnpaidActiveItems = OrderItem::query()
+                ->where('order_id', $order->id)
+                ->where('status', '!=', OrderItem::STATUS_CANCELLED)
+                ->whereDoesntHave('payments', fn ($query) => $query->where('status', Payment::STATUS_PAID))
+                ->exists();
+
+            if (! $hasUnpaidActiveItems) {
+                $order->update([
+                    'status' => Order::STATUS_PAID,
+                    'paid_at' => $paidAt,
+                    'closed_at' => $paidAt,
+                ]);
+
+                $order->table->update([
+                    'status' => RestaurantTable::STATUS_FREE,
+                ]);
+
+                return true;
+            }
+
+            return false;
         });
+
+        $message = $orderFullyPaid
+            ? 'Całe zamówienie zostało opłacone, a stolik zwolniony.'
+            : 'Płatność za wybrane pozycje została zapisana.';
 
         return redirect()
             ->route('waiter.orders.bill', $order)
-            ->with('success', 'Płatność została zapisana, a stolik zwolniony.');
+            ->with('success', $message);
     }
 
     private function authorizeWaiterOrder(Order $order): void

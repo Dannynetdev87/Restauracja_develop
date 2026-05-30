@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
 class Payment extends Model
 {
@@ -27,6 +28,7 @@ class Payment extends Model
     protected $fillable = [
         'order_id',
         'amount',
+        'tip_amount',
         'payment_method',
         'status',
         'paid_at',
@@ -34,12 +36,18 @@ class Payment extends Model
 
     protected $casts = [
         'amount' => 'decimal:2',
+        'tip_amount' => 'decimal:2',
         'paid_at' => 'datetime',
     ];
 
     public function order(): BelongsTo
     {
         return $this->belongsTo(Order::class);
+    }
+
+    public function orderItems(): BelongsToMany
+    {
+        return $this->belongsToMany(OrderItem::class);
     }
 
     protected function paymentMethod(): Attribute

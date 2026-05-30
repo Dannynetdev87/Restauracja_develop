@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class OrderItem extends Model
@@ -48,9 +49,27 @@ class OrderItem extends Model
         return $this->hasMany(OrderItemStatusHistory::class);
     }
 
+    public function payments(): BelongsToMany
+    {
+        return $this->belongsToMany(Payment::class);
+    }
+
     public function subtotal(): float
     {
         return $this->quantity * $this->unit_price;
+    }
+
+    public function isPaid(): bool
+    {
+        if ($this->relationLoaded('payments')) {
+            return $this->payments->contains(
+                fn (Payment $payment) => $payment->status === Payment::STATUS_PAID
+            );
+        }
+
+        return $this->payments()
+            ->where('status', Payment::STATUS_PAID)
+            ->exists();
     }
 
     protected function status(): Attribute

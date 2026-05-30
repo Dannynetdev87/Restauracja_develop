@@ -2,8 +2,14 @@
     <x-slot:title>Rachunek zamówienia #{{ $order->id }} - SmakPrzeszłości</x-slot>
 
     @php
-        $paidPayment = $order->payments->firstWhere('status', \App\Models\Payment::STATUS_PAID);
-        $canPay = $order->status === \App\Models\Order::STATUS_SERVED && ! $paidPayment;
+        $activeItems = $order->items->where('status', '!=', \App\Models\OrderItem::STATUS_CANCELLED);
+        $unpaidItems = $activeItems->filter(fn ($item) => ! $item->isPaid());
+        $paidPayments = $order->payments->where('status', \App\Models\Payment::STATUS_PAID);
+        $paidAmount = $paidPayments->sum(fn ($payment) => (float) $payment->amount);
+        $paidTips = $paidPayments->sum(fn ($payment) => (float) ($payment->tip_amount ?? 0));
+        $remainingAmount = $unpaidItems->sum(fn ($item) => $item->subtotal());
+        $canPay = $order->status === \App\Models\Order::STATUS_SERVED && $unpaidItems->isNotEmpty();
+
         $statusLabel = match ($order->status) {
             \App\Models\Order::STATUS_OPEN => 'Otwarte',
             \App\Models\Order::STATUS_IN_PROGRESS => 'W przygotowaniu',
@@ -43,103 +49,309 @@
             </div>
         @endif
 
-        <div class="grid gap-6 lg:grid-cols-[1fr_320px]">
-            <div class="rounded-lg border border-brand-dark/15 bg-white p-6 shadow-sm">
-                <div class="mb-6 border-b border-brand-dark/10 pb-5">
-                    <span class="text-sm font-bold uppercase text-brand-accent">Pozycje rachunku</span>
-                    <h2 class="mt-2 text-2xl font-black text-brand-dark">Podsumowanie zamówienia</h2>
-                </div>
+        <form method="POST" action="{{ route('waiter.orders.payments.store', $order) }}" id="payment-form">
+            @csrf
 
-                <div class="divide-y divide-brand-dark/10">
-                    @forelse($order->items as $item)
-                        @php
-                            $isCancelled = $item->status === \App\Models\OrderItem::STATUS_CANCELLED;
-                        @endphp
+            <div class="grid gap-6 lg:grid-cols-[1fr_340px]">
+                <div class="rounded-lg border border-brand-dark/15 bg-white p-6 shadow-sm">
+                    <div class="mb-6 border-b border-brand-dark/10 pb-5">
+                        <span class="text-sm font-bold uppercase text-brand-accent">Pozycje rachunku</span>
+                        <h2 class="mt-2 text-2xl font-black text-brand-dark">Wybierz pozycje do rozliczenia</h2>
+                    </div>
 
-                        <div class="grid gap-4 py-4 md:grid-cols-[72px_1fr_150px_150px] md:items-start {{ $isCancelled ? 'opacity-70' : '' }}">
-                            <div class="w-fit rounded-md px-3 py-2 text-sm font-black text-brand-light {{ $isCancelled ? 'bg-gray-500' : 'bg-brand-dark' }}">
-                                {{ $item->quantity }}x
-                            </div>
+                    <div class="divide-y divide-brand-dark/10">
+                        @forelse($order->items as $item)
+                            @php
+                                $isCancelled = $item->status === \App\Models\OrderItem::STATUS_CANCELLED;
+                                $isPaid = $item->isPaid();
+                            @endphp
 
-                            <div>
-                                <div class="flex flex-wrap items-center gap-2">
-                                    <h3 class="font-black text-brand-dark {{ $isCancelled ? 'line-through' : '' }}">{{ $item->menuItem->name }}</h3>
-                                    @if($isCancelled)
-                                        <span class="rounded-md bg-red-100 px-2.5 py-1 text-xs font-bold text-red-800">
-                                            Anulowane
-                                        </span>
+                            <div class="grid gap-4 py-4 grid-cols-[auto_auto_1fr] md:grid-cols-[40px_72px_1fr_130px_130px] md:items-center {{ $isCancelled || $isPaid ? 'opacity-65' : '' }}">
+                                <div class="flex items-center justify-center">
+                                    @if($canPay && ! $isCancelled && ! $isPaid)
+                                        <input
+                                            type="checkbox"
+                                            name="item_ids[]"
+                                            value="{{ $item->id }}"
+                                            data-price="{{ number_format($item->subtotal(), 2, '.', '') }}"
+                                            class="item-checkbox h-5 w-5 rounded border-brand-dark/20 text-brand-dark focus:ring-brand-dark"
+                                            checked
+                                        >
+                                    @else
+                                        <div class="flex h-5 w-5 items-center justify-center">
+                                            @if($isPaid)
+                                                <span class="text-base font-black text-green-700">✓</span>
+                                            @else
+                                                <span class="text-lg text-gray-300">-</span>
+                                            @endif
+                                        </div>
                                     @endif
                                 </div>
-                                @if($item->notes)
-                                    <p class="mt-2 rounded-md bg-brand-light px-3 py-2 text-sm text-brand-dark">
-                                        {{ $item->notes }}
-                                    </p>
-                                @endif
+
+                                <div class="w-fit rounded-md px-3 py-2 text-sm font-black text-brand-light {{ $isCancelled ? 'bg-gray-400' : ($isPaid ? 'bg-green-700' : 'bg-brand-dark') }}">
+                                    {{ $item->quantity }}x
+                                </div>
+
+                                <div class="col-span-3 md:col-span-1">
+                                    <div class="flex flex-wrap items-center gap-2">
+                                        <h3 class="font-black text-brand-dark {{ $isCancelled ? 'line-through text-gray-400' : '' }} {{ $isPaid ? 'text-gray-500' : '' }}">
+                                            {{ $item->menuItem->name }}
+                                        </h3>
+
+                                        @if($isCancelled)
+                                            <span class="rounded-md bg-red-100 px-2.5 py-1 text-xs font-bold text-red-800">Anulowane</span>
+                                        @elseif($isPaid)
+                                            <span class="rounded-md bg-green-100 px-2.5 py-1 text-xs font-bold text-green-800">Opłacone</span>
+                                        @endif
+                                    </div>
+
+                                    @if($item->notes)
+                                        <p class="mt-2 rounded-md bg-brand-light px-3 py-2 text-sm text-brand-dark">
+                                            {{ $item->notes }}
+                                        </p>
+                                    @endif
+                                </div>
+
+                                <div class="text-left md:text-right">
+                                    <span class="block text-xs font-bold uppercase text-brand-accent">Cena</span>
+                                    <strong class="text-brand-dark">{{ number_format($item->unit_price, 2, ',', ' ') }} zł</strong>
+                                </div>
+
+                                <div class="text-left md:text-right">
+                                    <span class="block text-xs font-bold uppercase text-brand-accent">Suma</span>
+                                    <strong class="text-lg text-brand-dark">
+                                        {{ $isCancelled ? '0,00' : number_format($item->subtotal(), 2, ',', ' ') }} zł
+                                    </strong>
+                                </div>
+                            </div>
+                        @empty
+                            <div class="rounded-md bg-brand-light px-4 py-3 text-sm text-brand-dark">
+                                Zamówienie nie ma pozycji do rozliczenia.
+                            </div>
+                        @endforelse
+                    </div>
+                </div>
+
+                <aside class="h-fit rounded-lg border border-brand-dark/15 bg-white p-5 shadow-sm lg:sticky lg:top-28">
+                    <span class="text-sm font-bold uppercase text-brand-accent">Podsumowanie rachunku</span>
+
+                    <div class="mt-4 space-y-3 text-sm text-brand-dark">
+                        <div class="flex justify-between gap-4">
+                            <span>Suma pozycji</span>
+                            <span class="font-bold">{{ number_format($order->total(), 2, ',', ' ') }} zł</span>
+                        </div>
+                        <div class="flex justify-between gap-4">
+                            <span>Opłacono za pozycje</span>
+                            <span class="font-bold text-green-800">{{ number_format($paidAmount, 2, ',', ' ') }} zł</span>
+                        </div>
+                        <div class="flex justify-between gap-4">
+                            <span>Pozostało</span>
+                            <span class="font-bold">{{ number_format($remainingAmount, 2, ',', ' ') }} zł</span>
+                        </div>
+
+                        @if($paidPayments->isNotEmpty())
+                            <div class="border-t border-brand-dark/10 pt-3 space-y-1.5">
+                                <span class="block text-xs font-bold uppercase text-brand-accent">Zarejestrowane płatności</span>
+                                @foreach($paidPayments as $payment)
+                                    <div class="rounded-md bg-green-50/70 px-2 py-1 text-xs text-green-900">
+                                        <div class="flex justify-between gap-2">
+                                            <span>{{ $paymentMethods[$payment->payment_method] ?? $payment->payment_method }} {{ $payment->paid_at?->format('H:i') }}</span>
+                                            <strong>{{ number_format($payment->amount, 2, ',', ' ') }} zł</strong>
+                                        </div>
+                                        @if((float) $payment->tip_amount > 0)
+                                            <div class="mt-0.5 flex justify-between gap-2 text-green-800">
+                                                <span>Napiwek</span>
+                                                <strong>{{ number_format($payment->tip_amount, 2, ',', ' ') }} zł</strong>
+                                            </div>
+                                        @endif
+                                    </div>
+                                @endforeach
+                            </div>
+                        @endif
+
+                        <div class="border-t border-brand-dark/10 pt-3">
+                            <span class="block text-sm font-bold text-brand-dark">Napiwek dla kelnera</span>
+                            <p class="mt-1 text-xs text-brand-accent">Wybierz procent od aktualnie zaznaczonych pozycji albo wpisz własną kwotę.</p>
+
+                            <input
+                                id="tip_amount"
+                                name="tip_amount"
+                                type="hidden"
+                                value="{{ old('tip_amount', '0.00') }}"
+                                data-initial-tip="{{ old('tip_amount', '0.00') }}"
+                                @disabled(! $canPay)
+                            >
+
+                            <div class="mt-3 grid grid-cols-3 gap-2" role="group" aria-label="Wybór napiwku">
+                                <button type="button" class="tip-option rounded-md border border-brand-dark/20 bg-white px-3 py-2 text-sm font-bold text-brand-dark transition hover:border-brand-accent" data-tip-type="percent" data-tip-value="5" @disabled(! $canPay)>5%</button>
+                                <button type="button" class="tip-option rounded-md border border-brand-dark/20 bg-white px-3 py-2 text-sm font-bold text-brand-dark transition hover:border-brand-accent" data-tip-type="percent" data-tip-value="10" @disabled(! $canPay)>10%</button>
+                                <button type="button" class="tip-option rounded-md border border-brand-dark/20 bg-white px-3 py-2 text-sm font-bold text-brand-dark transition hover:border-brand-accent" data-tip-type="percent" data-tip-value="15" @disabled(! $canPay)>15%</button>
+                                <button type="button" class="tip-option rounded-md border border-brand-dark/20 bg-white px-3 py-2 text-sm font-bold text-brand-dark transition hover:border-brand-accent" data-tip-type="none" data-tip-value="0" @disabled(! $canPay)>Bez napiwku</button>
+                                <button type="button" class="tip-option col-span-2 rounded-md border border-brand-dark/20 bg-white px-3 py-2 text-sm font-bold text-brand-dark transition hover:border-brand-accent" data-tip-type="custom" @disabled(! $canPay)>Własna kwota</button>
                             </div>
 
-                            <div class="text-left md:text-right">
-                                <span class="block text-xs font-bold uppercase text-brand-accent">Cena</span>
-                                <strong class="text-brand-dark">{{ number_format($item->unit_price, 2, ',', ' ') }} zł</strong>
+                            <div id="custom-tip-wrapper" class="mt-3 hidden">
+                                <label for="custom_tip_amount" class="block text-xs font-bold uppercase text-brand-accent">Kwota napiwku</label>
+                                <input
+                                    id="custom_tip_amount"
+                                    type="number"
+                                    min="0"
+                                    max="9999.99"
+                                    step="0.01"
+                                    value="{{ old('tip_amount', '0.00') }}"
+                                    class="mt-1 w-full rounded-md border border-brand-dark/20 bg-white px-3 py-2 text-sm text-brand-dark focus:border-brand-dark focus:outline-none"
+                                    @disabled(! $canPay)
+                                >
                             </div>
 
-                            <div class="text-left md:text-right">
-                                <span class="block text-xs font-bold uppercase text-brand-accent">Suma</span>
-                                <strong class="text-lg text-brand-dark">
-                                    {{ $isCancelled ? '0,00' : number_format($item->subtotal(), 2, ',', ' ') }} zł
-                                </strong>
+                            @if($paidTips > 0)
+                                <p class="mt-1 text-xs text-brand-accent">Dotychczas zapisane napiwki: {{ number_format($paidTips, 2, ',', ' ') }} zł</p>
+                            @endif
+                        </div>
+
+                        <div class="flex flex-col gap-1 border-t border-brand-dark/10 pt-3">
+                            <span class="text-xs font-bold uppercase text-brand-accent">Do zapłaty teraz</span>
+                            <div class="space-y-1 text-sm">
+                                <div class="flex justify-between">
+                                    <span>Wybrane pozycje</span>
+                                    <strong><span id="selected-total">0,00</span> zł</strong>
+                                </div>
+                                <div class="flex justify-between">
+                                    <span>Napiwek</span>
+                                    <strong><span id="tip-total">0,00</span> zł</strong>
+                                </div>
+                                <div class="flex justify-between border-t border-brand-dark/10 pt-2 text-2xl font-black text-brand-dark">
+                                    <span>Razem</span>
+                                    <span><span id="payment-total">0,00</span> zł</span>
+                                </div>
                             </div>
                         </div>
-                    @empty
-                        <div class="rounded-md bg-brand-light px-4 py-3 text-sm text-brand-dark">
-                            Zamówienie nie ma pozycji do rozliczenia.
-                        </div>
-                    @endforelse
-                </div>
-            </div>
-
-            <aside class="h-fit rounded-lg border border-brand-dark/15 bg-white p-5 shadow-sm lg:sticky lg:top-28">
-                <span class="text-sm font-bold uppercase text-brand-accent">Do zapłaty</span>
-                <div class="mt-4 space-y-3 text-sm text-brand-dark">
-                    <div class="flex justify-between gap-4">
-                        <span>Liczba pozycji</span>
-                        <strong>{{ $order->items->where('status', '!=', \App\Models\OrderItem::STATUS_CANCELLED)->sum('quantity') }}</strong>
                     </div>
-                    <div class="flex justify-between gap-4 border-t border-brand-dark/10 pt-3 text-lg">
-                        <span>Razem</span>
-                        <strong>{{ number_format($order->total(), 2, ',', ' ') }} zł</strong>
-                    </div>
-                </div>
 
-                @if($paidPayment)
-                    <div class="mt-5 rounded-md bg-green-50 px-4 py-3 text-sm font-semibold text-green-800">
-                        Opłacono {{ number_format($paidPayment->amount, 2, ',', ' ') }} zł metodą {{ $paymentMethods[$paidPayment->payment_method] ?? $paidPayment->payment_method }}.
-                    </div>
-                @elseif($canPay)
-                    <form method="POST" action="{{ route('waiter.orders.payments.store', $order) }}" class="mt-5 space-y-4">
-                        @csrf
-
-                        <div>
-                            <label for="payment_method" class="block text-sm font-bold text-brand-dark">Metoda płatności</label>
-                            <select id="payment_method"
+                    @if($canPay)
+                        <div class="mt-5 space-y-4">
+                            <div>
+                                <label for="payment_method" class="block text-sm font-bold text-brand-dark">Metoda płatności</label>
+                                <select
+                                    id="payment_method"
                                     name="payment_method"
                                     required
-                                    class="mt-1 w-full rounded-md border border-brand-dark/20 bg-white px-3 py-2 text-sm text-brand-dark focus:border-brand-dark focus:outline-none">
-                                @foreach($paymentMethods as $method => $label)
-                                    <option value="{{ $method }}" @selected(old('payment_method') === $method)>{{ $label }}</option>
-                                @endforeach
-                            </select>
-                        </div>
+                                    class="mt-1 w-full rounded-md border border-brand-dark/20 bg-white px-3 py-2 text-sm text-brand-dark focus:border-brand-dark focus:outline-none"
+                                >
+                                    <option value="">-- Wybierz metodę --</option>
+                                    @foreach($paymentMethods as $method => $label)
+                                        <option value="{{ $method }}" @selected(old('payment_method') === $method)>{{ $label }}</option>
+                                    @endforeach
+                                </select>
+                            </div>
 
-                        <button type="submit" class="w-full rounded-md bg-brand-dark px-4 py-3 text-sm font-bold text-brand-light hover:bg-brand-accent">
-                            Zatwierdź płatność
-                        </button>
-                    </form>
-                @else
-                    <div class="mt-5 rounded-md bg-yellow-50 px-4 py-3 text-sm font-semibold text-yellow-800">
-                        Płatność będzie dostępna po dostarczeniu wszystkich pozycji.
-                    </div>
-                @endif
-            </aside>
-        </div>
+                            <button id="payment-submit" type="submit" class="w-full rounded-md bg-brand-dark px-4 py-3 text-sm font-bold text-brand-light shadow transition-colors hover:bg-brand-accent">
+                                Zatwierdź płatność
+                            </button>
+                        </div>
+                    @elseif(in_array($order->status, [\App\Models\Order::STATUS_PAID, \App\Models\Order::STATUS_CLOSED], true))
+                        <div class="mt-5 rounded-md border border-green-200 bg-green-50 px-4 py-3 text-sm font-semibold text-green-800">
+                            Zamówienie zostało w całości opłacone i zamknięte.
+                        </div>
+                    @else
+                        <div class="mt-5 rounded-md border border-yellow-200 bg-yellow-50 px-4 py-3 text-sm font-semibold text-yellow-800">
+                            Płatność będzie dostępna po dostarczeniu wszystkich pozycji.
+                        </div>
+                    @endif
+                </aside>
+            </div>
+        </form>
     </section>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const checkboxes = Array.from(document.querySelectorAll('.item-checkbox'));
+            const tipInput = document.getElementById('tip_amount');
+            const customTipWrapper = document.getElementById('custom-tip-wrapper');
+            const customTipInput = document.getElementById('custom_tip_amount');
+            const tipOptions = Array.from(document.querySelectorAll('.tip-option'));
+            const selectedTotal = document.getElementById('selected-total');
+            const tipTotal = document.getElementById('tip-total');
+            const paymentTotal = document.getElementById('payment-total');
+            const submitButton = document.getElementById('payment-submit');
+            let selectedTipType = 'none';
+            let selectedTipValue = 0;
+            const formatter = new Intl.NumberFormat('pl-PL', {
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2,
+            });
+
+            const parseAmount = (value) => {
+                const amount = Number.parseFloat(String(value || '0').replace(',', '.'));
+
+                return Number.isFinite(amount) ? amount : 0;
+            };
+
+            const initialTipAmount = parseAmount(tipInput?.dataset.initialTip);
+            selectedTipType = initialTipAmount > 0 ? 'custom' : 'none';
+
+            const setActiveTipOption = () => {
+                tipOptions.forEach((option) => {
+                    const isActive = option.dataset.tipType === selectedTipType
+                        && (selectedTipType === 'custom' || parseAmount(option.dataset.tipValue) === selectedTipValue);
+
+                    option.classList.toggle('border-brand-accent', isActive);
+                    option.classList.toggle('bg-brand-light', isActive);
+                    option.classList.toggle('text-brand-dark', isActive);
+                    option.classList.toggle('ring-2', isActive);
+                    option.classList.toggle('ring-brand-accent', isActive);
+                    option.classList.toggle('shadow-md', isActive);
+                });
+
+                customTipWrapper?.classList.toggle('hidden', selectedTipType !== 'custom');
+            };
+
+            const refreshTotals = () => {
+                const selectedAmount = checkboxes
+                    .filter((checkbox) => checkbox.checked)
+                    .reduce((sum, checkbox) => sum + parseAmount(checkbox.dataset.price), 0);
+                const tipAmount = selectedTipType === 'custom'
+                    ? parseAmount(customTipInput?.value)
+                    : selectedTipType === 'percent'
+                        ? Math.round(selectedAmount * selectedTipValue) / 100
+                        : 0;
+
+                if (selectedTotal) {
+                    selectedTotal.textContent = formatter.format(selectedAmount);
+                }
+
+                if (tipInput) {
+                    tipInput.value = tipAmount.toFixed(2);
+                }
+
+                if (tipTotal) {
+                    tipTotal.textContent = formatter.format(tipAmount);
+                }
+
+                if (paymentTotal) {
+                    paymentTotal.textContent = formatter.format(selectedAmount + tipAmount);
+                }
+
+                if (submitButton) {
+                    submitButton.disabled = selectedAmount <= 0;
+                    submitButton.classList.toggle('opacity-60', selectedAmount <= 0);
+                    submitButton.classList.toggle('cursor-not-allowed', selectedAmount <= 0);
+                }
+            };
+
+            tipOptions.forEach((option) => {
+                option.addEventListener('click', () => {
+                    selectedTipType = option.dataset.tipType || 'none';
+                    selectedTipValue = parseAmount(option.dataset.tipValue);
+                    setActiveTipOption();
+                    refreshTotals();
+                });
+            });
+
+            checkboxes.forEach((checkbox) => checkbox.addEventListener('change', refreshTotals));
+            customTipInput?.addEventListener('input', refreshTotals);
+            setActiveTipOption();
+            refreshTotals();
+        });
+    </script>
 </x-app>
