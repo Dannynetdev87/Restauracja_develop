@@ -8,6 +8,7 @@ use App\Models\Order;
 use App\Models\OrderItem;
 use App\Models\RestaurantTable;
 use App\Models\User;
+use App\Models\Zone;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Illuminate\Support\Facades\DB;
 use Tests\TestCase;
@@ -19,11 +20,13 @@ class GuestHomeViewTest extends TestCase
     public function test_guest_can_see_all_tables_and_waiting_time_without_order_items(): void
     {
         $this->travelTo(now()->setTime(12, 0));
+        $zone = Zone::create(['name' => 'Widok ogrodu']);
 
         RestaurantTable::create([
             'number' => 951,
             'seats' => 2,
             'status' => RestaurantTable::STATUS_FREE,
+            'zone_id' => $zone->id,
         ]);
 
         $occupiedTable = RestaurantTable::create([
@@ -60,6 +63,7 @@ class GuestHomeViewTest extends TestCase
             ->assertOk()
             ->assertSee('Dostępność stolików')
             ->assertSee('Stolik nr 951')
+            ->assertSee('Widok ogrodu')
             ->assertSee('Stolik nr 952')
             ->assertSee('Stolik nr 953')
             ->assertSee('Stolik nr 954')

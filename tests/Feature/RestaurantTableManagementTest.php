@@ -5,6 +5,7 @@ namespace Tests\Feature;
 use App\Models\Order;
 use App\Models\RestaurantTable;
 use App\Models\User;
+use App\Models\Zone;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Tests\TestCase;
 
@@ -16,6 +17,10 @@ class RestaurantTableManagementTest extends TestCase
     {
         $manager = User::factory()->create(['role' => User::ROLE_MANAGER]);
         $waiter = User::factory()->create(['role' => User::ROLE_WAITER]);
+        $zone = Zone::create([
+            'name' => 'Sala testowa',
+            'assigned_waiter_id' => $waiter->id,
+        ]);
 
         $response = $this
             ->actingAs($manager)
@@ -24,6 +29,7 @@ class RestaurantTableManagementTest extends TestCase
                 'seats' => 4,
                 'status' => RestaurantTable::STATUS_FREE,
                 'assigned_waiter_id' => $waiter->id,
+                'zone_id' => $zone->id,
             ]);
 
         $response->assertRedirect(route('manager.tables.index'));
@@ -33,6 +39,7 @@ class RestaurantTableManagementTest extends TestCase
             'seats' => 4,
             'status' => RestaurantTable::STATUS_FREE,
             'assigned_waiter_id' => $waiter->id,
+            'zone_id' => $zone->id,
         ]);
     }
 
@@ -117,6 +124,78 @@ class RestaurantTableManagementTest extends TestCase
             ->assertSee('Przypisany kelner');
     }
 
+    public function test_manager_can_manage_zones_for_tables(): void
+    {
+        $manager = User::factory()->create(['role' => User::ROLE_MANAGER]);
+        $waiter = User::factory()->create([
+            'name' => 'Kelner Strefowy',
+            'role' => User::ROLE_WAITER,
+        ]);
+
+        $this
+            ->actingAs($manager)
+            ->post(route('manager.zones.store'), [
+                'name' => 'Taras testowy',
+                'assigned_waiter_id' => $waiter->id,
+            ])
+            ->assertRedirect(route('manager.tables.index'));
+
+        $zone = Zone::where('name', 'Taras testowy')->firstOrFail();
+
+        $this->assertDatabaseHas('zones', [
+            'id' => $zone->id,
+            'assigned_waiter_id' => $waiter->id,
+            'is_active' => true,
+        ]);
+
+        $this
+            ->actingAs($manager)
+            ->patch(route('manager.zones.toggle', $zone))
+            ->assertRedirect(route('manager.tables.index'));
+
+        $this->assertFalse($zone->fresh()->is_active);
+    }
+
+    public function test_manager_cannot_assign_zone_to_non_waiter(): void
+    {
+        $manager = User::factory()->create(['role' => User::ROLE_MANAGER]);
+        $kitchenUser = User::factory()->create(['role' => User::ROLE_KITCHEN]);
+
+        $this
+            ->actingAs($manager)
+            ->post(route('manager.zones.store'), [
+                'name' => 'Strefa bledna',
+                'assigned_waiter_id' => $kitchenUser->id,
+            ])
+            ->assertSessionHasErrors('assigned_waiter_id');
+
+        $this->assertDatabaseMissing('zones', [
+            'name' => 'Strefa bledna',
+        ]);
+    }
+
+    public function test_deleting_zone_detaches_tables(): void
+    {
+        $manager = User::factory()->create(['role' => User::ROLE_MANAGER]);
+        $zone = Zone::create(['name' => 'Strefa do usuniecia']);
+        $table = RestaurantTable::create([
+            'number' => 917,
+            'seats' => 4,
+            'status' => RestaurantTable::STATUS_FREE,
+            'zone_id' => $zone->id,
+        ]);
+
+        $this
+            ->actingAs($manager)
+            ->delete(route('manager.zones.destroy', $zone))
+            ->assertRedirect(route('manager.tables.index'));
+
+        $this->assertNull($table->fresh()->zone_id);
+        $this->assertDatabaseMissing('zones', [
+            'id' => $zone->id,
+        ]);
+    }
+
     public function test_manager_cannot_assign_table_to_non_waiter(): void
     {
         $manager = User::factory()->create(['role' => User::ROLE_MANAGER]);
@@ -144,6 +223,13 @@ class RestaurantTableManagementTest extends TestCase
         $this
             ->actingAs($waiter)
             ->get(route('manager.tables.index'))
+            ->assertForbidden();
+
+        $this
+            ->actingAs($waiter)
+            ->post(route('manager.zones.store'), [
+                'name' => 'Niedozwolona strefa',
+            ])
             ->assertForbidden();
     }
 

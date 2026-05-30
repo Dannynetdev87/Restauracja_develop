@@ -72,6 +72,18 @@
                         </select>
                     </div>
 
+                    <div>
+                        <label for="zone_id" class="block text-sm font-bold text-brand-dark">Strefa</label>
+                        <select id="zone_id" name="zone_id" class="mt-1 w-full rounded-md border border-brand-dark/20 px-3 py-2">
+                            <option value="">Poza strefą</option>
+                            @foreach($zones as $zone)
+                                <option value="{{ $zone->id }}" @selected((int) old('zone_id') === $zone->id)>
+                                    {{ $zone->name }}{{ $zone->is_active ? '' : ' (nieaktywna)' }}
+                                </option>
+                            @endforeach
+                        </select>
+                    </div>
+
                     <button type="submit" class="rounded-md bg-brand-dark px-4 py-2 text-sm font-bold text-brand-light hover:bg-brand-accent">
                         Dodaj stolik
                     </button>
@@ -88,6 +100,7 @@
                                 <th class="py-3 pr-4">Numer</th>
                                 <th class="py-3 pr-4">Miejsca</th>
                                 <th class="py-3 pr-4">Status</th>
+                                <th class="py-3 pr-4">Strefa</th>
                                 <th class="py-3 pr-4">Kelner</th>
                                 <th class="py-3 pr-4">Zamówienia</th>
                                 <th class="py-3 pr-4 text-right">Akcje</th>
@@ -104,9 +117,22 @@
                                         </span>
                                     </td>
                                     <td class="py-3 pr-4">
+                                        @if($table->zone)
+                                            <span class="font-bold text-brand-dark">{{ $table->zone->name }}</span>
+                                            <span class="mt-1 block text-xs {{ $table->zone->is_active ? 'text-green-700' : 'text-gray-500' }}">
+                                                {{ $table->zone->is_active ? 'Aktywna' : 'Nieaktywna' }}
+                                            </span>
+                                        @else
+                                            <span class="text-brand-accent">Poza strefą</span>
+                                        @endif
+                                    </td>
+                                    <td class="py-3 pr-4">
                                         @if($table->assignedWaiter)
                                             <span class="font-bold text-brand-dark">{{ $table->assignedWaiter->name }}</span>
                                             <span class="mt-1 block text-xs text-brand-accent">{{ $table->assignedWaiter->email }}</span>
+                                        @elseif($table->zone?->is_active && $table->zone?->assignedWaiter)
+                                            <span class="font-bold text-brand-dark">{{ $table->zone->assignedWaiter->name }}</span>
+                                            <span class="mt-1 block text-xs text-brand-accent">Ze strefy: {{ $table->zone->name }}</span>
                                         @else
                                             <span class="text-brand-accent">Bez przypisania</span>
                                         @endif
@@ -129,12 +155,106 @@
                                 </tr>
                             @empty
                                 <tr>
-                                    <td colspan="6" class="py-5 text-center text-brand-accent">Brak stolików w bazie.</td>
+                                    <td colspan="7" class="py-5 text-center text-brand-accent">Brak stolików w bazie.</td>
                                 </tr>
                             @endforelse
                         </tbody>
                     </table>
                 </div>
+            </div>
+        </div>
+
+        <div class="mt-8 rounded-lg border border-brand-dark/15 bg-white p-5 shadow-sm">
+            <div class="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
+                <div>
+                    <h2 class="text-xl font-black text-brand-dark">Strefy stolików</h2>
+                    <p class="mt-1 text-sm text-brand-accent">
+                        Strefa grupuje stoliki i może wskazywać kelnera domyślnego. Bezpośrednie przypisanie kelnera do stolika ma pierwszeństwo.
+                    </p>
+                </div>
+            </div>
+
+            <form method="POST" action="{{ route('manager.zones.store') }}" class="mt-5 grid gap-3 md:grid-cols-[1fr_1fr_auto] md:items-end">
+                @csrf
+
+                <div>
+                    <label for="zone_name" class="block text-sm font-bold text-brand-dark">Nazwa strefy</label>
+                    <input id="zone_name" name="name" type="text" maxlength="80" value="{{ old('name') }}" required class="mt-1 w-full rounded-md border border-brand-dark/20 px-3 py-2">
+                </div>
+
+                <div>
+                    <label for="zone_assigned_waiter_id" class="block text-sm font-bold text-brand-dark">Kelner domyślny</label>
+                    <select id="zone_assigned_waiter_id" name="assigned_waiter_id" class="mt-1 w-full rounded-md border border-brand-dark/20 px-3 py-2">
+                        <option value="">Bez przypisania</option>
+                        @foreach($waiters as $waiter)
+                            <option value="{{ $waiter->id }}" @selected((int) old('assigned_waiter_id') === $waiter->id)>
+                                {{ $waiter->name }} ({{ $waiter->email }})
+                            </option>
+                        @endforeach
+                    </select>
+                </div>
+
+                <button type="submit" class="rounded-md bg-brand-dark px-4 py-2 text-sm font-bold text-brand-light hover:bg-brand-accent">
+                    Dodaj strefę
+                </button>
+            </form>
+
+            <div class="mt-6 grid gap-4 md:grid-cols-2">
+                @forelse($zones as $zone)
+                    <div class="rounded-lg border border-brand-dark/10 bg-brand-light/30 p-4">
+                        <form method="POST" action="{{ route('manager.zones.update', $zone) }}" class="space-y-3">
+                            @csrf
+                            @method('PUT')
+
+                            <div>
+                                <label for="zone_{{ $zone->id }}_name" class="block text-xs font-bold uppercase text-brand-accent">Nazwa</label>
+                                <input id="zone_{{ $zone->id }}_name" name="name" type="text" maxlength="80" value="{{ $zone->name }}" required class="mt-1 w-full rounded-md border border-brand-dark/20 bg-white px-3 py-2">
+                            </div>
+
+                            <div>
+                                <label for="zone_{{ $zone->id }}_waiter" class="block text-xs font-bold uppercase text-brand-accent">Kelner domyślny</label>
+                                <select id="zone_{{ $zone->id }}_waiter" name="assigned_waiter_id" class="mt-1 w-full rounded-md border border-brand-dark/20 bg-white px-3 py-2">
+                                    <option value="">Bez przypisania</option>
+                                    @foreach($waiters as $waiter)
+                                        <option value="{{ $waiter->id }}" @selected($zone->assigned_waiter_id === $waiter->id)>
+                                            {{ $waiter->name }} ({{ $waiter->email }})
+                                        </option>
+                                    @endforeach
+                                </select>
+                            </div>
+
+                            <div class="flex flex-wrap items-center justify-between gap-2">
+                                <span class="rounded-full px-3 py-1 text-xs font-bold {{ $zone->is_active ? 'bg-green-100 text-green-800' : 'bg-gray-200 text-gray-700' }}">
+                                    {{ $zone->is_active ? 'Aktywna' : 'Nieaktywna' }} · {{ $zone->tables_count }} stolików
+                                </span>
+
+                                <button type="submit" class="rounded-md border border-brand-dark/20 bg-white px-3 py-2 text-xs font-bold text-brand-dark hover:bg-brand-light">
+                                    Zapisz
+                                </button>
+                            </div>
+                        </form>
+
+                        <div class="mt-3 flex flex-wrap justify-end gap-2">
+                            <form method="POST" action="{{ route('manager.zones.toggle', $zone) }}">
+                                @csrf
+                                @method('PATCH')
+                                <button type="submit" class="rounded-md border border-brand-dark/20 bg-white px-3 py-2 text-xs font-bold text-brand-dark hover:bg-brand-light">
+                                    {{ $zone->is_active ? 'Wyłącz' : 'Aktywuj' }}
+                                </button>
+                            </form>
+
+                            <form method="POST" action="{{ route('manager.zones.destroy', $zone) }}" onsubmit="return confirm('Usunąć strefę? Stoliki zostaną przeniesione poza strefę.');">
+                                @csrf
+                                @method('DELETE')
+                                <button type="submit" class="rounded-md border border-red-700 bg-white px-3 py-2 text-xs font-bold text-red-700 hover:bg-red-50">
+                                    Usuń
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                @empty
+                    <p class="text-sm text-brand-accent">Nie ma jeszcze żadnych stref.</p>
+                @endforelse
             </div>
         </div>
     </section>

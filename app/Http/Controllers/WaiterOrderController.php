@@ -22,10 +22,13 @@ class WaiterOrderController extends Controller
         if ($request->filled('table_id')) {
             $selectedTable = RestaurantTable::query()
                 ->visibleForWaiter($waiterId)
-                ->with(['activeOrders' => fn ($query) => $query
-                    ->where('waiter_id', $waiterId)
-                    ->with('items')
-                    ->latest('opened_at')])
+                ->with([
+                    'zone',
+                    'activeOrders' => fn ($query) => $query
+                        ->where('waiter_id', $waiterId)
+                        ->with('items')
+                        ->latest('opened_at'),
+                ])
                 ->whereKey($request->integer('table_id'))
                 ->firstOrFail();
 
@@ -42,9 +45,12 @@ class WaiterOrderController extends Controller
         return view('waiter.orders.create', [
             'tables' => RestaurantTable::query()
                 ->visibleForWaiter($waiterId)
-                ->with(['activeOrders' => fn ($query) => $query
-                    ->where('waiter_id', $waiterId)
-                    ->latest('opened_at')])
+                ->with([
+                    'zone',
+                    'activeOrders' => fn ($query) => $query
+                        ->where('waiter_id', $waiterId)
+                        ->latest('opened_at'),
+                ])
                 ->orderBy('number')
                 ->get(),
             'categories' => MenuCategory::query()
@@ -112,7 +118,9 @@ class WaiterOrderController extends Controller
                 ->lockForUpdate()
                 ->findOrFail($restaurantTable->id);
 
-            if ($table->assigned_waiter_id !== request()->user()->id) {
+            $table->load('zone');
+
+            if (! $table->isVisibleForWaiter(request()->user()->id)) {
                 throw ValidationException::withMessages([
                     'table' => 'Ten stolik nie jest przypisany do zalogowanego kelnera.',
                 ]);

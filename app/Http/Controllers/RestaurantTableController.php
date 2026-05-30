@@ -6,6 +6,7 @@ use App\Http\Requests\StoreRestaurantTableRequest;
 use App\Http\Requests\UpdateRestaurantTableRequest;
 use App\Models\RestaurantTable;
 use App\Models\User;
+use App\Models\Zone;
 
 class RestaurantTableController extends Controller
 {
@@ -13,12 +14,13 @@ class RestaurantTableController extends Controller
     {
         return view('manager.tables.index', [
             'tables' => RestaurantTable::query()
-                ->with('assignedWaiter')
+                ->with(['assignedWaiter', 'zone.assignedWaiter'])
                 ->withCount('orders')
                 ->orderBy('number')
                 ->get(),
             'statuses' => $this->statuses(),
             'waiters' => $this->waiters(),
+            'zones' => $this->zones(),
         ]);
     }
 
@@ -34,9 +36,10 @@ class RestaurantTableController extends Controller
     public function edit(RestaurantTable $restaurantTable)
     {
         return view('manager.tables.edit', [
-            'table' => $restaurantTable,
+            'table' => $restaurantTable->load(['assignedWaiter', 'zone.assignedWaiter']),
             'statuses' => $this->statuses(),
             'waiters' => $this->waiters(),
+            'zones' => $this->zones(),
         ]);
     }
 
@@ -79,6 +82,16 @@ class RestaurantTableController extends Controller
         return User::query()
             ->where('role', User::ROLE_WAITER)
             ->where('is_active', true)
+            ->orderBy('name')
+            ->get();
+    }
+
+    private function zones()
+    {
+        return Zone::query()
+            ->with(['assignedWaiter'])
+            ->withCount('tables')
+            ->orderByDesc('is_active')
             ->orderBy('name')
             ->get();
     }

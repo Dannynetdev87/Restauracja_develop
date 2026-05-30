@@ -70,6 +70,9 @@
                             <div>
                                 <h2 class="text-2xl font-black text-brand-dark">Stolik {{ $table->number }}</h2>
                                 <p class="mt-1 text-sm text-brand-accent">Miejsca: {{ $table->seats }}</p>
+                                @if($table->zone)
+                                    <p class="mt-1 text-xs font-bold uppercase text-brand-accent">Strefa: {{ $table->zone->name }}</p>
+                                @endif
                             </div>
                             <span class="rounded-full px-3 py-1 text-xs font-bold {{ $badgeClass }}">
                                 {{ $statuses[$table->status] ?? $table->status }}

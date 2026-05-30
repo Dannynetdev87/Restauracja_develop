@@ -14,6 +14,7 @@ use App\Http\Controllers\ScheduleController;
 use App\Http\Controllers\WaiterBillController;
 use App\Http\Controllers\WaiterOrderController;
 use App\Http\Controllers\WaiterTableController;
+use App\Http\Controllers\ZoneController;
 use App\Models\MenuCategory;
 use App\Models\User;
 use Illuminate\Support\Facades\Route;
@@ -92,6 +93,10 @@ Route::middleware('auth')->group(function () {
         Route::get('/manager/tables/{restaurantTable}/edit', [RestaurantTableController::class, 'edit'])->name('manager.tables.edit');
         Route::put('/manager/tables/{restaurantTable}', [RestaurantTableController::class, 'update'])->name('manager.tables.update');
         Route::delete('/manager/tables/{restaurantTable}', [RestaurantTableController::class, 'destroy'])->name('manager.tables.destroy');
+        Route::post('/manager/zones', [ZoneController::class, 'store'])->name('manager.zones.store');
+        Route::put('/manager/zones/{zone}', [ZoneController::class, 'update'])->name('manager.zones.update');
+        Route::patch('/manager/zones/{zone}/toggle', [ZoneController::class, 'toggle'])->name('manager.zones.toggle');
+        Route::delete('/manager/zones/{zone}', [ZoneController::class, 'destroy'])->name('manager.zones.destroy');
 
         Route::post('/manager/menu/categories', [MenuCategoryController::class, 'store'])->name('manager.menu-categories.store');
         Route::get('/manager/menu/categories/{menuCategory}/edit', [MenuCategoryController::class, 'edit'])->name('manager.menu-categories.edit');

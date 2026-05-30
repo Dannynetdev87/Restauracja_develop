@@ -9,9 +9,12 @@ class GuestTableController extends Controller
     public function index()
     {
         $tables = RestaurantTable::query()
-            ->with(['activeOrders' => fn ($query) => $query
-                ->select('id', 'restaurant_table_id', 'status', 'opened_at')
-                ->oldest('opened_at')])
+            ->with([
+                'zone',
+                'activeOrders' => fn ($query) => $query
+                    ->select('id', 'restaurant_table_id', 'status', 'opened_at')
+                    ->oldest('opened_at'),
+            ])
             ->orderBy('number')
             ->get()
             ->map(fn (RestaurantTable $table) => $this->withGuestDisplayData($table));

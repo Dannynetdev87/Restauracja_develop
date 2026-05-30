@@ -20,6 +20,9 @@
                             <div>
                                 <div class="table-number">Stolik nr {{ $table->number }}</div>
                                 <div class="table-seats">Miejsca: <strong class="text-brand-dark">{{ $table->seats }}</strong></div>
+                                @if($table->zone)
+                                    <div class="table-seats">Strefa: <strong class="text-brand-dark">{{ $table->zone->name }}</strong></div>
+                                @endif
                             </div>
 
                             <span class="status-badge {{ $table->status_class }}">
@@ -83,6 +86,12 @@
                             <div class="table-seats">
                                 Miejsca: <strong class="text-brand-dark">{{ $table->seats }}</strong>
                             </div>
+
+                            @if($table->zone)
+                                <div class="table-seats">
+                                    Strefa: <strong class="text-brand-dark">{{ $table->zone->name }}</strong>
+                                </div>
+                            @endif
 
                             @if($table->waiting_minutes !== null)
                                 <div class="mt-1 text-xs text-brand-accent">

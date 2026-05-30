@@ -53,6 +53,23 @@
                     </select>
                 </div>
 
+                <div>
+                    <label for="zone_id" class="block text-sm font-bold text-brand-dark">Strefa</label>
+                    <select id="zone_id" name="zone_id" class="mt-1 w-full rounded-md border border-brand-dark/20 px-3 py-2">
+                        <option value="">Poza strefą</option>
+                        @foreach($zones as $zone)
+                            <option value="{{ $zone->id }}" @selected((int) old('zone_id', $table->zone_id) === $zone->id)>
+                                {{ $zone->name }}{{ $zone->is_active ? '' : ' (nieaktywna)' }}
+                            </option>
+                        @endforeach
+                    </select>
+                    @if(! $table->assigned_waiter_id && $table->zone?->is_active && $table->zone?->assignedWaiter)
+                        <p class="mt-2 text-xs text-brand-accent">
+                            Aktualnie stolik dziedziczy kelnera ze strefy: {{ $table->zone->assignedWaiter->name }}.
+                        </p>
+                    @endif
+                </div>
+
                 <button type="submit" class="rounded-md bg-brand-dark px-4 py-2 text-sm font-bold text-brand-light hover:bg-brand-accent">
                     Zapisz zmiany
                 </button>

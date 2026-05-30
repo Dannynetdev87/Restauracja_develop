@@ -8,6 +8,7 @@ use App\Models\Order;
 use App\Models\OrderItem;
 use App\Models\RestaurantTable;
 use App\Models\User;
+use App\Models\Zone;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Tests\TestCase;
 
@@ -237,6 +238,73 @@ class WaiterTableWorkflowTest extends TestCase
             'new_status' => OrderItem::STATUS_NEW,
             'changed_by' => $waiter->id,
         ]);
+    }
+
+    public function test_waiter_can_use_table_assigned_through_active_zone(): void
+    {
+        $waiter = User::factory()->create(['role' => User::ROLE_WAITER]);
+        $zone = Zone::create([
+            'name' => 'Strefa kelnera testowego',
+            'assigned_waiter_id' => $waiter->id,
+            'is_active' => true,
+        ]);
+        $table = RestaurantTable::create([
+            'number' => 937,
+            'seats' => 4,
+            'status' => RestaurantTable::STATUS_FREE,
+            'assigned_waiter_id' => null,
+            'zone_id' => $zone->id,
+        ]);
+        $menuItem = $this->createMenuItem(name: 'Testowe danie strefowe');
+
+        $this
+            ->actingAs($waiter)
+            ->get(route('waiter.tables.index'))
+            ->assertOk()
+            ->assertSee('Stolik 937')
+            ->assertSee('Strefa kelnera testowego');
+
+        $response = $this
+            ->actingAs($waiter)
+            ->post(route('waiter.orders.store', $table), [
+                'items' => [
+                    $menuItem->id => ['quantity' => 1],
+                ],
+            ]);
+
+        $order = Order::where('restaurant_table_id', $table->id)->first();
+
+        $response->assertRedirect(route('waiter.orders.show', $order));
+
+        $this->assertDatabaseHas('orders', [
+            'restaurant_table_id' => $table->id,
+            'waiter_id' => $waiter->id,
+            'status' => Order::STATUS_OPEN,
+        ]);
+    }
+
+    public function test_table_direct_waiter_assignment_overrides_zone_waiter(): void
+    {
+        $waiter = User::factory()->create(['role' => User::ROLE_WAITER]);
+        $otherWaiter = User::factory()->create(['role' => User::ROLE_WAITER]);
+        $zone = Zone::create([
+            'name' => 'Strefa z innym stolikiem',
+            'assigned_waiter_id' => $waiter->id,
+        ]);
+
+        RestaurantTable::create([
+            'number' => 938,
+            'seats' => 4,
+            'status' => RestaurantTable::STATUS_FREE,
+            'assigned_waiter_id' => $otherWaiter->id,
+            'zone_id' => $zone->id,
+        ]);
+
+        $this
+            ->actingAs($waiter)
+            ->get(route('waiter.tables.index'))
+            ->assertOk()
+            ->assertDontSee('Stolik 938');
     }
 
     public function test_waiter_can_open_order_form_for_selected_table(): void

@@ -23,17 +23,24 @@ class RestaurantTable extends Model
         'seats',
         'status',
         'assigned_waiter_id',
+        'zone_id',
     ];
 
     protected $casts = [
         'number' => 'integer',
         'seats' => 'integer',
         'assigned_waiter_id' => 'integer',
+        'zone_id' => 'integer',
     ];
 
     public function assignedWaiter(): BelongsTo
     {
         return $this->belongsTo(User::class, 'assigned_waiter_id');
+    }
+
+    public function zone(): BelongsTo
+    {
+        return $this->belongsTo(Zone::class);
     }
 
     public function orders(): HasMany
@@ -58,7 +65,33 @@ class RestaurantTable extends Model
 
     public function scopeVisibleForWaiter(Builder $query, int $waiterId): Builder
     {
-        return $query->where('assigned_waiter_id', $waiterId);
+        return $query->where(function (Builder $query) use ($waiterId) {
+            $query
+                ->where('assigned_waiter_id', $waiterId)
+                ->orWhere(function (Builder $query) use ($waiterId) {
+                    $query
+                        ->whereNull('assigned_waiter_id')
+                        ->whereHas('zone', fn (Builder $zoneQuery) => $zoneQuery
+                            ->where('is_active', true)
+                            ->where('assigned_waiter_id', $waiterId));
+                });
+        });
+    }
+
+    public function isVisibleForWaiter(int $waiterId): bool
+    {
+        if ($this->assigned_waiter_id === $waiterId) {
+            return true;
+        }
+
+        return $this->assigned_waiter_id === null
+            && $this->zone?->is_active
+            && $this->zone?->assigned_waiter_id === $waiterId;
+    }
+
+    public function effectiveAssignedWaiter(): ?User
+    {
+        return $this->assignedWaiter ?: $this->zone?->assignedWaiter;
     }
 
     protected function status(): Attribute

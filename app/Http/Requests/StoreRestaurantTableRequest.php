@@ -26,6 +26,7 @@ class StoreRestaurantTableRequest extends FormRequest
                     ->where('role', User::ROLE_WAITER)
                     ->where('is_active', true),
             ],
+            'zone_id' => ['nullable', 'integer', Rule::exists('zones', 'id')],
             'status' => [
                 'required',
                 Rule::in([
