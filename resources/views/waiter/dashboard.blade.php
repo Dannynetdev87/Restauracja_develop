@@ -48,6 +48,10 @@
                    class="min-w-40 rounded-xl bg-brand-dark px-8 py-4 text-center text-sm font-black uppercase tracking-wide text-brand-light shadow-sm transition hover:bg-brand-accent">
                     Stoliki
                 </a>
+                <a href="{{ route('waiter.stats') }}"
+                   class="min-w-40 rounded-xl bg-brand-dark px-8 py-4 text-center text-sm font-black uppercase tracking-wide text-brand-light shadow-sm transition hover:bg-brand-accent">
+                    Napiwki
+                </a>
             </div>
 
             <div class="grid gap-5 lg:grid-cols-3">

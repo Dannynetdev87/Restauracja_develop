@@ -13,6 +13,7 @@ use App\Http\Controllers\RestaurantTableController;
 use App\Http\Controllers\ScheduleController;
 use App\Http\Controllers\WaiterBillController;
 use App\Http\Controllers\WaiterOrderController;
+use App\Http\Controllers\WaiterStatsController;
 use App\Http\Controllers\WaiterTableController;
 use App\Http\Controllers\ZoneController;
 use App\Models\MenuCategory;
@@ -55,6 +56,7 @@ Route::middleware('auth')->group(function () {
         Route::get('/waiter/orders/{order}/bill', [WaiterBillController::class, 'show'])->name('waiter.orders.bill');
         Route::post('/waiter/orders/{order}/payments', [WaiterBillController::class, 'storePayment'])->name('waiter.orders.payments.store');
         Route::patch('/waiter/order-items/{orderItem}/deliver', [WaiterOrderController::class, 'deliverItem'])->name('waiter.order-items.deliver');
+        Route::get('/waiter/stats', [WaiterStatsController::class, 'stats'])->name('waiter.stats');
     });
 
     Route::middleware('role:kuchnia')->group(function () {
