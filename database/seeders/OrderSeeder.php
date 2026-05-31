@@ -32,6 +32,7 @@ class OrderSeeder extends Seeder
         $table12 = RestaurantTable::where('number', 12)->firstOrFail();
 
         $smallActiveWaiter = $this->waiterForTable($table7, $defaultWaiter);
+        $table7->update(['status' => RestaurantTable::STATUS_OCCUPIED]);
         $smallActiveOrder = Order::create([
             'restaurant_table_id' => $table7->id,
             'waiter_id' => $smallActiveWaiter->id,
@@ -43,6 +44,7 @@ class OrderSeeder extends Seeder
         $this->addItem($smallActiveOrder, 'Lemoniada domowa 0.4L', 2, OrderItem::STATUS_READY, null, $smallActiveWaiter);
 
         $mediumActiveWaiter = $this->waiterForTable($table2, $defaultWaiter);
+        $table2->update(['status' => RestaurantTable::STATUS_OCCUPIED]);
         $mediumActiveOrder = Order::create([
             'restaurant_table_id' => $table2->id,
             'waiter_id' => $mediumActiveWaiter->id,
@@ -55,6 +57,7 @@ class OrderSeeder extends Seeder
         $this->addItem($mediumActiveOrder, 'Coca-Cola 0.25L', 4, OrderItem::STATUS_READY, 'Z lodem i cytryna.', $mediumActiveWaiter);
 
         $vipActiveWaiter = $this->waiterForTable($table12, $defaultWaiter);
+        $table12->update(['status' => RestaurantTable::STATUS_OCCUPIED]);
         $vipActiveOrder = Order::create([
             'restaurant_table_id' => $table12->id,
             'waiter_id' => $vipActiveWaiter->id,
@@ -110,7 +113,9 @@ class OrderSeeder extends Seeder
 
     private function waiterForTable(RestaurantTable $table, User $fallbackWaiter): User
     {
-        return $table->assignedWaiter()->first() ?? $fallbackWaiter;
+        $table->loadMissing(['assignedWaiter', 'zone.assignedWaiter']);
+
+        return $table->effectiveAssignedWaiter() ?? $fallbackWaiter;
     }
 
     private function addItem(
