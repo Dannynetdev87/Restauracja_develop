@@ -139,6 +139,43 @@ Scenariusz testowania separacji kelnerów:
 6. Spróbuj ręcznie wejść w adres formularza zamówienia dla cudzego stolika - system powinien zablokować dostęp.
 ```
 
+## Kody rabatowe
+
+Kod rabatowy obniża kwotę rachunku przy zapisie płatności kelnera. Nie jest voucherem płatniczym i nie działa jako osobna metoda płatności. Voucher płatniczy oznaczałby zapłatę określoną formą płatności, natomiast kod rabatowy zmniejsza należność za wybrane pozycje przed zapisaniem płatności.
+
+Manager zarządza kodami rabatowymi w panelu managera pod adresem:
+
+```text
+/manager/discount-codes
+```
+
+Manager może tworzyć, edytować oraz aktywować lub dezaktywować kody. Kod może być procentowy albo kwotowy, może mieć limit użyć, datę startu, datę wygaśnięcia i status aktywności. Licznik `used_count` nie jest edytowany ręcznie.
+
+Kelner używa kodu rabatowego w widoku rachunku podczas zapisu płatności. Kod jest opcjonalny. Jeżeli kod jest nieaktywny, wygasły, jeszcze nieważny albo ma wyczerpany limit użyć, płatność nie zostanie utworzona.
+
+Semantyka płatności z rabatem:
+
+- `Payment.amount` oznacza kwotę po rabacie, bez napiwku,
+- `Payment.discount_amount` przechowuje zapisaną kwotę rabatu,
+- `Payment.discount_code_id` wskazuje użyty kod rabatowy,
+- `Payment.tip_amount` przechowuje napiwek osobno i nie jest obniżany przez rabat.
+
+Partial billing działa nadal przez pivot `order_item_payment`. Płatność jest przypinana do wybranych pozycji zamówienia, a rabat jest liczony od subtotalu tych wybranych aktywnych pozycji. Zniżka nie tworzy nowego zamówienia, nie usuwa wyboru pozycji i nie zmienia mechanizmu zamykania zamówienia ani stolika. Zamówienie i stolik zamykają się dopiero po opłaceniu wszystkich aktywnych, nieanulowanych pozycji.
+
+`used_count` kodu rabatowego zwiększa się dopiero po skutecznym utworzeniu płatności. Nieudana próba użycia kodu nie zwiększa licznika i nie tworzy rekordu `Payment`.
+
+Przykładowe scenariusze manualnego QA:
+
+```text
+1. Manager tworzy aktywny kod procentowy, np. PROMO10 = 10%.
+2. Kelner wybiera część pozycji na rachunku, wpisuje PROMO10 i zapisuje płatność.
+3. Sprawdź, że Payment.amount jest pomniejszone o rabat, Payment.discount_amount zapisuje kwotę rabatu, a pozycje są przypięte przez order_item_payment.
+4. Dodaj napiwek przy płatności z rabatem i sprawdź, że Payment.tip_amount jest zapisany osobno.
+5. Użyj kodu nieaktywnego, wygasłego albo z wyczerpanym limitem i sprawdź, że płatność nie powstaje.
+6. Opłać tylko część pozycji z rabatem i sprawdź, że stolik oraz zamówienie pozostają otwarte.
+7. Opłać ostatnie aktywne pozycje i sprawdź, że zamówienie oraz stolik zamykają się dopiero po tej płatności.
+```
+
 ## Główne adresy w aplikacji
 
 ```text
