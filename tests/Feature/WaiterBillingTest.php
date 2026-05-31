@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Models\DiscountCode;
 use App\Models\MenuCategory;
 use App\Models\MenuItem;
 use App\Models\Order;
@@ -164,6 +165,204 @@ class WaiterBillingTest extends TestCase
         $this->assertFalse($secondItem->refresh()->isPaid());
         $this->assertSame(Order::STATUS_SERVED, $order->refresh()->status);
         $this->assertSame(RestaurantTable::STATUS_OCCUPIED, $order->table->refresh()->status);
+    }
+
+    public function test_waiter_can_pay_selected_items_with_percent_discount_code(): void
+    {
+        $waiter = User::factory()->create(['role' => User::ROLE_WAITER]);
+        $order = $this->createOrder($waiter, Order::STATUS_SERVED);
+        $firstItem = $this->createOrderItem($order, 'Rabat procentowy', 2, 50.00);
+        $secondItem = $this->createOrderItem($order, 'Bez rabatu jeszcze', 1, 20.00);
+        $discountCode = DiscountCode::factory()->percent(10.00)->create(['code' => 'KOD10']);
+
+        $this
+            ->actingAs($waiter)
+            ->post(route('waiter.orders.payments.store', $order), [
+                'payment_method' => Payment::METHOD_CARD,
+                'item_ids' => [$firstItem->id],
+                'discount_code' => ' kod10 ',
+            ])
+            ->assertRedirect(route('waiter.orders.bill', $order));
+
+        $payment = Payment::where('order_id', $order->id)->latest('id')->firstOrFail();
+
+        $this->assertDatabaseHas('payments', [
+            'id' => $payment->id,
+            'amount' => '90.00',
+            'discount_amount' => '10.00',
+            'discount_code_id' => $discountCode->id,
+            'tip_amount' => '0.00',
+        ]);
+        $this->assertDatabaseHas('order_item_payment', [
+            'payment_id' => $payment->id,
+            'order_item_id' => $firstItem->id,
+        ]);
+        $this->assertTrue($firstItem->refresh()->isPaid());
+        $this->assertFalse($secondItem->refresh()->isPaid());
+    }
+
+    public function test_fixed_discount_code_does_not_make_payment_amount_negative(): void
+    {
+        $waiter = User::factory()->create(['role' => User::ROLE_WAITER]);
+        $order = $this->createOrder($waiter, Order::STATUS_SERVED);
+        $item = $this->createOrderItem($order, 'Rabat kwotowy', 1, 30.00);
+        $discountCode = DiscountCode::factory()->fixed(50.00)->create(['code' => 'FIX50']);
+
+        $this
+            ->actingAs($waiter)
+            ->post(route('waiter.orders.payments.store', $order), [
+                'payment_method' => Payment::METHOD_CASH,
+                'item_ids' => [$item->id],
+                'discount_code' => 'FIX50',
+            ])
+            ->assertRedirect(route('waiter.orders.bill', $order));
+
+        $this->assertDatabaseHas('payments', [
+            'order_id' => $order->id,
+            'amount' => '0.00',
+            'discount_amount' => '30.00',
+            'discount_code_id' => $discountCode->id,
+        ]);
+    }
+
+    public function test_tip_amount_is_saved_independently_from_discount(): void
+    {
+        $waiter = User::factory()->create(['role' => User::ROLE_WAITER]);
+        $order = $this->createOrder($waiter, Order::STATUS_SERVED);
+        $item = $this->createOrderItem($order, 'Rabat i napiwek', 1, 100.00);
+        $discountCode = DiscountCode::factory()->percent(25.00)->create(['code' => 'TIP25']);
+
+        $this
+            ->actingAs($waiter)
+            ->post(route('waiter.orders.payments.store', $order), [
+                'payment_method' => Payment::METHOD_CARD,
+                'item_ids' => [$item->id],
+                'discount_code' => 'TIP25',
+                'tip_amount' => '12.34',
+            ])
+            ->assertRedirect(route('waiter.orders.bill', $order));
+
+        $this->assertDatabaseHas('payments', [
+            'order_id' => $order->id,
+            'amount' => '75.00',
+            'discount_amount' => '25.00',
+            'discount_code_id' => $discountCode->id,
+            'tip_amount' => '12.34',
+        ]);
+    }
+
+    public function test_partial_billing_with_discount_keeps_order_and_table_open(): void
+    {
+        $waiter = User::factory()->create(['role' => User::ROLE_WAITER]);
+        $order = $this->createOrder($waiter, Order::STATUS_SERVED);
+        $firstItem = $this->createOrderItem($order, 'Pierwsza rabatowana', 1, 100.00);
+        $secondItem = $this->createOrderItem($order, 'Druga nieopłacona', 1, 40.00);
+        DiscountCode::factory()->percent(50.00)->create(['code' => 'HALF']);
+
+        $this
+            ->actingAs($waiter)
+            ->post(route('waiter.orders.payments.store', $order), [
+                'payment_method' => Payment::METHOD_CARD,
+                'item_ids' => [$firstItem->id],
+                'discount_code' => 'HALF',
+            ])
+            ->assertRedirect(route('waiter.orders.bill', $order));
+
+        $this->assertTrue($firstItem->refresh()->isPaid());
+        $this->assertFalse($secondItem->refresh()->isPaid());
+        $this->assertSame(Order::STATUS_SERVED, $order->refresh()->status);
+        $this->assertSame(RestaurantTable::STATUS_OCCUPIED, $order->table->refresh()->status);
+    }
+
+    public function test_last_discounted_payment_closes_order_and_table_after_all_active_items_are_paid(): void
+    {
+        $waiter = User::factory()->create(['role' => User::ROLE_WAITER]);
+        $order = $this->createOrder($waiter, Order::STATUS_SERVED);
+        $firstItem = $this->createOrderItem($order, 'Pierwsza opłata', 1, 20.00);
+        $secondItem = $this->createOrderItem($order, 'Ostatnia z rabatem', 1, 50.00);
+        $this->createOrderItem($order, 'Anulowana z rabatem', 1, 99.00, OrderItem::STATUS_CANCELLED);
+        DiscountCode::factory()->percent(20.00)->create(['code' => 'LAST20']);
+
+        $this
+            ->actingAs($waiter)
+            ->post(route('waiter.orders.payments.store', $order), [
+                'payment_method' => Payment::METHOD_CARD,
+                'item_ids' => [$firstItem->id],
+            ])
+            ->assertRedirect(route('waiter.orders.bill', $order));
+
+        $this
+            ->actingAs($waiter)
+            ->post(route('waiter.orders.payments.store', $order), [
+                'payment_method' => Payment::METHOD_CASH,
+                'item_ids' => [$secondItem->id],
+                'discount_code' => 'LAST20',
+            ])
+            ->assertRedirect(route('waiter.orders.bill', $order))
+            ->assertSessionHas('success', 'Całe zamówienie zostało opłacone, a stolik zwolniony.');
+
+        $this->assertDatabaseHas('payments', [
+            'order_id' => $order->id,
+            'amount' => '40.00',
+            'discount_amount' => '10.00',
+        ]);
+        $this->assertSame(Order::STATUS_PAID, $order->refresh()->status);
+        $this->assertNotNull($order->paid_at);
+        $this->assertNotNull($order->closed_at);
+        $this->assertSame(RestaurantTable::STATUS_FREE, $order->table->refresh()->status);
+    }
+
+    public function test_unusable_discount_code_does_not_create_payment(): void
+    {
+        $waiter = User::factory()->create(['role' => User::ROLE_WAITER]);
+        $cases = [
+            DiscountCode::factory()->create(['code' => 'OFF', 'is_active' => false])->code,
+            DiscountCode::factory()->create(['code' => 'OLD', 'expires_at' => now()->subMinute()])->code,
+            DiscountCode::factory()->create(['code' => 'USED', 'usage_limit' => 1, 'used_count' => 1])->code,
+        ];
+
+        foreach ($cases as $code) {
+            $order = $this->createOrder($waiter, Order::STATUS_SERVED);
+            $item = $this->createOrderItem($order, 'Niepoprawny kod '.$code, 1, 25.00);
+
+            $this
+                ->actingAs($waiter)
+                ->post(route('waiter.orders.payments.store', $order), [
+                    'payment_method' => Payment::METHOD_CARD,
+                    'item_ids' => [$item->id],
+                    'discount_code' => $code,
+                ])
+                ->assertSessionHasErrors('discount_code');
+
+            $this->assertDatabaseMissing('payments', [
+                'order_id' => $order->id,
+                'status' => Payment::STATUS_PAID,
+            ]);
+            $this->assertFalse($item->refresh()->isPaid());
+        }
+    }
+
+    public function test_successful_discount_code_usage_increments_used_count(): void
+    {
+        $waiter = User::factory()->create(['role' => User::ROLE_WAITER]);
+        $order = $this->createOrder($waiter, Order::STATUS_SERVED);
+        $item = $this->createOrderItem($order, 'Licznik kodu', 1, 80.00);
+        $discountCode = DiscountCode::factory()->percent(10.00)->create([
+            'code' => 'COUNT10',
+            'usage_limit' => 5,
+            'used_count' => 2,
+        ]);
+
+        $this
+            ->actingAs($waiter)
+            ->post(route('waiter.orders.payments.store', $order), [
+                'payment_method' => Payment::METHOD_CARD,
+                'item_ids' => [$item->id],
+                'discount_code' => 'COUNT10',
+            ])
+            ->assertRedirect(route('waiter.orders.bill', $order));
+
+        $this->assertSame(3, $discountCode->refresh()->used_count);
     }
 
     public function test_order_closes_after_last_active_item_is_paid(): void

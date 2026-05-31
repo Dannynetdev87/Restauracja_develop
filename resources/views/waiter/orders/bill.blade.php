@@ -164,6 +164,12 @@
                                                 <strong>{{ number_format($payment->tip_amount, 2, ',', ' ') }} zł</strong>
                                             </div>
                                         @endif
+                                        @if((float) $payment->discount_amount > 0)
+                                            <div class="mt-0.5 flex justify-between gap-2 text-green-800">
+                                                <span>Rabat{{ $payment->discountCode ? ' '.$payment->discountCode->code : '' }}</span>
+                                                <strong>-{{ number_format($payment->discount_amount, 2, ',', ' ') }} zł</strong>
+                                            </div>
+                                        @endif
                                     </div>
                                 @endforeach
                             </div>
@@ -230,6 +236,18 @@
 
                     @if($canPay)
                         <div class="mt-5 space-y-4">
+                            <div>
+                                <label for="discount_code" class="block text-sm font-bold text-brand-dark">Kod rabatowy</label>
+                                <input
+                                    id="discount_code"
+                                    name="discount_code"
+                                    type="text"
+                                    value="{{ old('discount_code') }}"
+                                    placeholder="Opcjonalnie"
+                                    class="mt-1 w-full rounded-md border border-brand-dark/20 bg-white px-3 py-2 text-sm uppercase text-brand-dark focus:border-brand-dark focus:outline-none"
+                                >
+                            </div>
+
                             <div>
                                 <label for="payment_method" class="block text-sm font-bold text-brand-dark">Metoda płatności</label>
                                 <select

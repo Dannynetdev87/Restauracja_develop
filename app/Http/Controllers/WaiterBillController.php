@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\DiscountCode;
 use App\Models\Order;
 use App\Models\OrderItem;
 use App\Models\Payment;
@@ -18,7 +19,7 @@ class WaiterBillController extends Controller
         $this->authorizeWaiterOrder($order);
 
         return view('waiter.orders.bill', [
-            'order' => $order->load(['table', 'waiter', 'items.menuItem', 'items.payments', 'payments.orderItems']),
+            'order' => $order->load(['table', 'waiter', 'items.menuItem', 'items.payments', 'payments.orderItems', 'payments.discountCode']),
             'paymentMethods' => $this->paymentMethods(),
         ]);
     }
@@ -32,6 +33,7 @@ class WaiterBillController extends Controller
             'item_ids' => ['required', 'array', 'min:1'],
             'item_ids.*' => ['required', 'integer', Rule::exists('order_items', 'id')],
             'tip_amount' => ['nullable', 'numeric', 'min:0', 'max:9999.99'],
+            'discount_code' => ['nullable', 'string', 'max:50'],
         ]);
 
         $orderFullyPaid = DB::transaction(function () use ($order, $validated): bool {
@@ -98,16 +100,46 @@ class WaiterBillController extends Controller
 
             $paidAt = now();
             $tipAmount = round((float) ($validated['tip_amount'] ?? 0), 2);
+            $discountCode = null;
+            $discountAmount = 0.0;
+            $discountCodeValue = strtoupper(trim((string) ($validated['discount_code'] ?? '')));
+
+            if ($discountCodeValue !== '') {
+                $discountCode = DiscountCode::query()
+                    ->where('code', $discountCodeValue)
+                    ->lockForUpdate()
+                    ->first();
+
+                if (! $discountCode) {
+                    throw ValidationException::withMessages([
+                        'discount_code' => 'Podany kod rabatowy nie istnieje.',
+                    ]);
+                }
+
+                if (! $discountCode->isUsable($paidAt)) {
+                    throw ValidationException::withMessages([
+                        'discount_code' => 'Podany kod rabatowy nie jest aktywny.',
+                    ]);
+                }
+
+                $discountAmount = $discountCode->calculateDiscount($amount);
+            }
 
             $payment = $order->payments()->create([
-                'amount' => $amount,
+                'amount' => round(max(0, $amount - $discountAmount), 2),
                 'tip_amount' => $tipAmount,
+                'discount_code_id' => $discountCode?->id,
+                'discount_amount' => $discountAmount,
                 'payment_method' => $validated['payment_method'],
                 'status' => Payment::STATUS_PAID,
                 'paid_at' => $paidAt,
             ]);
 
             $payment->orderItems()->attach($itemsToPay->pluck('id')->all());
+
+            if ($discountCode) {
+                $discountCode->increment('used_count');
+            }
 
             $hasUnpaidActiveItems = OrderItem::query()
                 ->where('order_id', $order->id)

@@ -29,6 +29,8 @@ class Payment extends Model
         'order_id',
         'amount',
         'tip_amount',
+        'discount_code_id',
+        'discount_amount',
         'payment_method',
         'status',
         'paid_at',
@@ -37,6 +39,8 @@ class Payment extends Model
     protected $casts = [
         'amount' => 'decimal:2',
         'tip_amount' => 'decimal:2',
+        'discount_code_id' => 'integer',
+        'discount_amount' => 'decimal:2',
         'paid_at' => 'datetime',
     ];
 
@@ -48,6 +52,11 @@ class Payment extends Model
     public function orderItems(): BelongsToMany
     {
         return $this->belongsToMany(OrderItem::class);
+    }
+
+    public function discountCode(): BelongsTo
+    {
+        return $this->belongsTo(DiscountCode::class);
     }
 
     protected function paymentMethod(): Attribute
