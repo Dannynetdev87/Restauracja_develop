@@ -151,6 +151,9 @@ class WaiterTableWorkflowTest extends TestCase
             ->assertSee('W realizacji')
             ->assertSee('Anulowane / braki')
             ->assertSee('Do odbioru')
+            ->assertSee('wire:name="waiter.dashboard"', false)
+            ->assertSee('wire:poll.5s', false)
+            ->assertDontSee('data-refresh-interval="8000"', false)
             ->assertSee('Stolik 933')
             ->assertSee('2x Gotowy schabowy testowy')
             ->assertSee('Stan: Gotowe do dostarczenia')
@@ -172,6 +175,9 @@ class WaiterTableWorkflowTest extends TestCase
             ->assertOk()
             ->assertSee('Dashboard')
             ->assertSee('Stoliki')
+            ->assertSee('wire:name="waiter.dashboard"', false)
+            ->assertSee('wire:poll.5s', false)
+            ->assertDontSee('data-refresh-interval="8000"', false)
             ->assertSee('W realizacji');
     }
 
