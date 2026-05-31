@@ -321,21 +321,29 @@ Aktualne migracje obejmują:
 
 - użytkowników,
 - stoliki restauracyjne z przypisaniem kelnera,
+- strefy stolików i przypisanie stolików do stref,
 - kategorie menu,
 - pozycje menu,
 - zamówienia,
 - pozycje zamówień,
 - historię statusów pozycji,
 - płatności,
+- częściowe płatności przez pivot `order_item_payment`,
+- napiwki w `payments.tip_amount`,
+- kody rabatowe w `discount_codes`,
+- zapis rabatu na płatności przez `payments.discount_code_id` i `payments.discount_amount`,
 - grafik pracy (`schedules`).
 
 Aktualne seedery obejmują:
 
 - konta testowe użytkowników,
 - stoliki z przykładowym podziałem między kelnerów,
+- strefy stolików z przypisaniem przykładowych stolików i kelnerów,
 - kategorie i pozycje menu,
 - przykładowe zamówienia,
 - przykładowe statusy i dane potrzebne do przetestowania workflow.
+
+Kody rabatowe nie są dodawane przez seeder demonstracyjny. Manager tworzy je ręcznie w panelu `/manager/discount-codes`; dzięki temu czysty start projektu nie zawiera od razu aktywnych promocji.
 
 ## Uruchomienie aplikacji
 
