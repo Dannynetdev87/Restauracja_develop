@@ -98,6 +98,53 @@ class ManagerDiscountCodeManagementTest extends TestCase
         ]);
     }
 
+    public function test_manager_can_create_discount_code_without_providing_code(): void
+    {
+        $manager = User::factory()->create(['role' => User::ROLE_MANAGER]);
+
+        $this
+            ->actingAs($manager)
+            ->post(route('manager.discount-codes.store'), [
+                'type' => DiscountCode::TYPE_PERCENT,
+                'value' => '12.50',
+                'is_active' => '1',
+            ])
+            ->assertRedirect(route('manager.discount-codes.index'));
+
+        $discountCode = DiscountCode::query()
+            ->where('created_by', $manager->id)
+            ->firstOrFail();
+
+        $this->assertMatchesRegularExpression('/^KOD-[A-Z0-9]{8}$/', $discountCode->code);
+        $this->assertSame(strtoupper($discountCode->code), $discountCode->code);
+        $this->assertSame(DiscountCode::TYPE_PERCENT, $discountCode->type);
+        $this->assertSame('12.50', $discountCode->value);
+    }
+
+    public function test_whitespace_code_generates_discount_code_automatically(): void
+    {
+        $manager = User::factory()->create(['role' => User::ROLE_MANAGER]);
+
+        $this
+            ->actingAs($manager)
+            ->post(route('manager.discount-codes.store'), [
+                'code' => '   ',
+                'type' => DiscountCode::TYPE_FIXED,
+                'value' => '25.00',
+                'is_active' => '1',
+            ])
+            ->assertRedirect(route('manager.discount-codes.index'));
+
+        $discountCode = DiscountCode::query()
+            ->where('created_by', $manager->id)
+            ->firstOrFail();
+
+        $this->assertMatchesRegularExpression('/^KOD-[A-Z0-9]{8}$/', $discountCode->code);
+        $this->assertSame(strtoupper($discountCode->code), $discountCode->code);
+        $this->assertSame(DiscountCode::TYPE_FIXED, $discountCode->type);
+        $this->assertSame('25.00', $discountCode->value);
+    }
+
     public function test_percent_discount_value_cannot_exceed_one_hundred(): void
     {
         $manager = User::factory()->create(['role' => User::ROLE_MANAGER]);

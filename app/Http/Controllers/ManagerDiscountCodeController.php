@@ -22,6 +22,7 @@ class ManagerDiscountCodeController extends Controller
     public function store(StoreDiscountCodeRequest $request)
     {
         $data = $request->validated();
+        $data['code'] = $data['code'] ?? DiscountCode::generateUniqueCode();
         $data['created_by'] = $request->user()->id;
 
         DiscountCode::create($data);

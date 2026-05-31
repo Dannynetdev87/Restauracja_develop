@@ -15,8 +15,10 @@ class StoreDiscountCodeRequest extends FormRequest
 
     protected function prepareForValidation(): void
     {
+        $code = trim((string) $this->input('code'));
+
         $this->merge([
-            'code' => strtoupper(trim((string) $this->input('code'))),
+            'code' => $code === '' ? null : strtoupper($code),
             'is_active' => $this->boolean('is_active'),
         ]);
     }
@@ -24,7 +26,7 @@ class StoreDiscountCodeRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'code' => ['required', 'string', 'max:50', 'unique:discount_codes,code'],
+            'code' => ['nullable', 'string', 'max:50', 'unique:discount_codes,code'],
             'type' => ['required', Rule::in([DiscountCode::TYPE_PERCENT, DiscountCode::TYPE_FIXED])],
             'value' => [
                 'required',

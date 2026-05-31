@@ -41,7 +41,8 @@
 
                     <div>
                         <label for="code" class="block text-sm font-bold text-brand-dark">Kod</label>
-                        <input id="code" name="code" type="text" maxlength="50" value="{{ old('code') }}" required class="mt-1 w-full rounded-md border border-brand-dark/20 px-3 py-2 uppercase">
+                        <input id="code" name="code" type="text" maxlength="50" value="{{ old('code') }}" class="mt-1 w-full rounded-md border border-brand-dark/20 px-3 py-2 uppercase">
+                        <p class="mt-1 text-xs text-brand-accent">Zostaw puste, aby wygenerować kod automatycznie.</p>
                     </div>
 
                     <div>
