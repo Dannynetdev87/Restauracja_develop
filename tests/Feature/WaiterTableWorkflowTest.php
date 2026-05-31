@@ -32,6 +32,9 @@ class WaiterTableWorkflowTest extends TestCase
             ->assertOk()
             ->assertSee('Dashboard')
             ->assertSee('Stoliki')
+            ->assertSee('wire:name="waiter.tables"', false)
+            ->assertSee('wire:poll.5s', false)
+            ->assertDontSee('data-refresh-interval="8000"', false)
             ->assertSee('Stolik 920')
             ->assertSee('Wolny')
             ->assertSee('Rozpocznij zamówienie');
@@ -84,6 +87,9 @@ class WaiterTableWorkflowTest extends TestCase
             ->actingAs($waiter)
             ->get(route('waiter.tables.index'))
             ->assertOk()
+            ->assertSee('wire:name="waiter.tables"', false)
+            ->assertSee('wire:poll.5s', false)
+            ->assertDontSee('data-refresh-interval="8000"', false)
             ->assertSee('Stolik 930')
             ->assertSee('Stolik 931')
             ->assertDontSee('Stolik 932')
@@ -267,6 +273,8 @@ class WaiterTableWorkflowTest extends TestCase
             ->actingAs($waiter)
             ->get(route('waiter.tables.index'))
             ->assertOk()
+            ->assertSee('wire:name="waiter.tables"', false)
+            ->assertSee('wire:poll.5s', false)
             ->assertSee('Stolik 937')
             ->assertSee('Strefa kelnera testowego');
 
