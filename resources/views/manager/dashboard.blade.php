@@ -18,6 +18,10 @@
                    class="rounded-md border border-brand-dark/20 bg-white px-4 py-2 text-sm font-bold text-brand-dark hover:bg-brand-light">
                     Zarządzanie stolikami
                 </a>
+                <a href="{{ route('manager.discount-codes.index') }}"
+                   class="rounded-md border border-brand-dark/20 bg-white px-4 py-2 text-sm font-bold text-brand-dark hover:bg-brand-light">
+                    Kody rabatowe
+                </a>
                 <a href="{{ route('manager.orders.history') }}"
                    class="rounded-md bg-brand-dark px-4 py-2 text-sm font-bold text-brand-light hover:bg-brand-accent">
                     Historia zamówień

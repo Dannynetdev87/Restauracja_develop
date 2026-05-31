@@ -5,6 +5,7 @@ use App\Http\Controllers\BarDashboardController;
 use App\Http\Controllers\GuestTableController;
 use App\Http\Controllers\KitchenDashboardController;
 use App\Http\Controllers\ManagerDashboardController;
+use App\Http\Controllers\ManagerDiscountCodeController;
 use App\Http\Controllers\ManagerOrderHistoryController;
 use App\Http\Controllers\MenuCategoryController;
 use App\Http\Controllers\MenuItemController;
@@ -83,6 +84,11 @@ Route::middleware('auth')->group(function () {
     Route::middleware('role:manager,admin')->group(function () {
         Route::get('/manager/dashboard', [ManagerDashboardController::class, 'index'])->name('manager.dashboard');
         Route::get('/manager/orders/history', [ManagerOrderHistoryController::class, 'index'])->name('manager.orders.history');
+        Route::get('/manager/discount-codes', [ManagerDiscountCodeController::class, 'index'])->name('manager.discount-codes.index');
+        Route::post('/manager/discount-codes', [ManagerDiscountCodeController::class, 'store'])->name('manager.discount-codes.store');
+        Route::get('/manager/discount-codes/{discountCode}/edit', [ManagerDiscountCodeController::class, 'edit'])->name('manager.discount-codes.edit');
+        Route::put('/manager/discount-codes/{discountCode}', [ManagerDiscountCodeController::class, 'update'])->name('manager.discount-codes.update');
+        Route::patch('/manager/discount-codes/{discountCode}/toggle', [ManagerDiscountCodeController::class, 'toggle'])->name('manager.discount-codes.toggle');
         Route::post('/manager/schedules', [ScheduleController::class, 'store'])->name('manager.schedules.store');
         Route::get('/manager/schedules/{schedule}/edit', [ScheduleController::class, 'edit'])->name('manager.schedules.edit');
         Route::put('/manager/schedules/{schedule}', [ScheduleController::class, 'update'])->name('manager.schedules.update');
