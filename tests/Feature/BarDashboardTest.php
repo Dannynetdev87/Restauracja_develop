@@ -29,8 +29,9 @@ class BarDashboardTest extends TestCase
             ->assertSee('Lemoniada testowa')
             ->assertDontSee('Schabowy testowy')
             ->assertSee('Rozpocznij przygotowanie')
-            ->assertSee('data-auto-refresh', false)
-            ->assertSee('data-refresh-interval="8000"', false);
+            ->assertSee('wire:name="production.bar-dashboard"', false)
+            ->assertSee('wire:poll.5s', false)
+            ->assertDontSee('data-refresh-interval="8000"', false);
 
         $this->assertSame(OrderItem::STATUS_NEW, $barItem->fresh()->status);
         $this->assertSame(OrderItem::STATUS_NEW, $kitchenItem->fresh()->status);
@@ -96,8 +97,9 @@ class BarDashboardTest extends TestCase
             ->assertSee('>Dashboard</a>', false)
             ->assertDontSee('>Start</a>', false)
             ->assertDontSee('>Menu</a>', false)
-            ->assertSee('data-auto-refresh', false)
-            ->assertSee('data-refresh-interval="8000"', false)
+            ->assertSee('wire:name="production.bar-current"', false)
+            ->assertSee('wire:poll.5s', false)
+            ->assertDontSee('data-refresh-interval="8000"', false)
             ->assertSee('Pełny dashboard');
     }
 
