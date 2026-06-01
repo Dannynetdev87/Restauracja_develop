@@ -12,6 +12,15 @@ class UpdateMenuCategoryRequest extends FormRequest
         return true;
     }
 
+    protected function prepareForValidation(): void
+    {
+        if (! $this->filled('sort_order')) {
+            $this->merge([
+                'sort_order' => 0,
+            ]);
+        }
+    }
+
     public function rules(): array
     {
         $category = $this->route('menuCategory');
@@ -23,8 +32,21 @@ class UpdateMenuCategoryRequest extends FormRequest
                 'max:255',
                 Rule::unique('menu_categories', 'name')->ignore($category),
             ],
-            'sort_order' => ['nullable', 'integer', 'min:0', 'max:999'],
+            'sort_order' => [
+                'nullable',
+                'integer',
+                'min:0',
+                'max:999',
+                Rule::unique('menu_categories', 'sort_order')->ignore($category),
+            ],
             'is_active' => ['sometimes', 'boolean'],
+        ];
+    }
+
+    public function messages(): array
+    {
+        return [
+            'sort_order.unique' => 'Ta kolejność jest już używana przez inną kategorię menu.',
         ];
     }
 }
