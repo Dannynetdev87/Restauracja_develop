@@ -9,6 +9,7 @@ use App\Models\OrderItem;
 use App\Models\RestaurantTable;
 use App\Models\User;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
+use PHPUnit\Framework\Attributes\DataProvider;
 use Tests\TestCase;
 
 class MenuManagementTest extends TestCase
@@ -34,6 +35,130 @@ class MenuManagementTest extends TestCase
             'sort_order' => 5,
             'is_active' => true,
         ]);
+    }
+
+    #[DataProvider('menuManagerRoles')]
+    public function test_manager_or_admin_cannot_create_menu_category_with_duplicate_sort_order(string $role): void
+    {
+        $manager = User::factory()->create(['role' => $role]);
+
+        MenuCategory::create([
+            'name' => 'Istniejace zupy',
+            'sort_order' => 5,
+            'is_active' => true,
+        ]);
+
+        $response = $this
+            ->actingAs($manager)
+            ->post(route('manager.menu-categories.store'), [
+                'name' => 'Nowe przystawki',
+                'sort_order' => 5,
+                'is_active' => '1',
+            ]);
+
+        $response->assertSessionHasErrors('sort_order');
+
+        $this->assertDatabaseMissing('menu_categories', [
+            'name' => 'Nowe przystawki',
+            'sort_order' => 5,
+        ]);
+    }
+
+    #[DataProvider('menuManagerRoles')]
+    public function test_manager_or_admin_can_create_menu_category_with_unique_sort_order(string $role): void
+    {
+        $manager = User::factory()->create(['role' => $role]);
+
+        MenuCategory::create([
+            'name' => 'Istniejace zupy',
+            'sort_order' => 5,
+            'is_active' => true,
+        ]);
+
+        $response = $this
+            ->actingAs($manager)
+            ->post(route('manager.menu-categories.store'), [
+                'name' => 'Nowe przystawki',
+                'sort_order' => 6,
+                'is_active' => '1',
+            ]);
+
+        $response->assertRedirect(route('manager.podglad'));
+
+        $this->assertDatabaseHas('menu_categories', [
+            'name' => 'Nowe przystawki',
+            'sort_order' => 6,
+            'is_active' => true,
+        ]);
+    }
+
+    #[DataProvider('menuManagerRoles')]
+    public function test_manager_or_admin_can_update_menu_category_without_changing_sort_order(string $role): void
+    {
+        $manager = User::factory()->create(['role' => $role]);
+        $category = MenuCategory::create([
+            'name' => 'Zupy sezonowe',
+            'sort_order' => 5,
+            'is_active' => true,
+        ]);
+
+        $response = $this
+            ->actingAs($manager)
+            ->put(route('manager.menu-categories.update', $category), [
+                'name' => 'Zupy klasyczne',
+                'sort_order' => 5,
+                'is_active' => '1',
+            ]);
+
+        $response->assertRedirect(route('manager.podglad'));
+
+        $this->assertDatabaseHas('menu_categories', [
+            'id' => $category->id,
+            'name' => 'Zupy klasyczne',
+            'sort_order' => 5,
+        ]);
+    }
+
+    #[DataProvider('menuManagerRoles')]
+    public function test_manager_or_admin_cannot_update_menu_category_to_duplicate_sort_order(string $role): void
+    {
+        $manager = User::factory()->create(['role' => $role]);
+
+        MenuCategory::create([
+            'name' => 'Zupy sezonowe',
+            'sort_order' => 5,
+            'is_active' => true,
+        ]);
+
+        $category = MenuCategory::create([
+            'name' => 'Przystawki sezonowe',
+            'sort_order' => 6,
+            'is_active' => true,
+        ]);
+
+        $response = $this
+            ->actingAs($manager)
+            ->put(route('manager.menu-categories.update', $category), [
+                'name' => 'Przystawki klasyczne',
+                'sort_order' => 5,
+                'is_active' => '1',
+            ]);
+
+        $response->assertSessionHasErrors('sort_order');
+
+        $this->assertDatabaseHas('menu_categories', [
+            'id' => $category->id,
+            'name' => 'Przystawki sezonowe',
+            'sort_order' => 6,
+        ]);
+    }
+
+    public static function menuManagerRoles(): array
+    {
+        return [
+            'manager' => [User::ROLE_MANAGER],
+            'admin' => [User::ROLE_ADMIN],
+        ];
     }
 
     public function test_waiter_cannot_access_menu_management(): void
