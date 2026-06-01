@@ -6,7 +6,9 @@ use App\Models\Order;
 use App\Models\OrderItem;
 use App\Models\RestaurantTable;
 use App\Models\Schedule;
+use App\Models\TableReport;
 use App\Models\User;
+use Illuminate\Http\Request;
 
 class WaiterTableController extends Controller
 {
@@ -64,6 +66,26 @@ class WaiterTableController extends Controller
             'tables' => $this->visibleTables($waiterId),
             'statuses' => $this->statuses(),
         ]);
+    }
+
+    public function storeReport(Request $request, RestaurantTable $restaurantTable)
+    {
+        if (! $restaurantTable->isVisibleForWaiter(auth()->id())) {
+            abort(403);
+        }
+
+        $validated = $request->validate([
+            'type' => 'required|in:brudny stolik,brak sztućców,potrzebna pomoc,długi czas oczekiwania,problem z zamówieniem,inne',
+            'message' => 'nullable|string|max:255',
+        ]);
+
+        TableReport::create([
+            'restaurant_table_id' => $restaurantTable->id,
+            'reported_by' => auth()->id(),
+            ...$validated,
+        ]);
+
+        return back()->with('success', 'Zgłoszenie zostało wysłane do managera.');
     }
 
     private function visibleTables(int $waiterId)

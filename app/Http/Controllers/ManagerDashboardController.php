@@ -6,6 +6,8 @@ use App\Models\Order;
 use App\Models\OrderItem;
 use App\Models\Payment;
 use App\Models\RestaurantTable;
+use App\Models\TableReport;
+use Illuminate\Http\RedirectResponse;
 
 class ManagerDashboardController extends Controller
 {
@@ -76,6 +78,25 @@ class ManagerDashboardController extends Controller
                 ->oldest('opened_at')
                 ->limit(5)
                 ->get(),
+            'reports' => TableReport::with(['table', 'waiter'])
+                ->where('status', 'open')
+                ->latest()
+                ->get(),
         ]);
+    }
+
+    public function resolveReport(TableReport $tableReport): RedirectResponse
+    {
+        if (! auth()->user()->isManager() && ! auth()->user()->isAdmin()) {
+            abort(403, 'Brak uprawnień do wykonania tej akcji.');
+        }
+
+        $tableReport->update([
+            'status' => 'resolved',
+            'resolved_by' => auth()->id(),
+            'resolved_at' => now(),
+        ]);
+
+        return back()->with('success', 'Zgłoszenie zostało oznaczone jako rozwiązane.');
     }
 }

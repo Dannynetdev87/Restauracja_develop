@@ -29,7 +29,15 @@
             </div>
         </div>
 
+        @if(session('success'))
+            <div class="mb-6 rounded-xl border border-green-200 bg-green-50 px-4 py-3 text-sm font-bold text-green-800">
+                {{ session('success') }}
+            </div>
+        @endif
+
         <div class="space-y-8">
+
+            {{-- Statystyki główne --}}
             <div class="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
                 <div class="rounded-xl border border-brand-dark/15 bg-white p-5 shadow-sm">
                     <div class="flex items-center justify-between">
@@ -67,9 +75,9 @@
                 </div>
             </div>
 
+            {{-- Stan stolików --}}
             <div>
                 <h2 class="mb-4 text-xl font-bold text-brand-dark">Stan sali i stolików</h2>
-
                 <div class="grid grid-cols-2 gap-4 lg:grid-cols-4">
                     <div class="flex items-center justify-between rounded-xl border border-brand-dark/10 bg-white p-4 shadow-sm">
                         <div>
@@ -78,7 +86,6 @@
                         </div>
                         <span class="h-3 w-3 rounded-full bg-green-500"></span>
                     </div>
-
                     <div class="flex items-center justify-between rounded-xl border border-brand-dark/10 bg-white p-4 shadow-sm">
                         <div>
                             <p class="text-xs font-bold uppercase text-brand-accent">Zajęte</p>
@@ -86,7 +93,6 @@
                         </div>
                         <span class="h-3 w-3 rounded-full bg-red-500"></span>
                     </div>
-
                     <div class="flex items-center justify-between rounded-xl border border-brand-dark/10 bg-white p-4 shadow-sm">
                         <div>
                             <p class="text-xs font-bold uppercase text-brand-accent">Zarezerwowane</p>
@@ -94,7 +100,6 @@
                         </div>
                         <span class="h-3 w-3 rounded-full bg-amber-500"></span>
                     </div>
-
                     <div class="flex items-center justify-between rounded-xl border border-brand-dark/10 bg-white p-4 shadow-sm">
                         <div>
                             <p class="text-xs font-bold uppercase text-brand-accent">Wyłączone z użytku</p>
@@ -105,13 +110,74 @@
                 </div>
             </div>
 
+            {{-- Zgłoszenia z sali --}}
+            <section class="rounded-xl border border-red-200 bg-white p-5 shadow-sm">
+                <div class="mb-5 flex items-center justify-between gap-3 border-b border-brand-dark/10 pb-4">
+                    <div>
+                        <span class="text-xs font-bold uppercase text-red-700">Zgłoszenia kelnerów</span>
+                        <h2 class="mt-1 text-xl font-black text-brand-dark">Problemy przy stolikach</h2>
+                    </div>
+                    <span class="rounded-full bg-red-50 px-3 py-1 text-xs font-bold text-red-800">
+                        {{ $reports->count() }} {{ $reports->count() === 1 ? 'otwarte' : 'otwartych' }}
+                    </span>
+                </div>
+
+                <div class="space-y-3">
+                    @forelse($reports as $report)
+                        <div class="rounded-xl border border-red-100 bg-red-50/40 p-4">
+                            <div class="flex flex-wrap items-start justify-between gap-3">
+                                <div class="flex-1 min-w-0">
+                                    <div class="flex flex-wrap items-center gap-2 mb-1">
+                                        <span class="font-black text-brand-dark">
+                                            Stolik #{{ $report->table->number }}
+                                        </span>
+                                        <span class="rounded-md bg-red-100 px-2 py-0.5 text-xs font-bold text-red-800">
+                                            {{ $report->type }}
+                                        </span>
+                                    </div>
+                                    <p class="text-sm text-brand-accent">
+                                        Kelner: <strong class="text-brand-dark">{{ $report->waiter->full_name }}</strong>
+                                        · <span title="{{ $report->created_at }}">{{ $report->created_at->diffForHumans() }}</span>
+                                    </p>
+                                    @if($report->message)
+                                        <p class="mt-2 rounded-lg bg-white px-3 py-2 text-sm text-brand-dark border border-red-100">
+                                            {{ $report->message }}
+                                        </p>
+                                    @endif
+                                </div>
+
+                                <form
+                                    method="POST"
+                                    action="{{ route('manager.reports.resolve', $report) }}"
+                                    class="shrink-0"
+                                    onsubmit="return confirm('Oznaczyć zgłoszenie jako rozwiązane?')"
+                                >
+                                    @csrf
+                                    @method('PATCH')
+                                    <button
+                                        type="submit"
+                                        class="rounded-lg bg-green-700 px-3 py-2 text-xs font-black text-white hover:bg-green-800 transition-colors"
+                                    >
+                                        Rozwiązane
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+                    @empty
+                        <div class="rounded-xl border border-dashed border-brand-dark/20 px-4 py-8 text-center text-sm font-semibold text-brand-accent">
+                            Brak otwartych zgłoszeń.
+                        </div>
+                    @endforelse
+                </div>
+            </section>
+
+            {{-- Ostatnie zamówienia + Do sprawdzenia + Top menu --}}
             <div class="grid gap-6 xl:grid-cols-[minmax(0,1.45fr)_minmax(320px,0.85fr)]">
                 <section class="rounded-xl border border-brand-dark/15 bg-white p-5 shadow-sm">
                     <div class="mb-5 border-b border-brand-dark/10 pb-4">
                         <span class="text-xs font-bold uppercase text-brand-accent">Ostatnie zamówienia</span>
                         <h2 class="mt-1 text-xl font-black text-brand-dark">Historia operacyjna</h2>
                     </div>
-
                     <div class="space-y-3">
                         @forelse($recentOrders as $order)
                             <div class="grid gap-3 rounded-xl border border-brand-dark/10 bg-brand-card p-4 md:grid-cols-[1fr_auto] md:items-center">
@@ -148,7 +214,6 @@
                                 {{ $attentionOrders->count() }}
                             </span>
                         </div>
-
                         <div class="space-y-3">
                             @forelse($attentionOrders as $order)
                                 @php
@@ -157,7 +222,6 @@
                                         && ! $order->payments->contains('status', \App\Models\Payment::STATUS_PAID);
                                     $reason = $isUnpaidServed ? 'Nieopłacone' : 'Długo otwarte';
                                 @endphp
-
                                 <div class="rounded-xl border border-amber-700/20 bg-amber-50/60 p-4">
                                     <div class="flex items-start justify-between gap-3">
                                         <div>
@@ -185,7 +249,6 @@
                             <span class="text-xs font-bold uppercase text-brand-accent">Sprzedaż menu</span>
                             <h2 class="mt-1 text-xl font-black text-brand-dark">Najczęściej zamawiane dzisiaj</h2>
                         </div>
-
                         <div class="space-y-3">
                             @forelse($topItems as $item)
                                 <div class="flex items-center justify-between gap-4 rounded-xl border border-brand-dark/10 bg-brand-card px-4 py-3">
@@ -201,6 +264,7 @@
                     </aside>
                 </div>
             </div>
+
         </div>
     </section>
 </x-app>

@@ -129,32 +129,91 @@
                     @endif
                 </div>
 
-                <div class="mt-5">
+                {{-- Przyciski akcji --}}
+                <div class="mt-5 flex flex-col gap-2">
                     @if($canOpenOrder)
                         <a href="{{ route('waiter.orders.create', ['table_id' => $table->id]) }}"
                            class="block w-full rounded-md bg-brand-dark px-4 py-2 text-center text-sm font-bold text-brand-light hover:bg-brand-accent">
                             Rozpocznij zamówienie
                         </a>
                     @elseif($isOwnActiveOrder)
-                        <div class="grid gap-2">
-                            <a href="{{ route('waiter.orders.show', $activeOrder) }}"
-                               class="block w-full rounded-md border border-brand-dark/20 bg-white px-4 py-2 text-center text-sm font-bold text-brand-dark hover:bg-brand-light">
-                                Zobacz zamówienie
-                            </a>
-                            <a href="{{ route('waiter.orders.create', ['table_id' => $table->id]) }}"
-                               class="block w-full rounded-md bg-brand-dark px-4 py-2 text-center text-sm font-bold text-brand-light hover:bg-brand-accent">
-                                Dodaj pozycje
-                            </a>
-                        </div>
+                        <a href="{{ route('waiter.orders.show', $activeOrder) }}"
+                           class="block w-full rounded-md border border-brand-dark/20 bg-white px-4 py-2 text-center text-sm font-bold text-brand-dark hover:bg-brand-light">
+                            Zobacz zamówienie
+                        </a>
+                        <a href="{{ route('waiter.orders.create', ['table_id' => $table->id]) }}"
+                           class="block w-full rounded-md bg-brand-dark px-4 py-2 text-center text-sm font-bold text-brand-light hover:bg-brand-accent">
+                            Dodaj pozycje
+                        </a>
                     @elseif($activeOrder)
-                        <button type="button" disabled class="w-full cursor-not-allowed rounded-md bg-gray-200 px-4 py-2 text-sm font-bold text-gray-600">
+                        <button type="button" disabled
+                                class="w-full cursor-not-allowed rounded-md bg-gray-200 px-4 py-2 text-sm font-bold text-gray-600">
                             Obsługuje inny kelner
                         </button>
                     @else
-                        <button type="button" disabled class="w-full cursor-not-allowed rounded-md bg-gray-200 px-4 py-2 text-sm font-bold text-gray-600">
+                        <button type="button" disabled
+                                class="w-full cursor-not-allowed rounded-md bg-gray-200 px-4 py-2 text-sm font-bold text-gray-600">
                             Niedostępny
                         </button>
                     @endif
+
+                    <details class="group">
+                        <summary class="inline-flex w-full cursor-pointer list-none items-center justify-center rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-xs font-bold text-red-700 transition-colors hover:bg-red-100">
+                            <span class="group-open:hidden">Zgłoś problem ze stolikiem</span>
+                            <span class="hidden group-open:inline">Anuluj zgłoszenie</span>
+                        </summary>
+
+                        <div class="mt-3 rounded-xl border border-red-200 bg-red-50/60 p-4">
+                            <h4 class="mb-3 text-sm font-black text-red-800">
+                                Zgłoś problem - Stolik {{ $table->number }}
+                            </h4>
+
+                            <form method="POST" action="{{ route('waiter.tables.report', $table) }}">
+                                @csrf
+
+                                <div class="mb-3">
+                                    <label class="mb-1 block text-xs font-bold text-red-700">
+                                        Typ problemu <span class="text-red-500">*</span>
+                                    </label>
+                                    <select
+                                        name="type"
+                                        required
+                                        class="w-full rounded-lg border border-red-200 bg-white px-3 py-2 text-sm text-brand-dark focus:outline-none focus:ring-2 focus:ring-red-400"
+                                    >
+                                        <option value="" disabled selected>Wybierz typ</option>
+                                        <option value="brudny stolik">Brudny stolik</option>
+                                        <option value="brak sztućców">Brak sztućców</option>
+                                        <option value="potrzebna pomoc">Potrzebna pomoc managera</option>
+                                        <option value="długi czas oczekiwania">Klient czeka zbyt długo</option>
+                                        <option value="problem z zamówieniem">Problem z zamówieniem</option>
+                                        <option value="inne">Inne</option>
+                                    </select>
+                                </div>
+
+                                <div class="mb-4">
+                                    <label class="mb-1 block text-xs font-bold text-red-700">
+                                        Opis (opcjonalnie)
+                                    </label>
+                                    <textarea
+                                        name="message"
+                                        rows="2"
+                                        maxlength="255"
+                                        placeholder="Krótki opis problemu..."
+                                        class="w-full rounded-lg border border-red-200 bg-white px-3 py-2 text-sm text-brand-dark placeholder-brand-accent/50 focus:outline-none focus:ring-2 focus:ring-red-400 resize-none"
+                                    ></textarea>
+                                </div>
+
+                                <button
+                                    type="submit"
+                                    class="w-full rounded-lg bg-red-700 px-4 py-2 text-xs font-black text-white transition-colors hover:bg-red-800"
+                                >
+                                    Wyślij zgłoszenie do managera
+                                </button>
+
+                            </form>
+                        </div>
+                    </details>
+
                 </div>
             </article>
         @empty
