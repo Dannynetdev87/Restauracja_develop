@@ -11,6 +11,28 @@ use Illuminate\Validation\ValidationException;
 
 class KitchenDashboardController extends Controller
 {
+    public function selectCurrent(OrderItem $item)
+    {
+        if ($item->menuItem()->where('production_area', MenuItem::AREA_KITCHEN)->doesntExist()) {
+            abort(404);
+        }
+
+        if (! in_array($item->status, [
+            OrderItem::STATUS_NEW,
+            OrderItem::STATUS_PREPARING,
+            OrderItem::STATUS_READY,
+        ], true)) {
+            abort(404);
+        }
+
+        session([
+            'selected_kitchen_order_id' => $item->order_id,
+            'selected_kitchen_order_item_id' => $item->id,
+        ]);
+
+        return redirect()->route('kitchen.current');
+    }
+
     public function current()
     {
         $order = Order::query()

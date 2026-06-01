@@ -47,6 +47,7 @@ class KitchenDashboard extends Component
             'queueDescription' => 'Zamówienia zawierające pozycje kuchenne do obsłużenia.',
             'statusRouteName' => 'kitchen.order-items.status',
             'cancelRouteName' => 'kitchen.order-items.cancel',
+            'selectCurrentRouteName' => 'kitchen.order-items.select-current',
         ]);
     }
 }

@@ -47,6 +47,7 @@ class BarDashboard extends Component
             'queueDescription' => 'Zamówienia zawierające napoje do obsłużenia.',
             'statusRouteName' => 'bar.order-items.status',
             'cancelRouteName' => 'bar.order-items.cancel',
+            'selectCurrentRouteName' => 'bar.order-items.select-current',
         ]);
     }
 }

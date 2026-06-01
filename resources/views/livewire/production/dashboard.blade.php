@@ -2,7 +2,9 @@
     $allItems = collect($columns)
         ->flatMap(fn (array $column) => $column['items'])
         ->values();
-    $queueOrders = $allItems->groupBy(fn ($item) => $item->order->id);
+    $queueOrders = $allItems
+        ->groupBy(fn ($item) => $item->order->id)
+        ->sortKeysDesc();
     $formatMinutes = fn (int $minutes) => $minutes === 1 ? '1 min' : $minutes.' min';
     $formatItemsCount = fn (int $count) => $count === 1
         ? '1 pozycja'
@@ -66,7 +68,9 @@
                 <div class="grid gap-5 xl:grid-cols-3">
                     @foreach($columns as $status => $column)
                         @php
-                            $groupedItems = $column['items']->groupBy(fn ($item) => $item->order->id);
+                            $groupedItems = $column['items']
+                                ->groupBy(fn ($item) => $item->order->id)
+                                ->sortKeysDesc();
                         @endphp
 
                         <section class="rounded-xl border-2 bg-brand-light/40 p-5 {{ $columnFrameClass[$status] ?? 'border-brand-dark' }}">
@@ -167,6 +171,15 @@
                                                             <span class="block w-full rounded-md bg-green-50 px-4 py-2 text-center text-sm font-bold text-green-800">
                                                                 Gotowe do odbioru
                                                             </span>
+                                                        @endif
+
+                                                        @if(isset($selectCurrentRouteName))
+                                                            <form method="POST" action="{{ route($selectCurrentRouteName, $item) }}">
+                                                                @csrf
+                                                                <button type="submit" class="w-full rounded-md border border-brand-dark/20 bg-white px-4 py-2 text-sm font-bold text-brand-dark hover:bg-brand-light">
+                                                                    Przenieś do aktualnych
+                                                                </button>
+                                                            </form>
                                                         @endif
 
                                                         @if(isset($cancelRouteName) && in_array($item->status, [\App\Models\OrderItem::STATUS_NEW, \App\Models\OrderItem::STATUS_PREPARING], true))

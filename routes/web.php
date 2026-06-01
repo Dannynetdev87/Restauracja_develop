@@ -64,6 +64,7 @@ Route::middleware('auth')->group(function () {
     Route::middleware('role:kuchnia')->group(function () {
         Route::get('/kitchen/current', [KitchenDashboardController::class, 'current'])->name('kitchen.current');
         Route::get('/kitchen/dashboard', [KitchenDashboardController::class, 'index'])->name('kitchen.dashboard');
+        Route::post('/kitchen/order-items/{item}/select-current', [KitchenDashboardController::class, 'selectCurrent'])->name('kitchen.order-items.select-current');
         Route::patch('/kitchen/order-items/{orderItem}/status', [KitchenDashboardController::class, 'updateStatus'])->name('kitchen.order-items.status');
         Route::patch('/kitchen/order-items/{orderItem}/cancel', [KitchenDashboardController::class, 'cancel'])->name('kitchen.order-items.cancel');
     });
@@ -71,6 +72,7 @@ Route::middleware('auth')->group(function () {
     Route::middleware('role:bar')->group(function () {
         Route::get('/bar/current', [BarDashboardController::class, 'current'])->name('bar.current');
         Route::get('/bar/dashboard', [BarDashboardController::class, 'index'])->name('bar.dashboard');
+        Route::post('/bar/order-items/{item}/select-current', [BarDashboardController::class, 'selectCurrent'])->name('bar.order-items.select-current');
         Route::patch('/bar/order-items/{orderItem}/status', [BarDashboardController::class, 'updateStatus'])->name('bar.order-items.status');
         Route::patch('/bar/order-items/{orderItem}/cancel', [BarDashboardController::class, 'cancel'])->name('bar.order-items.cancel');
     });

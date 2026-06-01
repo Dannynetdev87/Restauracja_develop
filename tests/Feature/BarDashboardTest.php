@@ -185,6 +185,50 @@ class BarDashboardTest extends TestCase
             ->assertRedirect(route('bar.current'));
     }
 
+    public function test_bar_user_can_select_bar_item_as_current(): void
+    {
+        $barUser = User::factory()->create(['role' => User::ROLE_BAR]);
+        OrderItem::query()->update(['status' => OrderItem::STATUS_DELIVERED]);
+
+        $oldestOrder = $this->createOrder(openedAt: now()->subDay());
+        $selectedOrder = $this->createOrder(openedAt: now());
+        $this->createOrderItem($oldestOrder, 'Oldest bar item', MenuItem::AREA_BAR);
+        $selectedItem = $this->createOrderItem($selectedOrder, 'Selected bar item', MenuItem::AREA_BAR);
+        $otherSelectedOrderItem = $this->createOrderItem($selectedOrder, 'Other bar item', MenuItem::AREA_BAR);
+
+        $this
+            ->actingAs($barUser)
+            ->post(route('bar.order-items.select-current', $selectedItem))
+            ->assertRedirect(route('bar.current'));
+
+        $this
+            ->actingAs($barUser)
+            ->get(route('bar.current'))
+            ->assertOk()
+            ->assertSee('Zamówienie #'.$selectedOrder->id)
+            ->assertSee('Selected bar item')
+            ->assertDontSee('Oldest bar item')
+            ->assertDontSee('Other bar item');
+
+        $this->assertSame(OrderItem::STATUS_NEW, $selectedItem->fresh()->status);
+        $this->assertSame(OrderItem::STATUS_NEW, $otherSelectedOrderItem->fresh()->status);
+    }
+
+    public function test_bar_user_cannot_select_kitchen_item_as_current(): void
+    {
+        $barUser = User::factory()->create(['role' => User::ROLE_BAR]);
+        $order = $this->createOrder();
+        $kitchenItem = $this->createOrderItem($order, 'Kitchen item blocked from bar current', MenuItem::AREA_KITCHEN);
+
+        $this
+            ->actingAs($barUser)
+            ->post(route('bar.order-items.select-current', $kitchenItem))
+            ->assertNotFound();
+
+        $this->assertFalse(session()->has('selected_bar_order_id'));
+        $this->assertFalse(session()->has('selected_bar_order_item_id'));
+    }
+
     public function test_bar_user_can_mark_item_as_ready_and_order_status_is_synced(): void
     {
         $barUser = User::factory()->create(['role' => User::ROLE_BAR]);

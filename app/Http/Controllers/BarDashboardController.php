@@ -11,6 +11,28 @@ use Illuminate\Validation\ValidationException;
 
 class BarDashboardController extends Controller
 {
+    public function selectCurrent(OrderItem $item)
+    {
+        if ($item->menuItem()->where('production_area', MenuItem::AREA_BAR)->doesntExist()) {
+            abort(404);
+        }
+
+        if (! in_array($item->status, [
+            OrderItem::STATUS_NEW,
+            OrderItem::STATUS_PREPARING,
+            OrderItem::STATUS_READY,
+        ], true)) {
+            abort(404);
+        }
+
+        session([
+            'selected_bar_order_id' => $item->order_id,
+            'selected_bar_order_item_id' => $item->id,
+        ]);
+
+        return redirect()->route('bar.current');
+    }
+
     public function current()
     {
         $order = Order::query()

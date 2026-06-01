@@ -42,12 +42,12 @@
                     </p>
                 </div>
                 <span class="w-fit rounded-md bg-brand-light px-3 py-1 text-xs font-bold uppercase text-brand-dark">
-                    {{ $order->items->count() }} {{ $order->items->count() === 1 ? 'pozycja' : 'pozycji' }}
+                    {{ $items->count() }} {{ $items->count() === 1 ? 'pozycja' : 'pozycji' }}
                 </span>
             </div>
 
             <div class="space-y-4">
-                @foreach($order->items as $item)
+                @foreach($items as $item)
                     <article class="rounded-lg border border-brand-dark/10 bg-brand-card p-4">
                         <div class="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
                             <div class="flex gap-4">
