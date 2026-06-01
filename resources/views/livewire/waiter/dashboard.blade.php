@@ -35,10 +35,10 @@
         @endif
 
         <div class="mb-8 flex flex-wrap justify-center gap-4">
-            <a href="{{ route('waiter.dashboard') }}"
-               class="min-w-40 rounded-xl bg-brand-dark px-8 py-4 text-center text-sm font-black uppercase tracking-wide text-brand-light shadow-sm transition hover:bg-brand-accent">
+            <button type="button" disabled
+               class="min-w-40 rounded-xl bg-wheat px-8 py-4 text-center text-sm font-black uppercase tracking-wide text-brand-dark shadow-sm border border-current">
                 Dashboard
-            </a>
+            </button>
             <a href="{{ route('waiter.tables.index') }}"
                class="min-w-40 rounded-xl bg-brand-dark px-8 py-4 text-center text-sm font-black uppercase tracking-wide text-brand-light shadow-sm transition hover:bg-brand-accent">
                 Stoliki

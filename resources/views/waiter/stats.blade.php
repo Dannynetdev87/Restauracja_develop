@@ -3,11 +3,21 @@
 
     <section class="w-full px-4 py-10 sm:px-6 lg:px-8">
         <div class="mx-auto max-w-3xl">
-            <div class="mb-8">
+            <div class="mb-8 flex flex-wrap justify-center gap-4">
                 <a href="{{ route('waiter.dashboard') }}"
-                   class="text-sm font-bold text-brand-accent hover:text-brand-dark">
-                    Wróć do dashboardu
+                   class="min-w-40 rounded-xl bg-brand-dark px-8 py-4 text-center text-sm font-black uppercase tracking-wide text-brand-light shadow-sm transition hover:bg-brand-accent">
+                    Dashboard
                 </a>
+                <a href="{{ route('waiter.tables.index') }}"
+                   class="min-w-40 rounded-xl bg-brand-dark px-8 py-4 text-center text-sm font-black uppercase tracking-wide text-brand-light shadow-sm transition hover:bg-brand-accent">
+                    Stoliki
+                </a>
+                <button type="button" disabled
+                        class="min-w-40 rounded-xl bg-wheat px-8 py-4 text-center text-sm font-black uppercase tracking-wide text-brand-dark shadow-sm border border-current">
+                    Napiwki
+                </button>
+            </div>
+                <div class="mb-8">
                 <h1 class="mt-3 text-3xl font-black text-brand-dark">Moje napiwki</h1>
                 <p class="mt-1 text-brand-accent">{{ now()->locale('pl')->translatedFormat('l, d F Y') }}</p>
             </div>
