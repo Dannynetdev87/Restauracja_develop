@@ -58,6 +58,7 @@ Route::middleware('auth')->group(function () {
         Route::post('/waiter/orders/{order}/payments', [WaiterBillController::class, 'storePayment'])->name('waiter.orders.payments.store');
         Route::patch('/waiter/order-items/{orderItem}/deliver', [WaiterOrderController::class, 'deliverItem'])->name('waiter.order-items.deliver');
         Route::get('/waiter/stats', [WaiterStatsController::class, 'stats'])->name('waiter.stats');
+        Route::post('/waiter/tables/{restaurantTable}/report', [WaiterTableController::class, 'storeReport'])->name('waiter.tables.report');
     });
 
     Route::middleware('role:kuchnia')->group(function () {
@@ -116,6 +117,8 @@ Route::middleware('auth')->group(function () {
         Route::put('/manager/menu/items/{menuItem}', [MenuItemController::class, 'update'])->name('manager.menu-items.update');
         Route::patch('/manager/menu/items/{menuItem}/availability', [MenuItemController::class, 'toggleAvailability'])->name('manager.menu-items.availability');
         Route::delete('/manager/menu/items/{menuItem}', [MenuItemController::class, 'destroy'])->name('manager.menu-items.destroy');
+
+        Route::patch('/manager/reports/{tableReport}/resolve', [ManagerDashboardController::class, 'resolveReport'])->name('manager.reports.resolve');
     });
 });
 
