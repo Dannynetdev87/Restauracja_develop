@@ -48,6 +48,7 @@ class KitchenDashboard extends Component
             'statusRouteName' => 'kitchen.order-items.status',
             'cancelRouteName' => 'kitchen.order-items.cancel',
             'selectCurrentRouteName' => 'kitchen.order-items.select-current',
+            'containerClass' => 'w-full px-1 py-4 sm:px-2 lg:px-3',
         ]);
     }
 }
