@@ -49,8 +49,8 @@
             <p class="mt-2 max-w-3xl text-sm text-brand-accent">{{ $description }}</p>
         </div>
 
-        <div class="grid gap-6 lg:grid-cols-[minmax(0,1fr)_320px]">
-            <div class="space-y-5">
+        <div class="flex flex-col gap-6 lg:grid lg:grid-cols-[minmax(0,1fr)_320px]">
+            <div class="space-y-5 order-2 lg:order-none">
                 <div class="grid gap-4 md:grid-cols-3">
                     @foreach($columns as $column)
                         <div class="rounded-xl border border-brand-dark/15 bg-white/80 p-4 shadow-sm">
@@ -64,6 +64,9 @@
                         </div>
                     @endforeach
                 </div>
+
+                {{--Kreska na mobile--}}
+                <hr class="border-t-2 border-brand-dark/20 my-4 md:hidden">
 
                 <div class="grid gap-5 xl:grid-cols-3">
                     @foreach($columns as $status => $column)
@@ -206,6 +209,9 @@
                     @endforeach
                 </div>
             </div>
+
+            {{--Spacer dla tabletów--}}
+            <hr class="border-t-2 border-brand-dark/20 my-2 hidden md:block lg:hidden">
 
             <aside class="space-y-4">
                 <div class="rounded-lg bg-brand-dark p-5 text-brand-light shadow-sm">
