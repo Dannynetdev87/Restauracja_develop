@@ -3,12 +3,17 @@
 
     @php
         $activeItems = $order->items->where('status', '!=', \App\Models\OrderItem::STATUS_CANCELLED);
-        $unpaidItems = $activeItems->filter(fn ($item) => ! $item->isPaid());
+
+        // Obliczanie pozostałej kwoty na podstawie nieopłaconych sztuk
+        $remainingAmount = $activeItems->sum(function ($item) {
+            $paidQty = $item->payments->where('status', \App\Models\Payment::STATUS_PAID)->sum('pivot.quantity');
+            return max(0, $item->quantity - $paidQty) * $item->unit_price;
+        });
+
         $paidPayments = $order->payments->where('status', \App\Models\Payment::STATUS_PAID);
         $paidAmount = $paidPayments->sum(fn ($payment) => (float) $payment->amount);
         $paidTips = $paidPayments->sum(fn ($payment) => (float) ($payment->tip_amount ?? 0));
-        $remainingAmount = $unpaidItems->sum(fn ($item) => $item->subtotal());
-        $canPay = $order->status === \App\Models\Order::STATUS_SERVED && $unpaidItems->isNotEmpty();
+        $canPay = $order->status === \App\Models\Order::STATUS_SERVED && $remainingAmount > 0;
 
         $statusLabel = match ($order->status) {
             \App\Models\Order::STATUS_OPEN => 'Otwarte',
@@ -56,30 +61,32 @@
                 <div class="rounded-lg border border-brand-dark/15 bg-white p-6 shadow-sm">
                     <div class="mb-6 border-b border-brand-dark/10 pb-5">
                         <span class="text-sm font-bold uppercase text-brand-accent">Pozycje rachunku</span>
-                        <h2 class="mt-2 text-2xl font-black text-brand-dark">Wybierz pozycje do rozliczenia</h2>
+                        <h2 class="mt-2 text-2xl font-black text-brand-dark">Wybierz pozycje i ilości do rozliczenia</h2>
                     </div>
 
                     <div class="divide-y divide-brand-dark/10">
                         @forelse($order->items as $item)
                             @php
                                 $isCancelled = $item->status === \App\Models\OrderItem::STATUS_CANCELLED;
-                                $isPaid = $item->isPaid();
+                                $paidQty = $item->payments->where('status', \App\Models\Payment::STATUS_PAID)->sum('pivot.quantity');
+                                $remainingQty = max(0, $item->quantity - $paidQty);
+                                $isFullyPaid = ! $isCancelled && $remainingQty === 0 && $item->quantity > 0;
+                                $isPartiallyPaid = ! $isCancelled && $paidQty > 0 && $remainingQty > 0;
                             @endphp
 
-                            <div class="grid gap-4 py-4 grid-cols-[auto_auto_1fr] md:grid-cols-[40px_72px_1fr_130px_130px] md:items-center {{ $isCancelled || $isPaid ? 'opacity-65' : '' }}">
+                            <div class="grid gap-4 py-4 grid-cols-[auto_auto_1fr] md:grid-cols-[40px_140px_1fr_130px_130px] md:items-center {{ $isCancelled || $isFullyPaid ? 'opacity-65' : '' }}">
                                 <div class="flex items-center justify-center">
-                                    @if($canPay && ! $isCancelled && ! $isPaid)
+                                    @if($canPay && ! $isCancelled && $remainingQty > 0)
                                         <input
                                             type="checkbox"
                                             name="item_ids[]"
                                             value="{{ $item->id }}"
-                                            data-price="{{ number_format($item->subtotal(), 2, '.', '') }}"
                                             class="item-checkbox h-5 w-5 rounded border-brand-dark/20 text-brand-dark focus:ring-brand-dark"
                                             checked
                                         >
                                     @else
                                         <div class="flex h-5 w-5 items-center justify-center">
-                                            @if($isPaid)
+                                            @if($isFullyPaid)
                                                 <span class="text-base font-black text-green-700">✓</span>
                                             @else
                                                 <span class="text-lg text-gray-300">-</span>
@@ -88,20 +95,38 @@
                                     @endif
                                 </div>
 
-                                <div class="w-fit rounded-md px-3 py-2 text-sm font-black text-brand-light {{ $isCancelled ? 'bg-gray-400' : ($isPaid ? 'bg-green-700' : 'bg-brand-dark') }}">
-                                    {{ $item->quantity }}x
+                                <div class="flex items-center gap-2">
+                                    @if($canPay && ! $isCancelled && $remainingQty > 0)
+                                        <input
+                                            type="number"
+                                            name="quantities[{{ $item->id }}]"
+                                            value="{{ $remainingQty }}"
+                                            min="1"
+                                            max="{{ $remainingQty }}"
+                                            data-item-id="{{ $item->id }}"
+                                            data-unit-price="{{ number_format($item->unit_price, 2, '.', '') }}"
+                                            class="item-quantity-input w-20 rounded border-brand-dark/20 px-2 py-1 text-sm font-black text-brand-dark focus:border-brand-dark focus:ring-brand-dark"
+                                        >
+                                        <span class="text-xs text-brand-accent font-semibold">z {{ $remainingQty }}</span>
+                                    @else
+                                        <div class="w-fit rounded-md px-3 py-2 text-sm font-black text-brand-light {{ $isCancelled ? 'bg-gray-400' : ($isFullyPaid ? 'bg-green-700' : 'bg-brand-dark') }}">
+                                            {{ $item->quantity }}x
+                                        </div>
+                                    @endif
                                 </div>
 
                                 <div class="col-span-3 md:col-span-1">
                                     <div class="flex flex-wrap items-center gap-2">
-                                        <h3 class="font-black text-brand-dark {{ $isCancelled ? 'line-through text-gray-400' : '' }} {{ $isPaid ? 'text-gray-500' : '' }}">
+                                        <h3 class="font-black text-brand-dark {{ $isCancelled ? 'line-through text-gray-400' : '' }} {{ $isFullyPaid ? 'text-gray-500' : '' }}">
                                             {{ $item->menuItem->name }}
                                         </h3>
 
                                         @if($isCancelled)
                                             <span class="rounded-md bg-red-100 px-2.5 py-1 text-xs font-bold text-red-800">Anulowane</span>
-                                        @elseif($isPaid)
+                                        @elseif($isFullyPaid)
                                             <span class="rounded-md bg-green-100 px-2.5 py-1 text-xs font-bold text-green-800">Opłacone</span>
+                                        @elseif($isPartiallyPaid)
+                                            <span class="rounded-md bg-yellow-100 px-2.5 py-1 text-xs font-bold text-yellow-800">Opłacono {{ $paidQty }} z {{ $item->quantity }}</span>
                                         @endif
                                     </div>
 
@@ -113,12 +138,12 @@
                                 </div>
 
                                 <div class="text-left md:text-right">
-                                    <span class="block text-xs font-bold uppercase text-brand-accent">Cena</span>
+                                    <span class="block text-xs font-bold uppercase text-brand-accent">Cena jedn.</span>
                                     <strong class="text-brand-dark">{{ number_format($item->unit_price, 2, ',', ' ') }} zł</strong>
                                 </div>
 
                                 <div class="text-left md:text-right">
-                                    <span class="block text-xs font-bold uppercase text-brand-accent">Suma</span>
+                                    <span class="block text-xs font-bold uppercase text-brand-accent">Suma pozycji</span>
                                     <strong class="text-lg text-brand-dark">
                                         {{ $isCancelled ? '0,00' : number_format($item->subtotal(), 2, ',', ' ') }} zł
                                     </strong>
@@ -137,15 +162,15 @@
 
                     <div class="mt-4 space-y-3 text-sm text-brand-dark">
                         <div class="flex justify-between gap-4">
-                            <span>Suma pozycji</span>
+                            <span>Suma całego zamówienia</span>
                             <span class="font-bold">{{ number_format($order->total(), 2, ',', ' ') }} zł</span>
                         </div>
                         <div class="flex justify-between gap-4">
-                            <span>Opłacono za pozycje</span>
+                            <span>Łącznie już opłacono</span>
                             <span class="font-bold text-green-800">{{ number_format($paidAmount, 2, ',', ' ') }} zł</span>
                         </div>
                         <div class="flex justify-between gap-4">
-                            <span>Pozostało</span>
+                            <span>Pozostało do rozliczenia</span>
                             <span class="font-bold">{{ number_format($remainingAmount, 2, ',', ' ') }} zł</span>
                         </div>
 
@@ -284,6 +309,7 @@
     <script>
         document.addEventListener('DOMContentLoaded', () => {
             const checkboxes = Array.from(document.querySelectorAll('.item-checkbox'));
+            const qtyInputs = Array.from(document.querySelectorAll('.item-quantity-input'));
             const tipInput = document.getElementById('tip_amount');
             const customTipWrapper = document.getElementById('custom-tip-wrapper');
             const customTipInput = document.getElementById('custom_tip_amount');
@@ -301,7 +327,6 @@
 
             const parseAmount = (value) => {
                 const amount = Number.parseFloat(String(value || '0').replace(',', '.'));
-
                 return Number.isFinite(amount) ? amount : 0;
             };
 
@@ -325,9 +350,20 @@
             };
 
             const refreshTotals = () => {
-                const selectedAmount = checkboxes
-                    .filter((checkbox) => checkbox.checked)
-                    .reduce((sum, checkbox) => sum + parseAmount(checkbox.dataset.price), 0);
+                let selectedAmount = 0;
+
+                checkboxes.forEach((checkbox) => {
+                    if (checkbox.checked) {
+                        const itemId = checkbox.value;
+                        const qtyInput = document.querySelector(`.item-quantity-input[data-item-id="${itemId}"]`);
+                        if (qtyInput) {
+                            const qty = parseInt(qtyInput.value, 10) || 0;
+                            const unitPrice = parseAmount(qtyInput.dataset.unitPrice);
+                            selectedAmount += qty * unitPrice;
+                        }
+                    }
+                });
+
                 const tipAmount = selectedTipType === 'custom'
                     ? parseAmount(customTipInput?.value)
                     : selectedTipType === 'percent'
@@ -367,6 +403,16 @@
             });
 
             checkboxes.forEach((checkbox) => checkbox.addEventListener('change', refreshTotals));
+            qtyInputs.forEach((input) => {
+                input.addEventListener('input', (e) => {
+                    // Blokada wpisania wartości wyższych niż max w UI
+                    const max = parseInt(input.max, 10);
+                    if (parseInt(input.value, 10) > max) {
+                        input.value = max;
+                    }
+                    refreshTotals();
+                });
+            });
             customTipInput?.addEventListener('input', refreshTotals);
             setActiveTipOption();
             refreshTotals();

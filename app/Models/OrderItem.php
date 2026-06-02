@@ -49,9 +49,14 @@ class OrderItem extends Model
         return $this->hasMany(OrderItemStatusHistory::class);
     }
 
+    /**
+     * Zaktualizowana relacja z obsługą pola 'quantity' w tabeli pivot
+     */
     public function payments(): BelongsToMany
     {
-        return $this->belongsToMany(Payment::class);
+        return $this->belongsToMany(Payment::class)
+            ->withPivot('quantity')
+            ->withTimestamps();
     }
 
     public function subtotal(): float
@@ -59,17 +64,45 @@ class OrderItem extends Model
         return $this->quantity * $this->unit_price;
     }
 
-    public function isPaid(): bool
+    /**
+     * Zwraca liczbę sztuk tej pozycji, które zostały już opłacone
+     */
+    public function paidQuantity(): int
     {
         if ($this->relationLoaded('payments')) {
-            return $this->payments->contains(
-                fn (Payment $payment) => $payment->status === Payment::STATUS_PAID
-            );
+            return (int) $this->payments
+                ->where('status', Payment::STATUS_PAID)
+                ->sum(fn ($payment) => $payment->pivot->quantity ?? 0);
         }
 
-        return $this->payments()
+        return (int) $this->payments()
             ->where('status', Payment::STATUS_PAID)
-            ->exists();
+            ->sum('quantity');
+    }
+
+    /**
+     * Zwraca liczbę sztuk, które pozostały jeszcze do opłacenia
+     */
+    public function remainingQuantity(): int
+    {
+        if ($this->status === self::STATUS_CANCELLED) {
+            return 0;
+        }
+
+        return max(0, $this->quantity - $this->paidQuantity());
+    }
+
+    /**
+     * Pozycja jest w pełni opłacona tylko wtedy, gdy suma opłaconych sztuk
+     * zgadza się z całkowitą ilością w zamówieniu.
+     */
+    public function isPaid(): bool
+    {
+        if ($this->quantity <= 0) {
+            return true;
+        }
+
+        return $this->paidQuantity() >= $this->quantity;
     }
 
     protected function status(): Attribute

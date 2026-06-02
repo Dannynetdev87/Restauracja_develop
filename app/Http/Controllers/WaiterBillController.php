@@ -32,6 +32,8 @@ class WaiterBillController extends Controller
             'payment_method' => ['required', Rule::in(array_keys($this->paymentMethods()))],
             'item_ids' => ['required', 'array', 'min:1'],
             'item_ids.*' => ['required', 'integer', Rule::exists('order_items', 'id')],
+            'quantities' => ['nullable', 'array'],
+            'quantities.*' => ['nullable', 'integer', 'min:1'],
             'tip_amount' => ['nullable', 'numeric', 'min:0', 'max:9999.99'],
             'discount_code' => ['nullable', 'string', 'max:50'],
         ]);
@@ -82,15 +84,36 @@ class WaiterBillController extends Controller
                 ]);
             }
 
-            $paidItem = $itemsToPay->first(fn (OrderItem $item) => $item->isPaid());
+            $amount = 0.0;
+            $itemsToAttach = [];
 
-            if ($paidItem) {
-                throw ValidationException::withMessages([
-                    'item_ids' => 'Pozycja '.$paidItem->menuItem->name.' została już opłacona.',
-                ]);
+            foreach ($itemsToPay as $item) {
+                if ($item->isPaid()) {
+                    throw ValidationException::withMessages([
+                        'item_ids' => 'Pozycja '.$item->menuItem->name.' została już opłacona.',
+                    ]);
+                }
+
+                $remainingQty = $item->remainingQuantity();
+                $requestedQty = isset($validated['quantities'][$item->id])
+                    ? (int) $validated['quantities'][$item->id]
+                    : $remainingQty;
+
+                if ($requestedQty <= 0) {
+                    throw ValidationException::withMessages([
+                        'item_ids' => 'Ilość dla pozycji '.$item->menuItem->name.' musi być większa od zera.',
+                    ]);
+                }
+
+                if ($requestedQty > $remainingQty) {
+                    throw ValidationException::withMessages([
+                        'item_ids' => 'Próba opłacenia zbyt dużej ilości pozycji '.$item->menuItem->name.'.',
+                    ]);
+                }
+
+                $amount += $requestedQty * $item->unit_price;
+                $itemsToAttach[$item->id] = ['quantity' => $requestedQty];
             }
-
-            $amount = $itemsToPay->sum(fn (OrderItem $item) => $item->subtotal());
 
             if ($amount <= 0) {
                 throw ValidationException::withMessages([
@@ -125,6 +148,7 @@ class WaiterBillController extends Controller
                 $discountAmount = $discountCode->calculateDiscount($amount);
             }
 
+
             $payment = $order->payments()->create([
                 'amount' => round(max(0, $amount - $discountAmount), 2),
                 'tip_amount' => $tipAmount,
@@ -135,17 +159,20 @@ class WaiterBillController extends Controller
                 'paid_at' => $paidAt,
             ]);
 
-            $payment->orderItems()->attach($itemsToPay->pluck('id')->all());
+            // Bezpieczna i natywna metoda zapisu relacji pivot eliminująca błędy 'all() on array'
+            $payment->orderItems()->attach($itemsToAttach);
 
             if ($discountCode) {
                 $discountCode->increment('used_count');
             }
 
-            $hasUnpaidActiveItems = OrderItem::query()
+            $allActiveItems = OrderItem::query()
                 ->where('order_id', $order->id)
                 ->where('status', '!=', OrderItem::STATUS_CANCELLED)
-                ->whereDoesntHave('payments', fn ($query) => $query->where('status', Payment::STATUS_PAID))
-                ->exists();
+                ->with('payments')
+                ->get();
+
+            $hasUnpaidActiveItems = $allActiveItems->contains(fn (OrderItem $item) => ! $item->isPaid());
 
             if (! $hasUnpaidActiveItems) {
                 $order->update([

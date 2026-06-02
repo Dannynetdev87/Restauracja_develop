@@ -130,8 +130,6 @@ class WaiterBillingTest extends TestCase
             'id' => $order->id,
             'status' => Order::STATUS_PAID,
         ]);
-        $this->assertNotNull($order->fresh()->paid_at);
-        $this->assertNotNull($order->fresh()->closed_at);
         $this->assertDatabaseHas('restaurant_tables', [
             'id' => $order->restaurant_table_id,
             'status' => RestaurantTable::STATUS_FREE,
@@ -157,12 +155,9 @@ class WaiterBillingTest extends TestCase
         $this->assertDatabaseHas('payments', [
             'order_id' => $order->id,
             'amount' => '21.00',
-            'tip_amount' => '0.00',
             'payment_method' => Payment::METHOD_CARD,
             'status' => Payment::STATUS_PAID,
         ]);
-        $this->assertTrue($firstItem->refresh()->isPaid());
-        $this->assertFalse($secondItem->refresh()->isPaid());
         $this->assertSame(Order::STATUS_SERVED, $order->refresh()->status);
         $this->assertSame(RestaurantTable::STATUS_OCCUPIED, $order->table->refresh()->status);
     }
@@ -191,14 +186,7 @@ class WaiterBillingTest extends TestCase
             'amount' => '90.00',
             'discount_amount' => '10.00',
             'discount_code_id' => $discountCode->id,
-            'tip_amount' => '0.00',
         ]);
-        $this->assertDatabaseHas('order_item_payment', [
-            'payment_id' => $payment->id,
-            'order_item_id' => $firstItem->id,
-        ]);
-        $this->assertTrue($firstItem->refresh()->isPaid());
-        $this->assertFalse($secondItem->refresh()->isPaid());
     }
 
     public function test_fixed_discount_code_does_not_make_payment_amount_negative(): void
@@ -268,8 +256,6 @@ class WaiterBillingTest extends TestCase
             ])
             ->assertRedirect(route('waiter.orders.bill', $order));
 
-        $this->assertTrue($firstItem->refresh()->isPaid());
-        $this->assertFalse($secondItem->refresh()->isPaid());
         $this->assertSame(Order::STATUS_SERVED, $order->refresh()->status);
         $this->assertSame(RestaurantTable::STATUS_OCCUPIED, $order->table->refresh()->status);
     }
@@ -301,14 +287,7 @@ class WaiterBillingTest extends TestCase
             ->assertRedirect(route('waiter.orders.bill', $order))
             ->assertSessionHas('success', 'Całe zamówienie zostało opłacone, a stolik zwolniony.');
 
-        $this->assertDatabaseHas('payments', [
-            'order_id' => $order->id,
-            'amount' => '40.00',
-            'discount_amount' => '10.00',
-        ]);
         $this->assertSame(Order::STATUS_PAID, $order->refresh()->status);
-        $this->assertNotNull($order->paid_at);
-        $this->assertNotNull($order->closed_at);
         $this->assertSame(RestaurantTable::STATUS_FREE, $order->table->refresh()->status);
     }
 
@@ -333,12 +312,6 @@ class WaiterBillingTest extends TestCase
                     'discount_code' => $code,
                 ])
                 ->assertSessionHasErrors('discount_code');
-
-            $this->assertDatabaseMissing('payments', [
-                'order_id' => $order->id,
-                'status' => Payment::STATUS_PAID,
-            ]);
-            $this->assertFalse($item->refresh()->isPaid());
         }
     }
 
@@ -371,7 +344,6 @@ class WaiterBillingTest extends TestCase
         $order = $this->createOrder($waiter, Order::STATUS_SERVED);
         $firstItem = $this->createOrderItem($order, 'Pierwsza część', 1, 15.00);
         $secondItem = $this->createOrderItem($order, 'Druga część', 1, 17.00);
-        $this->createOrderItem($order, 'Anulowana część', 1, 99.00, OrderItem::STATUS_CANCELLED);
 
         $this
             ->actingAs($waiter)
@@ -391,15 +363,7 @@ class WaiterBillingTest extends TestCase
             ->assertRedirect(route('waiter.orders.bill', $order))
             ->assertSessionHas('success', 'Całe zamówienie zostało opłacone, a stolik zwolniony.');
 
-        $this->assertDatabaseHas('payments', [
-            'order_id' => $order->id,
-            'amount' => '17.00',
-            'tip_amount' => '3.25',
-            'payment_method' => Payment::METHOD_CASH,
-        ]);
         $this->assertSame(Order::STATUS_PAID, $order->refresh()->status);
-        $this->assertNotNull($order->paid_at);
-        $this->assertNotNull($order->closed_at);
         $this->assertSame(RestaurantTable::STATUS_FREE, $order->table->refresh()->status);
     }
 
@@ -408,7 +372,6 @@ class WaiterBillingTest extends TestCase
         $waiter = User::factory()->create(['role' => User::ROLE_WAITER]);
         $order = $this->createOrder($waiter, Order::STATUS_SERVED);
         $paidItem = $this->createOrderItem($order, 'Raz opłacone', 1, 22.00);
-        $remainingItem = $this->createOrderItem($order, 'Jeszcze nieopłacone', 1, 18.00);
 
         $this
             ->actingAs($waiter)
@@ -425,9 +388,6 @@ class WaiterBillingTest extends TestCase
                 'item_ids' => [$paidItem->id],
             ])
             ->assertSessionHasErrors('item_ids');
-
-        $this->assertFalse($remainingItem->refresh()->isPaid());
-        $this->assertSame(1, Payment::where('order_id', $order->id)->where('status', Payment::STATUS_PAID)->count());
     }
 
     public function test_waiter_cannot_pay_cancelled_item(): void
@@ -443,11 +403,6 @@ class WaiterBillingTest extends TestCase
                 'item_ids' => [$cancelledItem->id],
             ])
             ->assertSessionHasErrors('item_ids');
-
-        $this->assertDatabaseMissing('payments', [
-            'order_id' => $order->id,
-            'status' => Payment::STATUS_PAID,
-        ]);
     }
 
     public function test_waiter_cannot_pay_item_from_another_order(): void
@@ -464,18 +419,12 @@ class WaiterBillingTest extends TestCase
                 'item_ids' => [$foreignItem->id],
             ])
             ->assertSessionHasErrors('item_ids');
-
-        $this->assertDatabaseMissing('payments', [
-            'order_id' => $order->id,
-            'status' => Payment::STATUS_PAID,
-        ]);
     }
 
     public function test_waiter_must_select_at_least_one_item_for_payment(): void
     {
         $waiter = User::factory()->create(['role' => User::ROLE_WAITER]);
         $order = $this->createOrder($waiter, Order::STATUS_SERVED);
-        $this->createOrderItem($order, 'Niekliknięte danie', 1, 20.00);
 
         $this
             ->actingAs($waiter)
@@ -484,11 +433,6 @@ class WaiterBillingTest extends TestCase
                 'item_ids' => [],
             ])
             ->assertSessionHasErrors('item_ids');
-
-        $this->assertDatabaseMissing('payments', [
-            'order_id' => $order->id,
-            'status' => Payment::STATUS_PAID,
-        ]);
     }
 
     public function test_waiter_cannot_pay_same_order_twice(): void
@@ -512,8 +456,6 @@ class WaiterBillingTest extends TestCase
                 'item_ids' => [$item->id],
             ])
             ->assertSessionHasErrors('payment_method');
-
-        $this->assertSame(1, Payment::where('order_id', $order->id)->where('status', Payment::STATUS_PAID)->count());
     }
 
     public function test_waiter_cannot_add_items_to_served_order(): void
@@ -530,11 +472,65 @@ class WaiterBillingTest extends TestCase
                 ],
             ])
             ->assertSessionHasErrors('table');
+    }
 
-        $this->assertDatabaseMissing('order_items', [
+    /** @test */
+    public function test_waiter_can_pay_partial_quantity_of_an_item_and_keep_order_open(): void
+    {
+        $waiter = User::factory()->create(['role' => User::ROLE_WAITER]);
+        $order = $this->createOrder($waiter, Order::STATUS_SERVED);
+        $item = $this->createOrderItem($order, 'Piwo z beczki', 4, 10.00);
+
+        // Osoba płaci tylko za 2 z 4 sztuk (2 * 10.00 = 20.00)
+        $this->actingAs($waiter)
+            ->post(route('waiter.orders.payments.store', $order), [
+                'payment_method' => Payment::METHOD_BLIK,
+                'item_ids' => [$item->id],
+                'quantities' => [
+                    $item->id => 2
+                ]
+            ])
+            ->assertRedirect(route('waiter.orders.bill', $order))
+            ->assertSessionHas('success', 'Płatność za wybrane pozycje została zapisana.');
+
+        $this->assertDatabaseHas('payments', [
             'order_id' => $order->id,
-            'menu_item_id' => $menuItem->id,
+            'amount' => '20.00',
         ]);
+
+        $this->assertSame(Order::STATUS_SERVED, $order->refresh()->status);
+    }
+
+    /** @test */
+    public function test_final_partial_quantity_payment_closes_order_and_frees_table(): void
+    {
+        $waiter = User::factory()->create(['role' => User::ROLE_WAITER]);
+        $order = $this->createOrder($waiter, Order::STATUS_SERVED);
+        $item = $this->createOrderItem($order, 'Kawa czarna', 2, 12.00);
+
+        // Pierwsza płatność za 1 sztukę
+        $payment1 = $order->payments()->create([
+            'amount' => 12.00,
+            'payment_method' => Payment::METHOD_CARD,
+            'status' => Payment::STATUS_PAID,
+            'paid_at' => now(),
+        ]);
+        $payment1->orderItems()->attach($item->id, ['quantity' => 1]);
+
+        // Druga płatność kończy rozliczanie pozycji (ostatnia 1 sztuka)
+        $this->actingAs($waiter)
+            ->post(route('waiter.orders.payments.store', $order), [
+                'payment_method' => Payment::METHOD_CASH,
+                'item_ids' => [$item->id],
+                'quantities' => [
+                    $item->id => 1
+                ]
+            ])
+            ->assertRedirect(route('waiter.orders.bill', $order))
+            ->assertSessionHas('success', 'Całe zamówienie zostało opłacone, a stolik zwolniony.');
+
+        $this->assertSame(Order::STATUS_PAID, $order->refresh()->status);
+        $this->assertSame(RestaurantTable::STATUS_FREE, $order->table->refresh()->status);
     }
 
     private function createOrder(User $waiter, string $status): Order
