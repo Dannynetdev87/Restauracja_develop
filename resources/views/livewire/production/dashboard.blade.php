@@ -51,7 +51,7 @@
 
         <div class="flex flex-col gap-6 lg:grid lg:grid-cols-[minmax(0,1fr)_320px]">
             <div class="space-y-5 order-2 lg:order-none">
-                <div class="grid gap-4 md:grid-cols-3">
+                <div class="hidden lg:grid gap-4 lg:grid-cols-3">
                     @foreach($columns as $column)
                         <div class="rounded-xl border border-brand-dark/15 bg-white/80 p-4 shadow-sm">
                             <div class="flex items-center justify-between gap-3">
@@ -67,6 +67,16 @@
 
                 {{--Kreska na mobile--}}
                 <hr class="border-t-2 border-brand-dark/20 my-4 md:hidden">
+
+                {{--Kafelkowy pasek statusów na mobile--}}
+                <div class="grid grid-cols-3 gap-2 lg:hidden mt-2">
+                    @foreach($columns as $status => $column)
+                        <div class="rounded-xl border border-brand-dark/15 bg-white p-3 shadow-sm flex flex-col items-center justify-center text-center">
+                            <span class="text-[11px] font-black uppercase tracking-wider text-brand-dark truncate w-full">{{$column['title']}}</span>
+                            <span class="mt-1 rounded bg-brand-light/60 px-2 py-0.5 text-xs font-black text-brand-dark">{{$column['items']->count()}}</span>
+                        </div>
+                    @endforeach
+                </div>
 
                 <div class="grid gap-5 xl:grid-cols-3">
                     @foreach($columns as $status => $column)
