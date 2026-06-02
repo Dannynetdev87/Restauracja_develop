@@ -148,6 +148,7 @@ class WaiterBillController extends Controller
                 $discountAmount = $discountCode->calculateDiscount($amount);
             }
 
+
             $payment = $order->payments()->create([
                 'amount' => round(max(0, $amount - $discountAmount), 2),
                 'tip_amount' => $tipAmount,
