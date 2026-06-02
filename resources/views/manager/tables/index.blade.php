@@ -2,13 +2,20 @@
     <x-slot:title>Zarządzanie stolikami - SmakPrzeszłości</x-slot>
 
     <section class="w-full max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
-        <div class="flex flex-col gap-2 mb-8">
-            <span class="text-sm font-bold uppercase text-brand-accent">Panel managera</span>
-            <h1 class="text-3xl font-black text-brand-dark">Zarządzanie stolikami</h1>
-            <p class="text-brand-accent max-w-3xl">
-                Stolik z historią zamówień nie powinien być usuwany. W takim przypadku ustaw status nieaktywny, aby zachować spójność danych.
-                Przypisany kelner decyduje o tym, kto widzi stolik w swoim panelu.
-            </p>
+        <div class="mb-8 flex flex-col gap-5 border-b border-brand-dark/10 pb-6 lg:flex-row lg:items-end lg:justify-between">
+            <div>
+                <span class="text-sm font-bold uppercase text-brand-accent">Panel managera</span>
+                <h1 class="mt-1 text-3xl font-black text-brand-dark">Zarządzanie stolikami</h1>
+                <p class="mt-1 text-brand-accent max-w-3xl">
+                    Stolik z historią zamówień nie powinien być usuwany. W takim przypadku ustaw status nieaktywny, aby zachować spójność danych.
+                    Przypisany kelner decyduje o tym, kto widzi stolik w swoim panelu.
+                </p>
+            </div>
+
+            <a href="{{ route('manager.dashboard') }}"
+               class="w-fit rounded-md border border-brand-dark/20 bg-white px-4 py-2 text-sm font-bold text-brand-dark hover:bg-brand-light">
+                Powrót do panelu
+            </a>
         </div>
 
         @if(session('success'))
@@ -96,68 +103,68 @@
                 <div class="mt-5 overflow-x-auto">
                     <table class="min-w-full text-left text-sm">
                         <thead class="border-b border-brand-dark/10 text-xs uppercase text-brand-accent">
-                            <tr>
-                                <th class="py-3 pr-4">Numer</th>
-                                <th class="py-3 pr-4">Miejsca</th>
-                                <th class="py-3 pr-4">Status</th>
-                                <th class="py-3 pr-4">Strefa</th>
-                                <th class="py-3 pr-4">Kelner</th>
-                                <th class="py-3 pr-4">Zamówienia</th>
-                                <th class="py-3 pr-4 text-right">Akcje</th>
-                            </tr>
+                        <tr>
+                            <th class="py-3 pr-4">Numer</th>
+                            <th class="py-3 pr-4">Miejsca</th>
+                            <th class="py-3 pr-4">Status</th>
+                            <th class="py-3 pr-4">Strefa</th>
+                            <th class="py-3 pr-4">Kelner</th>
+                            <th class="py-3 pr-4">Zamówienia</th>
+                            <th class="py-3 pr-4 text-right">Akcje</th>
+                        </tr>
                         </thead>
                         <tbody class="divide-y divide-brand-dark/10">
-                            @forelse($tables as $table)
-                                <tr>
-                                    <td class="py-3 pr-4 font-black text-brand-dark">Stolik {{ $table->number }}</td>
-                                    <td class="py-3 pr-4">{{ $table->seats }}</td>
-                                    <td class="py-3 pr-4">
+                        @forelse($tables as $table)
+                            <tr>
+                                <td class="py-3 pr-4 font-black text-brand-dark">Stolik {{ $table->number }}</td>
+                                <td class="py-3 pr-4">{{ $table->seats }}</td>
+                                <td class="py-3 pr-4">
                                         <span class="rounded-full px-3 py-1 text-xs font-bold {{ $table->status === 'wolny' ? 'bg-green-100 text-green-800' : ($table->status === 'nieaktywny' ? 'bg-gray-200 text-gray-700' : 'bg-yellow-100 text-yellow-800') }}">
                                             {{ $statuses[$table->status] ?? $table->status }}
                                         </span>
-                                    </td>
-                                    <td class="py-3 pr-4">
-                                        @if($table->zone)
-                                            <span class="font-bold text-brand-dark">{{ $table->zone->name }}</span>
-                                            <span class="mt-1 block text-xs {{ $table->zone->is_active ? 'text-green-700' : 'text-gray-500' }}">
+                                </td>
+                                <td class="py-3 pr-4">
+                                    @if($table->zone)
+                                        <span class="font-bold text-brand-dark">{{ $table->zone->name }}</span>
+                                        <span class="mt-1 block text-xs {{ $table->zone->is_active ? 'text-green-700' : 'text-gray-500' }}">
                                                 {{ $table->zone->is_active ? 'Aktywna' : 'Nieaktywna' }}
                                             </span>
-                                        @else
-                                            <span class="text-brand-accent">Poza strefą</span>
-                                        @endif
-                                    </td>
-                                    <td class="py-3 pr-4">
-                                        @if($table->assignedWaiter)
-                                            <span class="font-bold text-brand-dark">{{ $table->assignedWaiter->name }}</span>
-                                            <span class="mt-1 block text-xs text-brand-accent">{{ $table->assignedWaiter->email }}</span>
-                                        @elseif($table->zone?->is_active && $table->zone?->assignedWaiter)
-                                            <span class="font-bold text-brand-dark">{{ $table->zone->assignedWaiter->name }}</span>
-                                            <span class="mt-1 block text-xs text-brand-accent">Ze strefy: {{ $table->zone->name }}</span>
-                                        @else
-                                            <span class="text-brand-accent">Bez przypisania</span>
-                                        @endif
-                                    </td>
-                                    <td class="py-3 pr-4">{{ $table->orders_count }}</td>
-                                    <td class="py-3 pr-4">
-                                        <div class="flex flex-wrap justify-end gap-2">
-                                            <a href="{{ route('manager.tables.edit', $table) }}" class="rounded-md border border-brand-dark/20 px-3 py-2 text-xs font-bold text-brand-dark hover:bg-brand-light">
-                                                Edytuj
-                                            </a>
-                                            <form method="POST" action="{{ route('manager.tables.destroy', $table) }}" onsubmit="return confirm('Usunąć stolik?');">
-                                                @csrf
-                                                @method('DELETE')
-                                                <button type="submit" class="rounded-md border border-red-700 px-3 py-2 text-xs font-bold text-red-700 hover:bg-red-50">
-                                                    Usuń
-                                                </button>
-                                            </form>
-                                        </div>
-                                    </td>
-                                </tr>
-                            @empty
-                                <tr>
-                                    <td colspan="7" class="py-5 text-center text-brand-accent">Brak stolików w bazie.</td>
-                                </tr>
-                            @endforelse
+                                    @else
+                                        <span class="text-brand-accent">Poza strefą</span>
+                                    @endif
+                                </td>
+                                <td class="py-3 pr-4">
+                                    @if($table->assignedWaiter)
+                                        <span class="font-bold text-brand-dark">{{ $table->assignedWaiter->name }}</span>
+                                        <span class="mt-1 block text-xs text-brand-accent">{{ $table->assignedWaiter->email }}</span>
+                                    @elseif($table->zone?->is_active && $table->zone?->assignedWaiter)
+                                        <span class="font-bold text-brand-dark">{{ $table->zone->assignedWaiter->name }}</span>
+                                        <span class="mt-1 block text-xs text-brand-accent">Ze strefy: {{ $table->zone->name }}</span>
+                                    @else
+                                        <span class="text-brand-accent">Bez przypisania</span>
+                                    @endif
+                                </td>
+                                <td class="py-3 pr-4">{{ $table->orders_count }}</td>
+                                <td class="py-3 pr-4">
+                                    <div class="flex flex-wrap justify-end gap-2">
+                                        <a href="{{ route('manager.tables.edit', $table) }}" class="rounded-md border border-brand-dark/20 px-3 py-2 text-xs font-bold text-brand-dark hover:bg-brand-light">
+                                            Edytuj
+                                        </a>
+                                        <form method="POST" action="{{ route('manager.tables.destroy', $table) }}" onsubmit="return confirm('Usunąć stolik?');">
+                                            @csrf
+                                            @method('DELETE')
+                                            <button type="submit" class="rounded-md border border-red-700 px-3 py-2 text-xs font-bold text-red-700 hover:bg-red-50">
+                                                Usuń
+                                            </button>
+                                        </form>
+                                    </div>
+                                </td>
+                            </tr>
+                        @empty
+                            <tr>
+                                <td colspan="7" class="py-5 text-center text-brand-accent">Brak stolików w bazie.</td>
+                            </tr>
+                        @endforelse
                         </tbody>
                     </table>
                 </div>

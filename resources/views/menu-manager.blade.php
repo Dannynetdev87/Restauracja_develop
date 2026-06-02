@@ -2,12 +2,19 @@
     <x-slot:title>Zarządzanie menu - SmakPrzeszłości</x-slot>
 
     <section class="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
-        <div class="flex flex-col gap-2 mb-8">
-            <span class="text-sm font-bold uppercase text-brand-accent">Panel managera</span>
-            <h1 class="text-3xl font-black text-brand-dark">Zarządzanie menu</h1>
-            <p class="text-brand-accent max-w-3xl">
-                Kategorie i pozycje menu są podstawą późniejszego procesu zamówień. Pozycji użytych w zamówieniach nie usuwamy z historii, tylko dezaktywujemy.
-            </p>
+        <div class="mb-8 flex flex-col gap-5 border-b border-brand-dark/10 pb-6 lg:flex-row lg:items-end lg:justify-between">
+            <div>
+                <span class="text-sm font-bold uppercase text-brand-accent">Panel managera</span>
+                <h1 class="mt-1 text-3xl font-black text-brand-dark">Zarządzanie menu</h1>
+                <p class="mt-1 text-brand-accent max-w-3xl">
+                    Kategorie i pozycje menu są podstawą późniejszego procesu zamówień. Pozycji użytych w zamówieniach nie usuwamy z historii, tylko dezaktywujemy.
+                </p>
+            </div>
+
+            <a href="{{ route('manager.dashboard') }}"
+               class="w-fit rounded-md border border-brand-dark/20 bg-white px-4 py-2 text-sm font-bold text-brand-dark hover:bg-brand-light">
+                Powrót do panelu
+            </a>
         </div>
 
         @if(session('success'))
@@ -150,57 +157,57 @@
                     <div class="mt-4 overflow-x-auto">
                         <table class="min-w-full text-left text-sm">
                             <thead class="border-b border-brand-dark/10 text-xs uppercase text-brand-accent">
-                                <tr>
-                                    <th class="py-3 pr-4">Nazwa</th>
-                                    <th class="py-3 pr-4">Cena</th>
-                                    <th class="py-3 pr-4">Obszar</th>
-                                    <th class="py-3 pr-4">Status</th>
-                                    <th class="py-3 pr-4 text-right">Akcje</th>
-                                </tr>
+                            <tr>
+                                <th class="py-3 pr-4">Nazwa</th>
+                                <th class="py-3 pr-4">Cena</th>
+                                <th class="py-3 pr-4">Obszar</th>
+                                <th class="py-3 pr-4">Status</th>
+                                <th class="py-3 pr-4 text-right">Akcje</th>
+                            </tr>
                             </thead>
                             <tbody class="divide-y divide-brand-dark/10">
-                                @forelse($category->items as $item)
-                                    <tr>
-                                        <td class="py-3 pr-4 font-bold text-brand-dark">
-                                            {{ $item->name }}
-                                            @if($item->description)
-                                                <p class="mt-1 max-w-xl text-xs font-normal text-brand-accent">{{ $item->description }}</p>
-                                            @endif
-                                        </td>
-                                        <td class="py-3 pr-4">{{ number_format($item->price, 2, ',', ' ') }} zł</td>
-                                        <td class="py-3 pr-4">{{ $item->production_area === 'bar' ? 'Bar' : 'Kuchnia' }}</td>
-                                        <td class="py-3 pr-4">
+                            @forelse($category->items as $item)
+                                <tr>
+                                    <td class="py-3 pr-4 font-bold text-brand-dark">
+                                        {{ $item->name }}
+                                        @if($item->description)
+                                            <p class="mt-1 max-w-xl text-xs font-normal text-brand-accent">{{ $item->description }}</p>
+                                        @endif
+                                    </td>
+                                    <td class="py-3 pr-4">{{ number_format($item->price, 2, ',', ' ') }} zł</td>
+                                    <td class="py-3 pr-4">{{ $item->production_area === 'bar' ? 'Bar' : 'Kuchnia' }}</td>
+                                    <td class="py-3 pr-4">
                                             <span class="rounded-full px-3 py-1 text-xs font-bold {{ $item->available ? 'bg-green-100 text-green-800' : 'bg-gray-200 text-gray-700' }}">
                                                 {{ $item->available ? 'dostępna' : 'niedostępna' }}
                                             </span>
-                                        </td>
-                                        <td class="py-3 pr-4">
-                                            <div class="flex flex-wrap justify-end gap-2">
-                                                <a href="{{ route('manager.menu-items.edit', $item) }}" class="rounded-md border border-brand-dark/20 px-3 py-2 text-xs font-bold text-brand-dark hover:bg-brand-light">
-                                                    Edytuj
-                                                </a>
-                                                <form method="POST" action="{{ route('manager.menu-items.availability', $item) }}">
-                                                    @csrf
-                                                    @method('PATCH')
-                                                    <button type="submit" class="rounded-md border border-brand-dark/20 px-3 py-2 text-xs font-bold text-brand-dark hover:bg-brand-light">
-                                                        {{ $item->available ? 'Wyłącz' : 'Włącz' }}
-                                                    </button>
-                                                </form>
-                                                <form method="POST" action="{{ route('manager.menu-items.destroy', $item) }}" onsubmit="return confirm('Usunąć lub dezaktywować pozycję menu?');">
-                                                    @csrf
-                                                    @method('DELETE')
-                                                    <button type="submit" class="rounded-md border border-red-700 px-3 py-2 text-xs font-bold text-red-700 hover:bg-red-50">
-                                                        Usuń
-                                                    </button>
-                                                </form>
-                                            </div>
-                                        </td>
-                                    </tr>
-                                @empty
-                                    <tr>
-                                        <td colspan="5" class="py-5 text-center text-brand-accent">Ta kategoria nie ma jeszcze pozycji menu.</td>
-                                    </tr>
-                                @endforelse
+                                    </td>
+                                    <td class="py-3 pr-4">
+                                        <div class="flex flex-wrap justify-end gap-2">
+                                            <a href="{{ route('manager.menu-items.edit', $item) }}" class="rounded-md border border-brand-dark/20 px-3 py-2 text-xs font-bold text-brand-dark hover:bg-brand-light">
+                                                Edytuj
+                                            </a>
+                                            <form method="POST" action="{{ route('manager.menu-items.availability', $item) }}">
+                                                @csrf
+                                                @method('PATCH')
+                                                <button type="submit" class="rounded-md border border-brand-dark/20 px-3 py-2 text-xs font-bold text-brand-dark hover:bg-brand-light">
+                                                    {{ $item->available ? 'Wyłącz' : 'Włącz' }}
+                                                </button>
+                                            </form>
+                                            <form method="POST" action="{{ route('manager.menu-items.destroy', $item) }}" onsubmit="return confirm('Usunąć lub dezaktywować pozycję menu?');">
+                                                @csrf
+                                                @method('DELETE')
+                                                <button type="submit" class="rounded-md border border-red-700 px-3 py-2 text-xs font-bold text-red-700 hover:bg-red-50">
+                                                    Usuń
+                                                </button>
+                                            </form>
+                                        </div>
+                                    </td>
+                                </tr>
+                            @empty
+                                <tr>
+                                    <td colspan="5" class="py-5 text-center text-brand-accent">Ta kategoria nie ma jeszcze pozycji menu.</td>
+                                </tr>
+                            @endforelse
                             </tbody>
                         </table>
                     </div>

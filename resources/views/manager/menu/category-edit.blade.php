@@ -2,23 +2,31 @@
     <x-slot:title>Edycja kategorii - SmakPrzeszłości</x-slot>
 
     <section class="w-full max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
-        <a href="{{ route('manager.podglad') }}" class="text-sm font-bold text-brand-accent hover:text-brand-dark">← Wróć do menu</a>
+        <div class="mb-8 flex flex-col gap-5 border-b border-brand-dark/10 pb-6 lg:flex-row lg:items-end lg:justify-between">
+            <div>
+                <span class="text-sm font-bold uppercase text-brand-accent">Panel managera</span>
+                <h1 class="mt-1 text-3xl font-black text-brand-dark">Edytuj kategorię</h1>
+            </div>
 
-        <div class="mt-6 rounded-lg border border-brand-dark/15 bg-white p-6 shadow-sm">
-            <h1 class="text-3xl font-black text-brand-dark">Edytuj kategorię</h1>
+            <a href="{{ route('manager.dashboard') }}"
+               class="w-fit rounded-md border border-brand-dark/20 bg-white px-4 py-2 text-sm font-bold text-brand-dark hover:bg-brand-light">
+                Powrót do panelu
+            </a>
+        </div>
 
-            @if($errors->any())
-                <div class="mt-5 rounded-lg border border-red-700 bg-red-50 px-4 py-3 text-sm text-red-800">
-                    <strong>Popraw błędy formularza:</strong>
-                    <ul class="mt-2 list-disc pl-5">
-                        @foreach($errors->all() as $error)
-                            <li>{{ $error }}</li>
-                        @endforeach
-                    </ul>
-                </div>
-            @endif
+        @if($errors->any())
+            <div class="rounded-lg border border-red-700 bg-red-50 px-4 py-3 text-sm text-red-800">
+                <strong>Popraw błędy formularza:</strong>
+                <ul class="mt-2 list-disc pl-5">
+                    @foreach($errors->all() as $error)
+                        <li>{{ $error }}</li>
+                    @endforeach
+                </ul>
+            </div>
+        @endif
 
-            <form method="POST" action="{{ route('manager.menu-categories.update', $category) }}" class="mt-6 space-y-4">
+        <div class="rounded-lg border border-brand-dark/15 bg-white p-6 shadow-sm">
+            <form method="POST" action="{{ route('manager.menu-categories.update', $category) }}" class="space-y-4">
                 @csrf
                 @method('PUT')
 
