@@ -116,22 +116,28 @@
             </div>
         </div>
 
-        <aside class="h-fit rounded-lg border border-brand-dark/15 bg-white p-5 shadow-sm">
-            <span class="text-sm font-bold uppercase text-brand-accent">Podsumowanie</span>
-            <div class="mt-4 space-y-3 text-sm text-brand-dark">
-                <div class="flex justify-between gap-4">
-                    <span>Stolik</span>
-                    <strong>{{ $order->table->number }}</strong>
+        <div class="h-fit space-y-4">
+            <aside class="rounded-lg border border-brand-dark/15 bg-white p-5 shadow-sm">
+                <span class="text-sm font-bold uppercase text-brand-accent">Podsumowanie</span>
+                <div class="mt-4 space-y-3 text-sm text-brand-dark">
+                    <div class="flex justify-between gap-4">
+                        <span>Stolik</span>
+                        <strong>{{ $order->table->number }}</strong>
+                    </div>
+                    <div class="flex justify-between gap-4">
+                        <span>Liczba pozycji</span>
+                        <strong>{{ $order->items->where('status', '!=', \App\Models\OrderItem::STATUS_CANCELLED)->sum('quantity') }}</strong>
+                    </div>
+                    <div class="flex justify-between gap-4 border-t border-brand-dark/10 pt-3 text-lg">
+                        <span>Razem</span>
+                        <strong>{{ number_format($order->total(), 2, ',', ' ') }} zł</strong>
+                    </div>
                 </div>
-                <div class="flex justify-between gap-4">
-                    <span>Liczba pozycji</span>
-                    <strong>{{ $order->items->where('status', '!=', \App\Models\OrderItem::STATUS_CANCELLED)->sum('quantity') }}</strong>
-                </div>
-                <div class="flex justify-between gap-4 border-t border-brand-dark/10 pt-3 text-lg">
-                    <span>Razem</span>
-                    <strong>{{ number_format($order->total(), 2, ',', ' ') }} zł</strong>
-                </div>
-            </div>
-        </aside>
+            </aside>
+
+            <a href="{{ route('waiter.tables.index') }}" class="flex w-full items-center justify-center rounded-lg border border-brand-dark/20 bg-brand-dark px-4 py-3 text-sm font-bold text-brand-light shadow-sm transition-all hover:bg-brand-light hover:text-brand-dark">
+                Wróć do stolików
+            </a>
+        </div>
     </div>
 </section>

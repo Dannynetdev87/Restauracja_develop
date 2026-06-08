@@ -157,7 +157,8 @@
                     </div>
                 </div>
 
-                <aside class="h-fit rounded-lg border border-brand-dark/15 bg-white p-5 shadow-sm lg:sticky lg:top-28">
+                <div class="h-fit space-y-4 lg:sticky lg:top-28">
+                <aside class="rounded-lg border border-brand-dark/15 bg-white p-5 shadow-sm">
                     <span class="text-sm font-bold uppercase text-brand-accent">Podsumowanie rachunku</span>
 
                     <div class="mt-4 space-y-3 text-sm text-brand-dark">
@@ -302,6 +303,11 @@
                         </div>
                     @endif
                 </aside>
+
+                    <a href="{{ route('waiter.tables.index') }}" class="flex w-full items-center justify-center rounded-lg border border-brand-dark/20 bg-brand-dark px-4 py-3 text-sm font-bold text-brand-light shadow-sm transition-all hover:bg-brand-light hover:text-brand-dark">
+                        Wróć do stolików
+                    </a>
+                </div>
             </div>
         </form>
     </section>
