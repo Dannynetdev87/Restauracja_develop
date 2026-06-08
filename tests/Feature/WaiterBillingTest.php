@@ -372,6 +372,7 @@ class WaiterBillingTest extends TestCase
         $waiter = User::factory()->create(['role' => User::ROLE_WAITER]);
         $order = $this->createOrder($waiter, Order::STATUS_SERVED);
         $paidItem = $this->createOrderItem($order, 'Raz opłacone', 1, 22.00);
+        $this->createOrderItem($order, 'Jeszcze nieopłacone', 1, 18.00);
 
         $this
             ->actingAs($waiter)
