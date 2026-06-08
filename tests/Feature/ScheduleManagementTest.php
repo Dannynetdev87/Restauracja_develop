@@ -4,6 +4,7 @@ namespace Tests\Feature;
 
 use App\Models\Schedule;
 use App\Models\User;
+use App\Models\Zone;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Tests\TestCase;
 
@@ -113,6 +114,50 @@ class ScheduleManagementTest extends TestCase
         ]);
     }
 
+    public function test_manager_can_create_schedule_with_zone(): void
+    {
+        $manager = User::factory()->create(['role' => User::ROLE_MANAGER]);
+        $waiter = User::factory()->create(['role' => User::ROLE_WAITER]);
+        $zone = Zone::create(['name' => 'Sala Testowa', 'is_active' => true]);
+
+        $this
+            ->actingAs($manager)
+            ->post(route('manager.schedules.store'), [
+                'user_id' => $waiter->id,
+                'zone_id' => $zone->id,
+                'date' => '2026-05-25',
+                'start_time' => '10:00',
+                'end_time' => '18:00',
+                'notes' => 'Dyżur w strefie',
+            ])
+            ->assertRedirect(route('schedule.index', ['view' => 'week', 'date' => '2026-05-25']));
+
+        $this->assertDatabaseHas('schedules', [
+            'user_id' => $waiter->id,
+            'zone_id' => $zone->id,
+            'date' => '2026-05-25',
+            'start_time' => '10:00',
+            'end_time' => '18:00',
+        ]);
+    }
+
+    public function test_manager_cannot_create_schedule_with_missing_zone(): void
+    {
+        $manager = User::factory()->create(['role' => User::ROLE_MANAGER]);
+        $waiter = User::factory()->create(['role' => User::ROLE_WAITER]);
+
+        $this
+            ->actingAs($manager)
+            ->post(route('manager.schedules.store'), [
+                'user_id' => $waiter->id,
+                'zone_id' => 999999,
+                'date' => '2026-05-25',
+                'start_time' => '10:00',
+                'end_time' => '18:00',
+            ])
+            ->assertSessionHasErrors('zone_id');
+    }
+
     public function test_manager_cannot_create_schedule_for_admin_account(): void
     {
         $manager = User::factory()->create(['role' => User::ROLE_MANAGER]);
@@ -159,6 +204,62 @@ class ScheduleManagementTest extends TestCase
             'end_time' => '20:00',
             'notes' => 'Sala B',
         ]);
+    }
+
+    public function test_manager_can_update_schedule_zone(): void
+    {
+        $manager = User::factory()->create(['role' => User::ROLE_MANAGER]);
+        $waiter = User::factory()->create(['role' => User::ROLE_WAITER]);
+        $oldZone = Zone::create(['name' => 'Sala Stara', 'is_active' => true]);
+        $newZone = Zone::create(['name' => 'Sala Nowa', 'is_active' => true]);
+        $schedule = $this->createSchedule($waiter, '2026-05-25', '10:00', '18:00', 'Sala A', $oldZone);
+
+        $this
+            ->actingAs($manager)
+            ->put(route('manager.schedules.update', $schedule), [
+                'user_id' => $waiter->id,
+                'zone_id' => $newZone->id,
+                'date' => '2026-05-25',
+                'start_time' => '10:00',
+                'end_time' => '18:00',
+                'notes' => 'Sala A',
+            ])
+            ->assertRedirect(route('schedule.index', ['view' => 'week', 'date' => '2026-05-25']));
+
+        $this->assertDatabaseHas('schedules', [
+            'id' => $schedule->id,
+            'zone_id' => $newZone->id,
+        ]);
+    }
+
+    public function test_schedule_view_shows_zone_name(): void
+    {
+        $manager = User::factory()->create(['role' => User::ROLE_MANAGER]);
+        $waiter = User::factory()->create(['role' => User::ROLE_WAITER]);
+        $zone = Zone::create(['name' => 'Taras Testowy', 'is_active' => true]);
+        $this->createSchedule($waiter, '2026-05-25', '10:00', '18:00', null, $zone);
+
+        $this
+            ->actingAs($manager)
+            ->get(route('schedule.index', ['view' => 'week', 'date' => '2026-05-25']))
+            ->assertOk()
+            ->assertSee('Taras Testowy');
+    }
+
+    public function test_deleting_zone_keeps_schedule_and_clears_zone_id(): void
+    {
+        $waiter = User::factory()->create(['role' => User::ROLE_WAITER]);
+        $zone = Zone::create(['name' => 'Strefa Do Usuniecia', 'is_active' => true]);
+        $schedule = $this->createSchedule($waiter, '2026-05-25', '10:00', '18:00', null, $zone);
+
+        $zone->delete();
+
+        $schedule->refresh();
+
+        $this->assertDatabaseHas('schedules', [
+            'id' => $schedule->id,
+        ]);
+        $this->assertNull($schedule->zone_id);
     }
 
     public function test_manager_can_delete_schedule(): void
@@ -233,9 +334,11 @@ class ScheduleManagementTest extends TestCase
         string $startTime,
         string $endTime,
         ?string $notes = null,
+        ?Zone $zone = null,
     ): Schedule {
         return Schedule::create([
             'user_id' => $user->id,
+            'zone_id' => $zone?->id,
             'date' => $date,
             'start_time' => $startTime,
             'end_time' => $endTime,

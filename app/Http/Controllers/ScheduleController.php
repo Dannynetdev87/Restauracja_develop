@@ -6,6 +6,7 @@ use App\Http\Requests\StoreScheduleRequest;
 use App\Http\Requests\UpdateScheduleRequest;
 use App\Models\Schedule;
 use App\Models\User;
+use App\Models\Zone;
 use Carbon\Carbon;
 use Carbon\CarbonInterface;
 use Illuminate\Http\Request;
@@ -99,7 +100,7 @@ class ScheduleController extends Controller
             : collect([$user]);
 
         $schedules = Schedule::query()
-            ->with('user')
+            ->with(['user', 'zone'])
             ->whereBetween('date', [$rangeStart->toDateString(), $rangeEnd->toDateString()])
             ->when(
                 $isManagerOrAdmin,
@@ -130,7 +131,11 @@ class ScheduleController extends Controller
                 fn (Schedule $schedule) => $schedule->date->toDateString(),
             ]),
             'schedulesByDate' => $schedules->groupBy(fn (Schedule $schedule) => $schedule->date->toDateString()),
-            'editingSchedule' => $editingSchedule?->load('user'),
+            'editingSchedule' => $editingSchedule?->load(['user', 'zone']),
+            'zones' => Zone::query()
+                ->where('is_active', true)
+                ->orderBy('name')
+                ->get(),
         ]);
     }
 
