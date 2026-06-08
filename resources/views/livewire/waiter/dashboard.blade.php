@@ -19,9 +19,9 @@
 <section
     id="waiter-dashboard-refresh"
     wire:poll.5s
-    class="w-full px-4 py-8 sm:px-6 lg:px-8"
+    class="w-full px-4 py-6 sm:px-6 sm:py-8 lg:px-8"
 >
-    <div class="mx-auto max-w-6xl">
+    <div class="mx-auto max-w-6xl min-w-0">
         @if(session('success'))
             <div class="mb-6 rounded-lg border border-green-700 bg-green-50 px-4 py-3 text-sm font-semibold text-green-800">
                 {{ session('success') }}
@@ -34,33 +34,33 @@
             </div>
         @endif
 
-        <div class="mb-8 flex flex-wrap justify-center gap-4">
+        <div class="mb-6 grid grid-cols-3 gap-2 sm:mb-8 sm:flex sm:flex-wrap sm:justify-center sm:gap-4">
             <button type="button" disabled
-               class="min-w-40 rounded-xl bg-wheat px-8 py-4 text-center text-sm font-black uppercase tracking-wide text-brand-dark shadow-sm border border-current">
+               class="min-w-0 rounded-xl border border-current bg-wheat px-2 py-3 text-center text-xs font-black uppercase tracking-wide text-brand-dark shadow-sm sm:min-w-40 sm:px-8 sm:py-4 sm:text-sm">
                 Dashboard
             </button>
             <a href="{{ route('waiter.tables.index') }}"
-               class="min-w-40 rounded-xl bg-brand-dark px-8 py-4 text-center text-sm font-black uppercase tracking-wide text-brand-light shadow-sm transition hover:bg-brand-accent">
+               class="min-w-0 rounded-xl bg-brand-dark px-2 py-3 text-center text-xs font-black uppercase tracking-wide text-brand-light shadow-sm transition hover:bg-brand-accent sm:min-w-40 sm:px-8 sm:py-4 sm:text-sm">
                 Stoliki
             </a>
             <a href="{{ route('waiter.stats') }}"
-               class="min-w-40 rounded-xl bg-brand-dark px-8 py-4 text-center text-sm font-black uppercase tracking-wide text-brand-light shadow-sm transition hover:bg-brand-accent">
+               class="min-w-0 rounded-xl bg-brand-dark px-2 py-3 text-center text-xs font-black uppercase tracking-wide text-brand-light shadow-sm transition hover:bg-brand-accent sm:min-w-40 sm:px-8 sm:py-4 sm:text-sm">
                 Napiwki
             </a>
         </div>
 
-        <div class="grid gap-5 lg:grid-cols-3">
-            <section class="rounded-xl border-2 border-brand-dark bg-brand-light/50 p-5">
-                <h2 class="border-b-2 border-brand-dark pb-3 text-center text-sm font-black uppercase tracking-[0.16em] text-brand-dark">
+        <div class="grid gap-4 lg:grid-cols-3 lg:gap-5">
+            <section class="rounded-xl border-2 border-brand-dark bg-brand-light/50 p-4 sm:p-5">
+                <h2 class="border-b-2 border-brand-dark pb-3 text-center text-sm font-black uppercase tracking-wide text-brand-dark sm:tracking-[0.16em]">
                     W realizacji
                 </h2>
 
                 <div class="mt-4 space-y-3">
                     @forelse($inProgressItems->take(4) as $item)
                         <article wire:key="waiter-dashboard-progress-{{ $item->id }}" class="rounded-lg border border-brand-dark/20 bg-white/80 p-4 shadow-sm">
-                            <div class="flex items-start justify-between gap-3">
+                            <div class="flex flex-wrap items-start justify-between gap-3">
                                 <div class="min-w-0">
-                                    <h3 class="font-black text-brand-dark">{{ $formatItemTitle($item) }}</h3>
+                                    <h3 class="break-words font-black text-brand-dark">{{ $formatItemTitle($item) }}</h3>
                                     <p class="mt-1 text-xs font-bold text-amber-800">
                                         Status: {{ $itemStatusLabel($item) }}
                                     </p>
@@ -78,17 +78,17 @@
                 </div>
             </section>
 
-            <section class="rounded-xl border-2 border-red-900 bg-red-50/20 p-5">
-                <h2 class="border-b-2 border-red-900 pb-3 text-center text-sm font-black uppercase tracking-[0.16em] text-red-950">
+            <section class="rounded-xl border-2 border-red-900 bg-red-50/20 p-4 sm:p-5">
+                <h2 class="border-b-2 border-red-900 pb-3 text-center text-sm font-black uppercase tracking-wide text-red-950 sm:tracking-[0.16em]">
                     Anulowane / braki
                 </h2>
 
                 <div class="mt-4 space-y-3">
                     @forelse($cancelledItems->take(4) as $item)
                         <article wire:key="waiter-dashboard-cancelled-{{ $item->id }}" class="rounded-lg border border-red-200 bg-white/90 p-4 shadow-sm">
-                            <div class="flex items-start justify-between gap-3">
+                            <div class="flex flex-wrap items-start justify-between gap-3">
                                 <div class="min-w-0">
-                                    <h3 class="font-black text-brand-dark line-through decoration-red-700/60">
+                                    <h3 class="break-words font-black text-brand-dark line-through decoration-red-700/60">
                                         {{ $formatItemTitle($item) }}
                                     </h3>
                                     <p class="mt-1 text-xs font-bold text-red-800">
@@ -112,17 +112,17 @@
                 </div>
             </section>
 
-            <section class="rounded-xl border-2 border-emerald-900 bg-emerald-50/20 p-5">
-                <h2 class="border-b-2 border-emerald-900 pb-3 text-center text-sm font-black uppercase tracking-[0.16em] text-emerald-950">
+            <section class="rounded-xl border-2 border-emerald-900 bg-emerald-50/20 p-4 sm:p-5">
+                <h2 class="border-b-2 border-emerald-900 pb-3 text-center text-sm font-black uppercase tracking-wide text-emerald-950 sm:tracking-[0.16em]">
                     Do odbioru
                 </h2>
 
                 <div class="mt-4 space-y-3">
                     @forelse($readyItems->take(4) as $item)
                         <article wire:key="waiter-dashboard-ready-{{ $item->id }}" class="rounded-lg border border-emerald-200 bg-white/90 p-4 shadow-sm">
-                            <div class="flex items-start justify-between gap-3">
+                            <div class="flex flex-wrap items-start justify-between gap-3">
                                 <div class="min-w-0">
-                                    <h3 class="font-black text-brand-dark">{{ $formatItemTitle($item) }}</h3>
+                                    <h3 class="break-words font-black text-brand-dark">{{ $formatItemTitle($item) }}</h3>
                                     <p class="mt-1 text-xs font-bold text-emerald-800">
                                         Stan: Gotowe do dostarczenia
                                     </p>
@@ -149,16 +149,16 @@
             </section>
         </div>
 
-        <div class="mt-6 grid gap-5 lg:grid-cols-2">
-            <section class="rounded-xl border-2 border-brand-dark bg-brand-light/50 p-5">
-                <span class="text-xs font-black uppercase tracking-[0.16em] text-brand-accent">
+        <div class="mt-5 grid gap-4 lg:mt-6 lg:grid-cols-2 lg:gap-5">
+            <section class="rounded-xl border-2 border-brand-dark bg-brand-light/50 p-4 sm:p-5">
+                <span class="text-xs font-black uppercase tracking-wide text-brand-accent sm:tracking-[0.16em]">
                     Twoja strefa operacyjna
                 </span>
                 <h2 class="mt-2 text-lg font-black text-brand-dark">
                     Aktywne stoliki i dostępne miejsca
                 </h2>
 
-                <div class="mt-8 flex flex-wrap gap-2">
+                <div class="mt-5 flex flex-wrap gap-2 sm:mt-8">
                     @forelse($tables as $table)
                         @php
                             $activeOrder = $table->activeOrders->first();
@@ -189,10 +189,10 @@
                 </div>
             </section>
 
-            <section class="rounded-xl border-2 border-brand-dark bg-brand-light/50 p-5">
-                <div class="flex items-start justify-between gap-4">
+            <section class="rounded-xl border-2 border-brand-dark bg-brand-light/50 p-4 sm:p-5">
+                <div class="flex flex-wrap items-start justify-between gap-4">
                     <div>
-                        <span class="text-xs font-black uppercase tracking-[0.16em] text-brand-accent">
+                        <span class="text-xs font-black uppercase tracking-wide text-brand-accent sm:tracking-[0.16em]">
                             Dzisiejsza zmiana
                         </span>
                         <h2 class="mt-2 text-lg font-black text-brand-dark">

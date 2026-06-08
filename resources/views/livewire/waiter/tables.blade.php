@@ -1,26 +1,26 @@
 <section
     wire:poll.5s
-    class="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10"
+    class="w-full max-w-7xl mx-auto px-4 py-6 sm:px-6 sm:py-10 lg:px-8"
 >
-    <div class="mb-8 flex flex-wrap justify-center gap-4">
+    <div class="mb-6 grid grid-cols-3 gap-2 sm:mb-8 sm:flex sm:flex-wrap sm:justify-center sm:gap-4">
         <a href="{{ route('waiter.dashboard') }}"
-           class="min-w-40 rounded-xl bg-brand-dark px-8 py-4 text-center text-sm font-black uppercase tracking-wide text-brand-light shadow-sm transition hover:bg-brand-accent">
+           class="min-w-0 rounded-xl bg-brand-dark px-2 py-3 text-center text-xs font-black uppercase tracking-wide text-brand-light shadow-sm transition hover:bg-brand-accent sm:min-w-40 sm:px-8 sm:py-4 sm:text-sm">
             Dashboard
         </a>
         <button type="button" disabled
-                class="min-w-40 rounded-xl bg-wheat px-8 py-4 text-center text-sm font-black uppercase tracking-wide text-brand-dark shadow-sm border border-current">
+                class="min-w-0 rounded-xl border border-current bg-wheat px-2 py-3 text-center text-xs font-black uppercase tracking-wide text-brand-dark shadow-sm sm:min-w-40 sm:px-8 sm:py-4 sm:text-sm">
             Stoliki
         </button>
         <a href="{{ route('waiter.stats') }}"
-           class="min-w-40 rounded-xl bg-brand-dark px-8 py-4 text-center text-sm font-black uppercase tracking-wide text-brand-light shadow-sm transition hover:bg-brand-accent">
+           class="min-w-0 rounded-xl bg-brand-dark px-2 py-3 text-center text-xs font-black uppercase tracking-wide text-brand-light shadow-sm transition hover:bg-brand-accent sm:min-w-40 sm:px-8 sm:py-4 sm:text-sm">
             Napiwki
         </a>
     </div>
 
-    <div class="flex flex-col gap-2 mb-8">
+    <div class="mb-6 flex min-w-0 flex-col gap-2 sm:mb-8">
         <span class="text-sm font-bold uppercase text-brand-accent">Panel kelnera</span>
-        <h1 class="text-3xl font-black text-brand-dark">Stoliki</h1>
-        <p class="text-brand-accent max-w-3xl">
+        <h1 class="text-2xl font-black text-brand-dark sm:text-3xl">Stoliki</h1>
+        <p class="max-w-3xl text-sm leading-6 text-brand-accent sm:text-base">
             Wybierz wolny stolik, aby rozpocząć zamówienie. Przy zajętym stoliku możesz wrócić do aktywnego zamówienia, sprawdzić status pozycji i dodać kolejne dania.
         </p>
     </div>
@@ -37,7 +37,7 @@
         </div>
     @endif
 
-    <div class="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+    <div class="grid gap-3 sm:grid-cols-2 sm:gap-4 xl:grid-cols-3">
         @forelse($tables as $table)
             @php
                 $activeOrder = $table->activeOrders->first();
@@ -68,11 +68,11 @@
                 };
             @endphp
 
-            <article wire:key="waiter-table-{{ $table->id }}" class="rounded-lg border border-brand-dark/15 bg-white p-5 shadow-sm flex flex-col justify-between">
+            <article wire:key="waiter-table-{{ $table->id }}" class="flex min-w-0 flex-col justify-between rounded-lg border border-brand-dark/15 bg-white p-4 shadow-sm sm:p-5">
                 <div>
-                    <div class="flex items-start justify-between gap-4">
-                        <div>
-                            <h2 class="text-2xl font-black text-brand-dark">Stolik {{ $table->number }}</h2>
+                    <div class="flex flex-wrap items-start justify-between gap-3 sm:gap-4">
+                        <div class="min-w-0">
+                            <h2 class="text-xl font-black text-brand-dark sm:text-2xl">Stolik {{ $table->number }}</h2>
                             <p class="mt-1 text-sm text-brand-accent">Miejsca: {{ $table->seats }}</p>
                             @if($table->zone)
                                 <p class="mt-1 text-xs font-bold uppercase text-brand-accent">Strefa: {{ $table->zone->name }}</p>
@@ -86,7 +86,7 @@
                     @if($activeOrder)
                         <div class="mt-4 space-y-3 rounded-lg border border-brand-dark/10 bg-brand-light p-3 text-sm text-brand-dark">
                             <div class="flex flex-wrap items-center justify-between gap-2">
-                                <div>
+                                <div class="min-w-0">
                                     <p class="font-black">Aktywne zamówienie #{{ $activeOrder->id }}</p>
                                     <p class="mt-1 text-xs text-brand-accent">
                                         Otwarte {{ $activeOrder->opened_at->format('H:i') }}
@@ -134,29 +134,29 @@
                 </div>
 
                 {{-- Przyciski akcji --}}
-                <div class="mt-5 flex flex-col gap-2">
+                <div class="mt-4 flex flex-col gap-2 sm:mt-5">
                     @if($canOpenOrder)
                         <a href="{{ route('waiter.orders.create', ['table_id' => $table->id]) }}"
-                           class="block w-full rounded-md bg-brand-dark px-4 py-2 text-center text-sm font-bold text-brand-light hover:bg-brand-accent">
+                           class="block w-full rounded-md bg-brand-dark px-4 py-3 text-center text-sm font-bold text-brand-light hover:bg-brand-accent sm:py-2">
                             Rozpocznij zamówienie
                         </a>
                     @elseif($isOwnActiveOrder)
                         <a href="{{ route('waiter.orders.show', $activeOrder) }}"
-                           class="block w-full rounded-md border border-brand-dark/20 bg-white px-4 py-2 text-center text-sm font-bold text-brand-dark hover:bg-brand-light">
+                           class="block w-full rounded-md border border-brand-dark/20 bg-white px-4 py-3 text-center text-sm font-bold text-brand-dark hover:bg-brand-light sm:py-2">
                             Zobacz zamówienie
                         </a>
                         <a href="{{ route('waiter.orders.create', ['table_id' => $table->id]) }}"
-                           class="block w-full rounded-md bg-brand-dark px-4 py-2 text-center text-sm font-bold text-brand-light hover:bg-brand-accent">
+                           class="block w-full rounded-md bg-brand-dark px-4 py-3 text-center text-sm font-bold text-brand-light hover:bg-brand-accent sm:py-2">
                             Dodaj pozycje
                         </a>
                     @elseif($activeOrder)
                         <button type="button" disabled
-                                class="w-full cursor-not-allowed rounded-md bg-gray-200 px-4 py-2 text-sm font-bold text-gray-600">
+                                class="w-full cursor-not-allowed rounded-md bg-gray-200 px-4 py-3 text-sm font-bold text-gray-600 sm:py-2">
                             Obsługuje inny kelner
                         </button>
                     @else
                         <button type="button" disabled
-                                class="w-full cursor-not-allowed rounded-md bg-gray-200 px-4 py-2 text-sm font-bold text-gray-600">
+                                class="w-full cursor-not-allowed rounded-md bg-gray-200 px-4 py-3 text-sm font-bold text-gray-600 sm:py-2">
                             Niedostępny
                         </button>
                     @endif
@@ -165,12 +165,12 @@
                         <button
                             type="button"
                             wire:click="closeReportForm"
-                            class="inline-flex w-full cursor-pointer items-center justify-center rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-xs font-bold text-red-700 transition-colors hover:bg-red-100"
+                            class="inline-flex w-full cursor-pointer items-center justify-center rounded-lg border border-red-200 bg-red-50 px-3 py-3 text-xs font-bold text-red-700 transition-colors hover:bg-red-100 sm:py-2"
                         >
                             Anuluj zgłoszenie
                         </button>
 
-                        <div wire:key="waiter-table-report-form-{{ $table->id }}" class="mt-3 rounded-xl border border-red-200 bg-red-50/60 p-4">
+                        <div wire:key="waiter-table-report-form-{{ $table->id }}" class="mt-3 rounded-xl border border-red-200 bg-red-50/60 p-3 sm:p-4">
                             <h4 class="mb-3 text-sm font-black text-red-800">
                                 Zgłoś problem - Stolik {{ $table->number }}
                             </h4>
@@ -225,7 +225,7 @@
                         <button
                             type="button"
                             wire:click="openReportForm({{ $table->id }})"
-                            class="inline-flex w-full cursor-pointer items-center justify-center rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-xs font-bold text-red-700 transition-colors hover:bg-red-100"
+                            class="inline-flex w-full cursor-pointer items-center justify-center rounded-lg border border-red-200 bg-red-50 px-3 py-3 text-xs font-bold text-red-700 transition-colors hover:bg-red-100 sm:py-2"
                         >
                             Zgłoś problem ze stolikiem
                         </button>
