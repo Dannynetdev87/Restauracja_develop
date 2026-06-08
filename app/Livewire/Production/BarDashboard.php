@@ -48,6 +48,7 @@ class BarDashboard extends Component
             'statusRouteName' => 'bar.order-items.status',
             'cancelRouteName' => 'bar.order-items.cancel',
             'selectCurrentRouteName' => 'bar.order-items.select-current',
+            'containerClass' => 'w-full px-1 py-4 sm:px-2 lg:px-3',
         ]);
     }
 }
