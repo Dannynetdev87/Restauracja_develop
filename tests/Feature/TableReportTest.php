@@ -2,10 +2,12 @@
 
 namespace Tests\Feature;
 
+use App\Livewire\Waiter\Tables;
 use App\Models\RestaurantTable;
 use App\Models\TableReport;
 use App\Models\User;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
+use Livewire\Livewire;
 use Tests\TestCase;
 
 class TableReportTest extends TestCase
@@ -116,6 +118,27 @@ class TableReportTest extends TestCase
             'restaurant_table_id' => $table->id,
             'reported_by' => $waiter->id,
         ]);
+    }
+
+    public function test_waiter_table_report_form_stays_open_after_livewire_refresh(): void
+    {
+        $waiter = User::factory()->create(['role' => User::ROLE_WAITER]);
+        $table = RestaurantTable::create([
+            'number' => 812,
+            'seats' => 4,
+            'status' => RestaurantTable::STATUS_FREE,
+            'assigned_waiter_id' => $waiter->id,
+        ]);
+
+        Livewire::actingAs($waiter)
+            ->test(Tables::class)
+            ->call('openReportForm', $table->id)
+            ->set("reportTypes.{$table->id}", 'inne')
+            ->set("reportMessages.{$table->id}", 'Klient prosi o pomoc managera.')
+            ->call('$refresh')
+            ->assertSet('openReportTableId', $table->id)
+            ->assertSet("reportTypes.{$table->id}", 'inne')
+            ->assertSet("reportMessages.{$table->id}", 'Klient prosi o pomoc managera.');
     }
 
     // Manager widzi otwarte zgłoszenia na dashboardzie

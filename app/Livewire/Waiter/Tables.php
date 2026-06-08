@@ -7,6 +7,26 @@ use Livewire\Component;
 
 class Tables extends Component
 {
+    public ?int $openReportTableId = null;
+
+    public array $reportTypes = [];
+
+    public array $reportMessages = [];
+
+    public function openReportForm(int $tableId): void
+    {
+        $this->openReportTableId = $tableId;
+    }
+
+    public function closeReportForm(): void
+    {
+        if ($this->openReportTableId !== null) {
+            unset($this->reportTypes[$this->openReportTableId], $this->reportMessages[$this->openReportTableId]);
+        }
+
+        $this->openReportTableId = null;
+    }
+
     public function render()
     {
         $waiterId = request()->user()->id;

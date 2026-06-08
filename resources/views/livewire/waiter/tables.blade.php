@@ -161,13 +161,16 @@
                         </button>
                     @endif
 
-                    <details class="group">
-                        <summary class="inline-flex w-full cursor-pointer list-none items-center justify-center rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-xs font-bold text-red-700 transition-colors hover:bg-red-100">
-                            <span class="group-open:hidden">Zgłoś problem ze stolikiem</span>
-                            <span class="hidden group-open:inline">Anuluj zgłoszenie</span>
-                        </summary>
+                    @if($openReportTableId === $table->id)
+                        <button
+                            type="button"
+                            wire:click="closeReportForm"
+                            class="inline-flex w-full cursor-pointer items-center justify-center rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-xs font-bold text-red-700 transition-colors hover:bg-red-100"
+                        >
+                            Anuluj zgłoszenie
+                        </button>
 
-                        <div class="mt-3 rounded-xl border border-red-200 bg-red-50/60 p-4">
+                        <div wire:key="waiter-table-report-form-{{ $table->id }}" class="mt-3 rounded-xl border border-red-200 bg-red-50/60 p-4">
                             <h4 class="mb-3 text-sm font-black text-red-800">
                                 Zgłoś problem - Stolik {{ $table->number }}
                             </h4>
@@ -181,6 +184,7 @@
                                     </label>
                                     <select
                                         name="type"
+                                        wire:model.live="reportTypes.{{ $table->id }}"
                                         required
                                         class="w-full rounded-lg border border-red-200 bg-white px-3 py-2 text-sm text-brand-dark focus:outline-none focus:ring-2 focus:ring-red-400"
                                     >
@@ -200,6 +204,7 @@
                                     </label>
                                     <textarea
                                         name="message"
+                                        wire:model.live.debounce.300ms="reportMessages.{{ $table->id }}"
                                         rows="2"
                                         maxlength="255"
                                         placeholder="Krótki opis problemu..."
@@ -216,7 +221,15 @@
 
                             </form>
                         </div>
-                    </details>
+                    @else
+                        <button
+                            type="button"
+                            wire:click="openReportForm({{ $table->id }})"
+                            class="inline-flex w-full cursor-pointer items-center justify-center rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-xs font-bold text-red-700 transition-colors hover:bg-red-100"
+                        >
+                            Zgłoś problem ze stolikiem
+                        </button>
+                    @endif
 
                 </div>
             </article>
