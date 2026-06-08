@@ -28,6 +28,7 @@ class UpdateScheduleRequest extends FormRequest
                     ->where('is_active', true)
                     ->whereIn('role', User::SCHEDULABLE_ROLES),
             ],
+            'zone_id' => ['nullable', 'integer', Rule::exists('zones', 'id')],
             'date' => ['required', 'date'],
             'start_time' => ['required', 'date_format:H:i'],
             'end_time' => ['required', 'date_format:H:i', 'after:start_time'],

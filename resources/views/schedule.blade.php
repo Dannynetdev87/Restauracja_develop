@@ -155,6 +155,11 @@
                                                                     </form>
                                                                 </div>
                                                             </div>
+                                                            @if($shift->zone)
+                                                                <p class="mt-2 text-xs font-bold uppercase tracking-wide text-brand-accent">
+                                                                    Strefa: {{ $shift->zone->name }}
+                                                                </p>
+                                                            @endif
                                                             @if($shift->notes)
                                                                 <p class="mt-2 truncate">{{ $shift->notes }}</p>
                                                             @endif
@@ -196,6 +201,11 @@
                                             <div class="rounded-md border px-4 py-3 {{ $stateClasses[$state] }}">
                                                 <span class="block text-xs font-bold uppercase">{{ $stateLabels[$state] }}</span>
                                                 <strong class="mt-1 block text-xl">{{ $shift->startsAt() }} - {{ $shift->endsAt() }}</strong>
+                                                @if($shift->zone)
+                                                    <p class="mt-2 text-xs font-bold uppercase tracking-wide text-brand-accent">
+                                                        Strefa: {{ $shift->zone->name }}
+                                                    </p>
+                                                @endif
                                                 @if($shift->notes)
                                                     <p class="mt-2 text-sm">{{ $shift->notes }}</p>
                                                 @endif
@@ -245,6 +255,11 @@
                                                         <strong class="block truncate">{{ $shift->user->name }}</strong>
                                                     @endif
                                                     <span>{{ $shift->startsAt() }} - {{ $shift->endsAt() }}</span>
+                                                    @if($shift->zone)
+                                                        <span class="block truncate font-bold text-brand-accent">
+                                                            {{ $shift->zone->name }}
+                                                        </span>
+                                                    @endif
                                                 </div>
                                             @empty
                                                 <span class="text-xs text-brand-accent">Brak zmian</span>
@@ -310,6 +325,18 @@
                                        value="{{ old('end_time', $formSchedule?->endsAt()) }}"
                                        class="mt-1 w-full rounded-md border border-brand-dark/20 px-3 py-2 text-sm text-brand-dark focus:border-brand-dark focus:outline-none">
                             </div>
+                        </div>
+
+                        <div>
+                            <label for="zone_id" class="block text-sm font-bold text-brand-dark">Strefa</label>
+                            <select id="zone_id" name="zone_id" class="mt-1 w-full rounded-md border border-brand-dark/20 bg-white px-3 py-2 text-sm text-brand-dark focus:border-brand-dark focus:outline-none">
+                                <option value="">Bez strefy</option>
+                                @foreach($zones as $zone)
+                                    <option value="{{ $zone->id }}" {{ (int) old('zone_id', $formSchedule?->zone_id) === $zone->id ? 'selected' : '' }}>
+                                        {{ $zone->name }}
+                                    </option>
+                                @endforeach
+                            </select>
                         </div>
 
                         <div>

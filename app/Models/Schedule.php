@@ -16,6 +16,7 @@ class Schedule extends Model
 
     protected $fillable = [
         'user_id',
+        'zone_id',
         'date',
         'start_time',
         'end_time',
@@ -23,12 +24,18 @@ class Schedule extends Model
     ];
 
     protected $casts = [
+        'zone_id' => 'integer',
         'date' => 'date',
     ];
 
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
+    }
+
+    public function zone(): BelongsTo
+    {
+        return $this->belongsTo(Zone::class);
     }
 
     public function startsAt(): string
