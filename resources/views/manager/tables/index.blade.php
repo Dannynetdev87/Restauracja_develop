@@ -13,7 +13,7 @@
             </div>
 
             <a href="{{ route('manager.dashboard') }}"
-               class="w-fit rounded-md border border-brand-dark/20 bg-white px-4 py-2 text-sm font-bold text-brand-dark hover:bg-brand-light">
+               class="w-full rounded-md border border-brand-dark/20 bg-white px-4 py-2 text-center text-sm font-bold text-brand-dark hover:bg-brand-light lg:w-auto">
                 Powrót do panelu
             </a>
         </div>
@@ -41,8 +41,8 @@
             </div>
         @endif
 
-        <div class="grid gap-6 lg:grid-cols-[0.8fr_1.2fr]">
-            <div class="rounded-lg border border-brand-dark/15 bg-white p-5 shadow-sm">
+        <div class="grid min-w-0 gap-6 lg:grid-cols-[0.8fr_1.2fr]">
+            <div class="rounded-lg border border-brand-dark/15 bg-white p-4 shadow-sm sm:p-5">
                 <h2 class="text-xl font-black text-brand-dark">Dodaj stolik</h2>
 
                 <form method="POST" action="{{ route('manager.tables.store') }}" class="mt-5 space-y-4">
@@ -60,7 +60,7 @@
 
                     <div>
                         <label for="status" class="block text-sm font-bold text-brand-dark">Status</label>
-                        <select id="status" name="status" required class="mt-1 w-full rounded-md border border-brand-dark/20 px-3 py-2">
+                        <select id="status" name="status" required class="mt-1 w-full rounded-md border border-brand-dark/20 bg-white px-3 py-2">
                             @foreach($statuses as $value => $label)
                                 <option value="{{ $value }}" @selected(old('status', 'wolny') === $value)>{{ $label }}</option>
                             @endforeach
@@ -69,7 +69,7 @@
 
                     <div>
                         <label for="assigned_waiter_id" class="block text-sm font-bold text-brand-dark">Przypisany kelner</label>
-                        <select id="assigned_waiter_id" name="assigned_waiter_id" class="mt-1 w-full rounded-md border border-brand-dark/20 px-3 py-2">
+                        <select id="assigned_waiter_id" name="assigned_waiter_id" class="mt-1 w-full max-w-full rounded-md border border-brand-dark/20 bg-white px-3 py-2 overflow-hidden text-ellipsis">
                             <option value="">Bez przypisania</option>
                             @foreach($waiters as $waiter)
                                 <option value="{{ $waiter->id }}" @selected((int) old('assigned_waiter_id') === $waiter->id)>
@@ -81,7 +81,7 @@
 
                     <div>
                         <label for="zone_id" class="block text-sm font-bold text-brand-dark">Strefa</label>
-                        <select id="zone_id" name="zone_id" class="mt-1 w-full rounded-md border border-brand-dark/20 px-3 py-2">
+                        <select id="zone_id" name="zone_id" class="mt-1 w-full max-w-full rounded-md border border-brand-dark/20 bg-white px-3 py-2 overflow-hidden text-ellipsis">
                             <option value="">Poza strefą</option>
                             @foreach($zones as $zone)
                                 <option value="{{ $zone->id }}" @selected((int) old('zone_id') === $zone->id)>
@@ -91,17 +91,17 @@
                         </select>
                     </div>
 
-                    <button type="submit" class="rounded-md bg-brand-dark px-4 py-2 text-sm font-bold text-brand-light hover:bg-brand-accent">
+                    <button type="submit" class="w-full rounded-md bg-brand-dark px-4 py-2 text-sm font-bold text-brand-light hover:bg-brand-accent sm:w-auto">
                         Dodaj stolik
                     </button>
                 </form>
             </div>
 
-            <div class="rounded-lg border border-brand-dark/15 bg-white p-5 shadow-sm">
+            <div class="min-w-0 rounded-lg border border-brand-dark/15 bg-white p-4 shadow-sm sm:p-5">
                 <h2 class="text-xl font-black text-brand-dark">Lista stolików</h2>
 
-                <div class="mt-5 overflow-x-auto">
-                    <table class="min-w-full text-left text-sm">
+                <div class="mt-5 w-full overflow-x-auto">
+                    <table class="min-w-full whitespace-nowrap text-left text-sm">
                         <thead class="border-b border-brand-dark/10 text-xs uppercase text-brand-accent">
                         <tr>
                             <th class="py-3 pr-4">Numer</th>
@@ -146,14 +146,14 @@
                                 </td>
                                 <td class="py-3 pr-4">{{ $table->orders_count }}</td>
                                 <td class="py-3 pr-4">
-                                    <div class="flex flex-wrap justify-end gap-2">
-                                        <a href="{{ route('manager.tables.edit', $table) }}" class="rounded-md border border-brand-dark/20 px-3 py-2 text-xs font-bold text-brand-dark hover:bg-brand-light">
+                                    <div class="flex flex-col justify-end gap-2 sm:flex-row">
+                                        <a href="{{ route('manager.tables.edit', $table) }}" class="rounded-md border border-brand-dark/20 px-3 py-2 text-center text-xs font-bold text-brand-dark hover:bg-brand-light">
                                             Edytuj
                                         </a>
                                         <form method="POST" action="{{ route('manager.tables.destroy', $table) }}" onsubmit="return confirm('Usunąć stolik?');">
                                             @csrf
                                             @method('DELETE')
-                                            <button type="submit" class="rounded-md border border-red-700 px-3 py-2 text-xs font-bold text-red-700 hover:bg-red-50">
+                                            <button type="submit" class="w-full rounded-md border border-red-700 px-3 py-2 text-xs font-bold text-red-700 hover:bg-red-50">
                                                 Usuń
                                             </button>
                                         </form>
@@ -171,7 +171,7 @@
             </div>
         </div>
 
-        <div class="mt-8 rounded-lg border border-brand-dark/15 bg-white p-5 shadow-sm">
+        <div class="mt-8 rounded-lg border border-brand-dark/15 bg-white p-4 shadow-sm sm:p-5">
             <div class="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
                 <div>
                     <h2 class="text-xl font-black text-brand-dark">Strefy stolików</h2>
@@ -181,7 +181,7 @@
                 </div>
             </div>
 
-            <form method="POST" action="{{ route('manager.zones.store') }}" class="mt-5 grid gap-3 md:grid-cols-[1fr_1fr_auto] md:items-end">
+            <form method="POST" action="{{ route('manager.zones.store') }}" class="mt-5 grid min-w-0 gap-3 md:grid-cols-[1fr_1fr_auto] md:items-end">
                 @csrf
 
                 <div>
@@ -191,7 +191,7 @@
 
                 <div>
                     <label for="zone_assigned_waiter_id" class="block text-sm font-bold text-brand-dark">Kelner domyślny</label>
-                    <select id="zone_assigned_waiter_id" name="assigned_waiter_id" class="mt-1 w-full rounded-md border border-brand-dark/20 px-3 py-2">
+                    <select id="zone_assigned_waiter_id" name="assigned_waiter_id" class="mt-1 w-full max-w-full rounded-md border border-brand-dark/20 bg-white px-3 py-2 overflow-hidden text-ellipsis">
                         <option value="">Bez przypisania</option>
                         @foreach($waiters as $waiter)
                             <option value="{{ $waiter->id }}" @selected((int) old('assigned_waiter_id') === $waiter->id)>
@@ -201,14 +201,14 @@
                     </select>
                 </div>
 
-                <button type="submit" class="rounded-md bg-brand-dark px-4 py-2 text-sm font-bold text-brand-light hover:bg-brand-accent">
+                <button type="submit" class="w-full rounded-md bg-brand-dark px-4 py-2 text-sm font-bold text-brand-light hover:bg-brand-accent md:w-auto">
                     Dodaj strefę
                 </button>
             </form>
 
-            <div class="mt-6 grid gap-4 md:grid-cols-2">
+            <div class="mt-6 grid min-w-0 gap-4 md:grid-cols-2">
                 @forelse($zones as $zone)
-                    <div class="rounded-lg border border-brand-dark/10 bg-brand-light/30 p-4">
+                    <div class="min-w-0 rounded-lg border border-brand-dark/10 bg-brand-light/30 p-4">
                         <form method="POST" action="{{ route('manager.zones.update', $zone) }}" class="space-y-3">
                             @csrf
                             @method('PUT')
@@ -220,7 +220,7 @@
 
                             <div>
                                 <label for="zone_{{ $zone->id }}_waiter" class="block text-xs font-bold uppercase text-brand-accent">Kelner domyślny</label>
-                                <select id="zone_{{ $zone->id }}_waiter" name="assigned_waiter_id" class="mt-1 w-full rounded-md border border-brand-dark/20 bg-white px-3 py-2">
+                                <select id="zone_{{ $zone->id }}_waiter" name="assigned_waiter_id" class="mt-1 w-full max-w-full rounded-md border border-brand-dark/20 bg-white px-3 py-2 overflow-hidden text-ellipsis">
                                     <option value="">Bez przypisania</option>
                                     @foreach($waiters as $waiter)
                                         <option value="{{ $waiter->id }}" @selected($zone->assigned_waiter_id === $waiter->id)>
@@ -230,22 +230,22 @@
                                 </select>
                             </div>
 
-                            <div class="flex flex-wrap items-center justify-between gap-2">
+                            <div class="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
                                 <span class="rounded-full px-3 py-1 text-xs font-bold {{ $zone->is_active ? 'bg-green-100 text-green-800' : 'bg-gray-200 text-gray-700' }}">
                                     {{ $zone->is_active ? 'Aktywna' : 'Nieaktywna' }} · {{ $zone->tables_count }} stolików
                                 </span>
 
-                                <button type="submit" class="rounded-md border border-brand-dark/20 bg-white px-3 py-2 text-xs font-bold text-brand-dark hover:bg-brand-light">
+                                <button type="submit" class="w-full rounded-md border border-brand-dark/20 bg-white px-3 py-2 text-xs font-bold text-brand-dark hover:bg-brand-light sm:w-auto">
                                     Zapisz
                                 </button>
                             </div>
                         </form>
 
-                        <div class="mt-3 flex flex-wrap justify-end gap-2">
+                        <div class="mt-3 flex flex-col justify-end gap-2 sm:flex-row">
                             <form method="POST" action="{{ route('manager.zones.toggle', $zone) }}">
                                 @csrf
                                 @method('PATCH')
-                                <button type="submit" class="rounded-md border border-brand-dark/20 bg-white px-3 py-2 text-xs font-bold text-brand-dark hover:bg-brand-light">
+                                <button type="submit" class="w-full rounded-md border border-brand-dark/20 bg-white px-3 py-2 text-xs font-bold text-brand-dark hover:bg-brand-light">
                                     {{ $zone->is_active ? 'Wyłącz' : 'Aktywuj' }}
                                 </button>
                             </form>
@@ -253,7 +253,7 @@
                             <form method="POST" action="{{ route('manager.zones.destroy', $zone) }}" onsubmit="return confirm('Usunąć strefę? Stoliki zostaną przeniesione poza strefę.');">
                                 @csrf
                                 @method('DELETE')
-                                <button type="submit" class="rounded-md border border-red-700 bg-white px-3 py-2 text-xs font-bold text-red-700 hover:bg-red-50">
+                                <button type="submit" class="w-full rounded-md border border-red-700 bg-white px-3 py-2 text-xs font-bold text-red-700 hover:bg-red-50">
                                     Usuń
                                 </button>
                             </form>

@@ -10,7 +10,7 @@
             </div>
 
             <a href="{{ route('manager.discount-codes.index') }}"
-               class="w-fit rounded-md border border-brand-dark/20 bg-white px-4 py-2 text-sm font-bold text-brand-dark hover:bg-brand-light">
+               class="w-full rounded-md border border-brand-dark/20 bg-white px-4 py-2 text-center text-sm font-bold text-brand-dark hover:bg-brand-light sm:w-auto">
                 Powrot do listy
             </a>
         </div>
@@ -26,11 +26,11 @@
             </div>
         @endif
 
-        <div class="rounded-lg border border-brand-dark/15 bg-white p-5 shadow-sm">
-            <div class="grid gap-4 border-b border-brand-dark/10 pb-5 sm:grid-cols-2">
+        <div class="rounded-lg border border-brand-dark/15 bg-white p-4 shadow-sm sm:p-5">
+            <div class="grid min-w-0 gap-4 border-b border-brand-dark/10 pb-5 sm:grid-cols-2">
                 <div>
                     <span class="block text-xs font-bold uppercase text-brand-accent">Kod</span>
-                    <strong class="mt-1 block font-mono text-xl text-brand-dark">{{ $discountCode->code }}</strong>
+                    <strong class="mt-1 block break-words font-mono text-xl text-brand-dark">{{ $discountCode->code }}</strong>
                 </div>
                 <div>
                     <span class="block text-xs font-bold uppercase text-brand-accent">Uzycia</span>
@@ -38,7 +38,7 @@
                 </div>
                 <div>
                     <span class="block text-xs font-bold uppercase text-brand-accent">Utworzyl</span>
-                    <span class="mt-1 block text-brand-dark">{{ $discountCode->createdBy?->name ?? '-' }}</span>
+                    <span class="mt-1 block truncate text-brand-dark">{{ $discountCode->createdBy?->name ?? '-' }}</span>
                 </div>
                 <div>
                     <span class="block text-xs font-bold uppercase text-brand-accent">Utworzono</span>
@@ -52,7 +52,7 @@
 
                 <div>
                     <label for="type" class="block text-sm font-bold text-brand-dark">Typ</label>
-                    <select id="type" name="type" required class="mt-1 w-full rounded-md border border-brand-dark/20 px-3 py-2">
+                    <select id="type" name="type" required class="mt-1 w-full rounded-md border border-brand-dark/20 bg-white px-3 py-2">
                         @foreach($types as $value => $label)
                             <option value="{{ $value }}" @selected(old('type', $discountCode->type) === $value)>{{ $label }}</option>
                         @endforeach
@@ -84,7 +84,7 @@
                     Aktywny
                 </label>
 
-                <button type="submit" class="rounded-md bg-brand-dark px-4 py-2 text-sm font-bold text-brand-light hover:bg-brand-accent">
+                <button type="submit" class="w-full rounded-md bg-brand-dark px-4 py-2 text-sm font-bold text-brand-light hover:bg-brand-accent sm:w-auto">
                     Zapisz zmiany
                 </button>
             </form>

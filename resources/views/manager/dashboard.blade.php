@@ -9,21 +9,21 @@
                 <p class="mt-1 text-sm text-brand-accent">Bieżący podgląd statystyk, stanu sal oraz pracy restauracji.</p>
             </div>
 
-            <div class="flex flex-wrap gap-2">
+            <div class="flex w-full flex-col gap-2 sm:w-auto sm:flex-row sm:flex-wrap">
                 <a href="{{ route('manager.podglad') }}"
-                   class="rounded-md border border-brand-dark/20 bg-white px-4 py-2 text-sm font-bold text-brand-dark hover:bg-brand-light">
+                   class="rounded-md border border-brand-dark/20 bg-white px-4 py-2 text-center text-sm font-bold text-brand-dark hover:bg-brand-light">
                     Zarządzanie menu
                 </a>
                 <a href="{{ route('manager.tables.index') }}"
-                   class="rounded-md border border-brand-dark/20 bg-white px-4 py-2 text-sm font-bold text-brand-dark hover:bg-brand-light">
+                   class="rounded-md border border-brand-dark/20 bg-white px-4 py-2 text-center text-sm font-bold text-brand-dark hover:bg-brand-light">
                     Zarządzanie stolikami
                 </a>
                 <a href="{{ route('manager.discount-codes.index') }}"
-                   class="rounded-md border border-brand-dark/20 bg-white px-4 py-2 text-sm font-bold text-brand-dark hover:bg-brand-light">
+                   class="rounded-md border border-brand-dark/20 bg-white px-4 py-2 text-center text-sm font-bold text-brand-dark hover:bg-brand-light">
                     Kody rabatowe
                 </a>
                 <a href="{{ route('manager.orders.history') }}"
-                   class="rounded-md bg-brand-dark px-4 py-2 text-sm font-bold text-brand-light hover:bg-brand-accent">
+                   class="rounded-md bg-brand-dark px-4 py-2 text-center text-sm font-bold text-brand-light hover:bg-brand-accent">
                     Historia zamówień
                 </a>
             </div>
@@ -44,9 +44,9 @@
                         <span class="text-xs font-bold uppercase text-brand-accent">Sprzedaż (Dziś)</span>
                         <span class="rounded-full bg-green-50 px-2 py-0.5 text-[10px] font-bold text-green-600">Live</span>
                     </div>
-                    <div class="mt-4 flex items-baseline gap-1">
-                        <span class="text-3xl font-black text-brand-dark">{{ number_format((float) $todaySales, 2, ',', ' ') }}</span>
-                        <span class="text-sm font-bold text-brand-accent">zł</span>
+                    <div class="mt-4 flex items-baseline gap-1 overflow-hidden">
+                        <span class="truncate text-3xl font-black text-brand-dark">{{ number_format((float) $todaySales, 2, ',', ' ') }}</span>
+                        <span class="shrink-0 text-sm font-bold text-brand-accent">zł</span>
                     </div>
                 </div>
 
@@ -135,7 +135,7 @@
                                             {{ $report->type }}
                                         </span>
                                     </div>
-                                    <p class="text-sm text-brand-accent">
+                                    <p class="truncate text-sm text-brand-accent">
                                         Kelner: <strong class="text-brand-dark">{{ $report->waiter->full_name }}</strong>
                                         · <span title="{{ $report->created_at }}">{{ $report->created_at->diffForHumans() }}</span>
                                     </p>
@@ -149,14 +149,14 @@
                                 <form
                                     method="POST"
                                     action="{{ route('manager.reports.resolve', $report) }}"
-                                    class="shrink-0"
+                                    class="w-full shrink-0 sm:w-auto"
                                     onsubmit="return confirm('Oznaczyć zgłoszenie jako rozwiązane?')"
                                 >
                                     @csrf
                                     @method('PATCH')
                                     <button
                                         type="submit"
-                                        class="rounded-lg bg-green-700 px-3 py-2 text-xs font-black text-white hover:bg-green-800 transition-colors"
+                                        class="w-full rounded-lg bg-green-700 px-3 py-2 text-xs font-black text-white hover:bg-green-800 transition-colors"
                                     >
                                         Rozwiązane
                                     </button>

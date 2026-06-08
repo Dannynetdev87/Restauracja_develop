@@ -2,9 +2,9 @@
     <x-slot:title>Edycja stolika - SmakPrzeszłości</x-slot>
 
     <section class="w-full max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
-        <a href="{{ route('manager.tables.index') }}" class="text-sm font-bold text-brand-accent hover:text-brand-dark">← Wróć do stolików</a>
+        <a href="{{ route('manager.tables.index') }}" class="inline-block text-sm font-bold text-brand-accent hover:text-brand-dark">← Wróć do stolików</a>
 
-        <div class="mt-6 rounded-lg border border-brand-dark/15 bg-white p-6 shadow-sm">
+        <div class="mt-6 rounded-lg border border-brand-dark/15 bg-white p-4 shadow-sm sm:p-6">
             <h1 class="text-3xl font-black text-brand-dark">Edytuj stolik</h1>
 
             @if($errors->any())
@@ -34,7 +34,7 @@
 
                 <div>
                     <label for="status" class="block text-sm font-bold text-brand-dark">Status</label>
-                    <select id="status" name="status" required class="mt-1 w-full rounded-md border border-brand-dark/20 px-3 py-2">
+                    <select id="status" name="status" required class="mt-1 w-full rounded-md border border-brand-dark/20 bg-white px-3 py-2">
                         @foreach($statuses as $value => $label)
                             <option value="{{ $value }}" @selected(old('status', $table->status) === $value)>{{ $label }}</option>
                         @endforeach
@@ -43,7 +43,7 @@
 
                 <div>
                     <label for="assigned_waiter_id" class="block text-sm font-bold text-brand-dark">Przypisany kelner</label>
-                    <select id="assigned_waiter_id" name="assigned_waiter_id" class="mt-1 w-full rounded-md border border-brand-dark/20 px-3 py-2">
+                    <select id="assigned_waiter_id" name="assigned_waiter_id" class="mt-1 w-full max-w-full rounded-md border border-brand-dark/20 bg-white px-3 py-2 overflow-hidden text-ellipsis">
                         <option value="">Bez przypisania</option>
                         @foreach($waiters as $waiter)
                             <option value="{{ $waiter->id }}" @selected((int) old('assigned_waiter_id', $table->assigned_waiter_id) === $waiter->id)>
@@ -55,7 +55,7 @@
 
                 <div>
                     <label for="zone_id" class="block text-sm font-bold text-brand-dark">Strefa</label>
-                    <select id="zone_id" name="zone_id" class="mt-1 w-full rounded-md border border-brand-dark/20 px-3 py-2">
+                    <select id="zone_id" name="zone_id" class="mt-1 w-full max-w-full rounded-md border border-brand-dark/20 bg-white px-3 py-2 overflow-hidden text-ellipsis">
                         <option value="">Poza strefą</option>
                         @foreach($zones as $zone)
                             <option value="{{ $zone->id }}" @selected((int) old('zone_id', $table->zone_id) === $zone->id)>
@@ -70,7 +70,7 @@
                     @endif
                 </div>
 
-                <button type="submit" class="rounded-md bg-brand-dark px-4 py-2 text-sm font-bold text-brand-light hover:bg-brand-accent">
+                <button type="submit" class="w-full rounded-md bg-brand-dark px-4 py-2 text-sm font-bold text-brand-light hover:bg-brand-accent sm:w-auto">
                     Zapisz zmiany
                 </button>
             </form>

@@ -12,7 +12,7 @@
             </div>
 
             <a href="{{ route('manager.dashboard') }}"
-               class="w-fit rounded-md border border-brand-dark/20 bg-white px-4 py-2 text-sm font-bold text-brand-dark hover:bg-brand-light">
+               class="w-full rounded-md border border-brand-dark/20 bg-white px-4 py-2 text-center text-sm font-bold text-brand-dark hover:bg-brand-light sm:w-auto">
                 Powrót do panelu
             </a>
         </div>
@@ -40,8 +40,8 @@
             </div>
         @endif
 
-        <div class="grid gap-6 lg:grid-cols-[0.9fr_1.1fr]">
-            <div class="rounded-lg border border-brand-dark/15 bg-white p-5 shadow-sm">
+        <div class="grid min-w-0 gap-6 lg:grid-cols-[0.9fr_1.1fr]">
+            <div class="rounded-lg border border-brand-dark/15 bg-white p-4 shadow-sm sm:p-5">
                 <h2 class="text-xl font-black text-brand-dark">Dodaj kategorię</h2>
 
                 <form method="POST" action="{{ route('manager.menu-categories.store') }}" class="mt-5 space-y-4">
@@ -62,13 +62,13 @@
                         Aktywna
                     </label>
 
-                    <button type="submit" class="rounded-md bg-brand-dark px-4 py-2 text-sm font-bold text-brand-light hover:bg-brand-accent">
+                    <button type="submit" class="w-full rounded-md bg-brand-dark px-4 py-2 text-sm font-bold text-brand-light hover:bg-brand-accent sm:w-auto">
                         Dodaj kategorię
                     </button>
                 </form>
             </div>
 
-            <div class="rounded-lg border border-brand-dark/15 bg-white p-5 shadow-sm">
+            <div class="min-w-0 rounded-lg border border-brand-dark/15 bg-white p-4 shadow-sm sm:p-5">
                 <h2 class="text-xl font-black text-brand-dark">Dodaj pozycję menu</h2>
 
                 <form method="POST" action="{{ route('manager.menu-items.store') }}" class="mt-5 grid gap-4 sm:grid-cols-2">
@@ -81,7 +81,7 @@
 
                     <div>
                         <label for="item-category" class="block text-sm font-bold text-brand-dark">Kategoria</label>
-                        <select id="item-category" name="menu_category_id" required class="mt-1 w-full rounded-md border border-brand-dark/20 px-3 py-2">
+                        <select id="item-category" name="menu_category_id" required class="mt-1 w-full max-w-full rounded-md border border-brand-dark/20 bg-white px-3 py-2 overflow-hidden text-ellipsis">
                             <option value="">Wybierz kategorię</option>
                             @foreach($activeCategories as $category)
                                 <option value="{{ $category->id }}" @selected((int) old('menu_category_id') === $category->id)>
@@ -98,7 +98,7 @@
 
                     <div>
                         <label for="item-production-area" class="block text-sm font-bold text-brand-dark">Przygotowanie</label>
-                        <select id="item-production-area" name="production_area" required class="mt-1 w-full rounded-md border border-brand-dark/20 px-3 py-2">
+                        <select id="item-production-area" name="production_area" required class="mt-1 w-full rounded-md border border-brand-dark/20 bg-white px-3 py-2">
                             <option value="kuchnia" @selected(old('production_area') === 'kuchnia')>Kuchnia</option>
                             <option value="bar" @selected(old('production_area') === 'bar')>Bar</option>
                         </select>
@@ -115,7 +115,7 @@
                     </div>
 
                     <div class="sm:col-span-2">
-                        <button type="submit" class="rounded-md bg-brand-dark px-4 py-2 text-sm font-bold text-brand-light hover:bg-brand-accent">
+                        <button type="submit" class="w-full rounded-md bg-brand-dark px-4 py-2 text-sm font-bold text-brand-light hover:bg-brand-accent sm:w-auto">
                             Dodaj pozycję
                         </button>
                     </div>
@@ -125,7 +125,7 @@
 
         <div class="mt-8 space-y-6">
             @forelse($categories as $category)
-                <article class="rounded-lg border border-brand-dark/15 bg-white p-5 shadow-sm">
+                <article class="min-w-0 rounded-lg border border-brand-dark/15 bg-white p-4 shadow-sm sm:p-5">
                     <div class="flex flex-col gap-4 border-b border-brand-dark/10 pb-4 sm:flex-row sm:items-center sm:justify-between">
                         <div>
                             <div class="flex flex-wrap items-center gap-2">
@@ -140,14 +140,14 @@
                             <p class="mt-1 text-sm text-brand-accent">Liczba pozycji: {{ $category->items->count() }}</p>
                         </div>
 
-                        <div class="flex flex-wrap gap-2">
-                            <a href="{{ route('manager.menu-categories.edit', $category) }}" class="rounded-md border border-brand-dark/20 px-3 py-2 text-sm font-bold text-brand-dark hover:bg-brand-light">
+                        <div class="flex w-full flex-col gap-2 sm:w-auto sm:flex-row">
+                            <a href="{{ route('manager.menu-categories.edit', $category) }}" class="rounded-md border border-brand-dark/20 px-3 py-2 text-center text-sm font-bold text-brand-dark hover:bg-brand-light">
                                 Edytuj
                             </a>
                             <form method="POST" action="{{ route('manager.menu-categories.destroy', $category) }}" onsubmit="return confirm('Usunąć kategorię?');">
                                 @csrf
                                 @method('DELETE')
-                                <button type="submit" class="rounded-md border border-red-700 px-3 py-2 text-sm font-bold text-red-700 hover:bg-red-50">
+                                <button type="submit" class="w-full rounded-md border border-red-700 px-3 py-2 text-sm font-bold text-red-700 hover:bg-red-50">
                                     Usuń
                                 </button>
                             </form>
@@ -155,7 +155,7 @@
                     </div>
 
                     <div class="mt-4 overflow-x-auto">
-                        <table class="min-w-full text-left text-sm">
+                        <table class="min-w-full whitespace-nowrap text-left text-sm">
                             <thead class="border-b border-brand-dark/10 text-xs uppercase text-brand-accent">
                             <tr>
                                 <th class="py-3 pr-4">Nazwa</th>
@@ -182,21 +182,21 @@
                                             </span>
                                     </td>
                                     <td class="py-3 pr-4">
-                                        <div class="flex flex-wrap justify-end gap-2">
-                                            <a href="{{ route('manager.menu-items.edit', $item) }}" class="rounded-md border border-brand-dark/20 px-3 py-2 text-xs font-bold text-brand-dark hover:bg-brand-light">
+                                        <div class="flex flex-col justify-end gap-2 sm:flex-row">
+                                            <a href="{{ route('manager.menu-items.edit', $item) }}" class="rounded-md border border-brand-dark/20 px-3 py-2 text-center text-xs font-bold text-brand-dark hover:bg-brand-light">
                                                 Edytuj
                                             </a>
                                             <form method="POST" action="{{ route('manager.menu-items.availability', $item) }}">
                                                 @csrf
                                                 @method('PATCH')
-                                                <button type="submit" class="rounded-md border border-brand-dark/20 px-3 py-2 text-xs font-bold text-brand-dark hover:bg-brand-light">
+                                                <button type="submit" class="w-full rounded-md border border-brand-dark/20 px-3 py-2 text-xs font-bold text-brand-dark hover:bg-brand-light">
                                                     {{ $item->available ? 'Wyłącz' : 'Włącz' }}
                                                 </button>
                                             </form>
                                             <form method="POST" action="{{ route('manager.menu-items.destroy', $item) }}" onsubmit="return confirm('Usunąć lub dezaktywować pozycję menu?');">
                                                 @csrf
                                                 @method('DELETE')
-                                                <button type="submit" class="rounded-md border border-red-700 px-3 py-2 text-xs font-bold text-red-700 hover:bg-red-50">
+                                                <button type="submit" class="w-full rounded-md border border-red-700 px-3 py-2 text-xs font-bold text-red-700 hover:bg-red-50">
                                                     Usuń
                                                 </button>
                                             </form>

@@ -9,7 +9,7 @@
             </div>
 
             <a href="{{ route('manager.dashboard') }}"
-               class="w-fit rounded-md border border-brand-dark/20 bg-white px-4 py-2 text-sm font-bold text-brand-dark hover:bg-brand-light">
+               class="w-full rounded-md border border-brand-dark/20 bg-white px-4 py-2 text-center text-sm font-bold text-brand-dark hover:bg-brand-light sm:w-auto">
                 Powrót do panelu
             </a>
         </div>
@@ -25,7 +25,7 @@
             </div>
         @endif
 
-        <div class="rounded-lg border border-brand-dark/15 bg-white p-6 shadow-sm">
+        <div class="rounded-lg border border-brand-dark/15 bg-white p-4 shadow-sm sm:p-6">
             <form method="POST" action="{{ route('manager.menu-categories.update', $category) }}" class="space-y-4">
                 @csrf
                 @method('PUT')
@@ -45,7 +45,7 @@
                     Aktywna
                 </label>
 
-                <button type="submit" class="rounded-md bg-brand-dark px-4 py-2 text-sm font-bold text-brand-light hover:bg-brand-accent">
+                <button type="submit" class="w-full rounded-md bg-brand-dark px-4 py-2 text-sm font-bold text-brand-light hover:bg-brand-accent sm:w-auto">
                     Zapisz zmiany
                 </button>
             </form>

@@ -9,7 +9,7 @@
             </div>
 
             <a href="{{ route('manager.dashboard') }}"
-               class="w-fit rounded-md border border-brand-dark/20 bg-white px-4 py-2 text-sm font-bold text-brand-dark hover:bg-brand-light">
+               class="w-full rounded-md border border-brand-dark/20 bg-white px-4 py-2 text-center text-sm font-bold text-brand-dark hover:bg-brand-light sm:w-auto">
                 Powrót do panelu
             </a>
         </div>
@@ -25,7 +25,7 @@
             </div>
         @endif
 
-        <div class="rounded-lg border border-brand-dark/15 bg-white p-6 shadow-sm">
+        <div class="rounded-lg border border-brand-dark/15 bg-white p-4 shadow-sm sm:p-6">
             <form method="POST" action="{{ route('manager.menu-items.update', $menuItem) }}" class="grid gap-4 sm:grid-cols-2">
                 @csrf
                 @method('PUT')
@@ -37,7 +37,7 @@
 
                 <div>
                     <label for="menu_category_id" class="block text-sm font-bold text-brand-dark">Kategoria</label>
-                    <select id="menu_category_id" name="menu_category_id" required class="mt-1 w-full rounded-md border border-brand-dark/20 px-3 py-2">
+                    <select id="menu_category_id" name="menu_category_id" required class="mt-1 w-full max-w-full rounded-md border border-brand-dark/20 bg-white px-3 py-2 overflow-hidden text-ellipsis">
                         @foreach($categories as $category)
                             <option value="{{ $category->id }}" @selected((int) old('menu_category_id', $menuItem->menu_category_id) === $category->id)>
                                 {{ $category->name }}
@@ -53,7 +53,7 @@
 
                 <div>
                     <label for="production_area" class="block text-sm font-bold text-brand-dark">Przygotowanie</label>
-                    <select id="production_area" name="production_area" required class="mt-1 w-full rounded-md border border-brand-dark/20 px-3 py-2">
+                    <select id="production_area" name="production_area" required class="mt-1 w-full rounded-md border border-brand-dark/20 bg-white px-3 py-2">
                         <option value="kuchnia" @selected(old('production_area', $menuItem->production_area) === 'kuchnia')>Kuchnia</option>
                         <option value="bar" @selected(old('production_area', $menuItem->production_area) === 'bar')>Bar</option>
                     </select>
@@ -70,7 +70,7 @@
                 </div>
 
                 <div class="sm:col-span-2">
-                    <button type="submit" class="rounded-md bg-brand-dark px-4 py-2 text-sm font-bold text-brand-light hover:bg-brand-accent">
+                    <button type="submit" class="w-full rounded-md bg-brand-dark px-4 py-2 text-sm font-bold text-brand-light hover:bg-brand-accent sm:w-auto">
                         Zapisz zmiany
                     </button>
                 </div>

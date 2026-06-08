@@ -10,7 +10,7 @@
             </div>
 
             <a href="{{ route('manager.dashboard') }}"
-               class="w-fit rounded-md border border-brand-dark/20 bg-white px-4 py-2 text-sm font-bold text-brand-dark hover:bg-brand-light">
+               class="w-full rounded-md border border-brand-dark/20 bg-white px-4 py-2 text-center text-sm font-bold text-brand-dark hover:bg-brand-light sm:w-auto">
                 Powrot do panelu
             </a>
         </div>
@@ -32,8 +32,8 @@
             </div>
         @endif
 
-        <div class="grid gap-6 xl:grid-cols-[360px_1fr]">
-            <div class="h-fit rounded-lg border border-brand-dark/15 bg-white p-5 shadow-sm">
+        <div class="grid min-w-0 gap-6 xl:grid-cols-[360px_1fr]">
+            <div class="h-fit rounded-lg border border-brand-dark/15 bg-white p-4 shadow-sm sm:p-5">
                 <h2 class="text-xl font-black text-brand-dark">Dodaj kod</h2>
 
                 <form method="POST" action="{{ route('manager.discount-codes.store') }}" class="mt-5 space-y-4">
@@ -47,7 +47,7 @@
 
                     <div>
                         <label for="type" class="block text-sm font-bold text-brand-dark">Typ</label>
-                        <select id="type" name="type" required class="mt-1 w-full rounded-md border border-brand-dark/20 px-3 py-2">
+                        <select id="type" name="type" required class="mt-1 w-full rounded-md border border-brand-dark/20 bg-white px-3 py-2">
                             @foreach($types as $value => $label)
                                 <option value="{{ $value }}" @selected(old('type') === $value)>{{ $label }}</option>
                             @endforeach
@@ -79,17 +79,17 @@
                         Aktywny
                     </label>
 
-                    <button type="submit" class="rounded-md bg-brand-dark px-4 py-2 text-sm font-bold text-brand-light hover:bg-brand-accent">
+                    <button type="submit" class="w-full rounded-md bg-brand-dark px-4 py-2 text-sm font-bold text-brand-light hover:bg-brand-accent sm:w-auto">
                         Dodaj kod
                     </button>
                 </form>
             </div>
 
-            <div class="rounded-lg border border-brand-dark/15 bg-white p-5 shadow-sm">
+            <div class="min-w-0 rounded-lg border border-brand-dark/15 bg-white p-4 shadow-sm sm:p-5">
                 <h2 class="text-xl font-black text-brand-dark">Lista kodow</h2>
 
-                <div class="mt-5 overflow-x-auto">
-                    <table class="min-w-full text-left text-sm">
+                <div class="mt-5 w-full overflow-x-auto">
+                    <table class="min-w-full whitespace-nowrap text-left text-sm">
                         <thead class="border-b border-brand-dark/10 text-xs uppercase text-brand-accent">
                             <tr>
                                 <th class="py-3 pr-4">Kod</th>
@@ -130,14 +130,14 @@
                                     <td class="py-3 pr-4">{{ $discountCode->createdBy?->name ?? '-' }}</td>
                                     <td class="py-3 pr-4">{{ $discountCode->created_at?->format('Y-m-d H:i') }}</td>
                                     <td class="py-3 pr-4">
-                                        <div class="flex flex-wrap justify-end gap-2">
-                                            <a href="{{ route('manager.discount-codes.edit', $discountCode) }}" class="rounded-md border border-brand-dark/20 px-3 py-2 text-xs font-bold text-brand-dark hover:bg-brand-light">
+                                        <div class="flex flex-col justify-end gap-2 sm:flex-row">
+                                            <a href="{{ route('manager.discount-codes.edit', $discountCode) }}" class="rounded-md border border-brand-dark/20 px-3 py-2 text-center text-xs font-bold text-brand-dark hover:bg-brand-light">
                                                 Edytuj
                                             </a>
                                             <form method="POST" action="{{ route('manager.discount-codes.toggle', $discountCode) }}">
                                                 @csrf
                                                 @method('PATCH')
-                                                <button type="submit" class="rounded-md border border-brand-dark/20 bg-white px-3 py-2 text-xs font-bold text-brand-dark hover:bg-brand-light">
+                                                <button type="submit" class="w-full rounded-md border border-brand-dark/20 bg-white px-3 py-2 text-xs font-bold text-brand-dark hover:bg-brand-light">
                                                     {{ $discountCode->is_active ? 'Dezaktywuj' : 'Aktywuj' }}
                                                 </button>
                                             </form>

@@ -53,33 +53,33 @@
                 </p>
             </div>
 
-            <div class="flex flex-col gap-3 sm:flex-row sm:items-center">
-                <div class="inline-flex rounded-lg border border-brand-dark/15 bg-white p-1">
+            <div class="flex w-full flex-col gap-3 sm:flex-row sm:items-center lg:w-auto">
+                <div class="inline-flex w-full rounded-lg border border-brand-dark/15 bg-white p-1 sm:w-auto">
                     <a href="{{ route('schedule.index', ['view' => 'week', 'date' => $selectedDate->toDateString()]) }}"
-                       class="rounded-md px-4 py-2 text-sm font-bold {{ $viewMode === 'week' ? 'bg-brand-dark text-brand-light' : 'text-brand-dark hover:bg-brand-light' }}">
+                       class="flex-1 rounded-md px-4 py-2 text-center text-sm font-bold sm:flex-none {{ $viewMode === 'week' ? 'bg-brand-dark text-brand-light' : 'text-brand-dark hover:bg-brand-light' }}">
                         Tydzień
                     </a>
                     <a href="{{ route('schedule.index', ['view' => 'month', 'date' => $selectedDate->toDateString()]) }}"
-                       class="rounded-md px-4 py-2 text-sm font-bold {{ $viewMode === 'month' ? 'bg-brand-dark text-brand-light' : 'text-brand-dark hover:bg-brand-light' }}">
+                       class="flex-1 rounded-md px-4 py-2 text-center text-sm font-bold sm:flex-none {{ $viewMode === 'month' ? 'bg-brand-dark text-brand-light' : 'text-brand-dark hover:bg-brand-light' }}">
                         Miesiąc
                     </a>
                 </div>
 
-                <div class="flex items-center gap-2">
+                <div class="flex w-full flex-wrap items-center gap-2 sm:w-auto">
                     <a href="{{ route('schedule.index', ['view' => $viewMode, 'date' => $previousDate->toDateString()]) }}"
-                       class="rounded-md border border-brand-dark/20 bg-white px-3 py-2 text-sm font-bold text-brand-dark hover:bg-brand-light">
+                       class="flex-1 rounded-md border border-brand-dark/20 bg-white px-3 py-2 text-center text-sm font-bold text-brand-dark hover:bg-brand-light sm:flex-none">
                         Poprzedni
                     </a>
-                    <form method="GET" action="{{ route('schedule.index') }}" class="flex items-center gap-2">
+                    <form method="GET" action="{{ route('schedule.index') }}" class="flex min-w-0 flex-1 items-center gap-2 sm:flex-none">
                         <input type="hidden" name="view" value="{{ $viewMode }}">
                         <input type="date" name="date" value="{{ $selectedDate->toDateString() }}"
-                               class="w-36 rounded-md border border-brand-dark/20 bg-white px-3 py-2 text-sm text-brand-dark focus:border-brand-dark focus:outline-none">
+                               class="w-full min-w-0 rounded-md border border-brand-dark/20 bg-white px-3 py-2 text-sm text-brand-dark focus:border-brand-dark focus:outline-none sm:w-36">
                         <button type="submit" class="rounded-md bg-brand-dark px-3 py-2 text-sm font-bold text-brand-light hover:bg-brand-accent">
                             Pokaż
                         </button>
                     </form>
                     <a href="{{ route('schedule.index', ['view' => $viewMode, 'date' => $nextDate->toDateString()]) }}"
-                       class="rounded-md border border-brand-dark/20 bg-white px-3 py-2 text-sm font-bold text-brand-dark hover:bg-brand-light">
+                       class="flex-1 rounded-md border border-brand-dark/20 bg-white px-3 py-2 text-center text-sm font-bold text-brand-dark hover:bg-brand-light sm:flex-none">
                         Następny
                     </a>
                 </div>
@@ -102,7 +102,7 @@
             <div class="space-y-6">
                 @if($viewMode === 'week')
                     @if($isManagerOrAdmin)
-                        <div class="overflow-x-auto rounded-lg border border-brand-dark/15 bg-white p-4 shadow-sm">
+                        <div class="w-full overflow-x-auto rounded-lg border border-brand-dark/15 bg-white p-3 shadow-sm sm:p-4">
                             <table class="min-w-[980px] w-full border-collapse text-left">
                                 <thead>
                                 <tr class="border-b border-brand-dark/10 text-xs uppercase tracking-wide text-brand-accent">
@@ -221,7 +221,7 @@
                         </div>
                     @endif
                 @else
-                    <div class="overflow-x-auto rounded-lg border border-brand-dark/15 bg-white p-4 shadow-sm">
+                    <div class="w-full overflow-x-auto rounded-lg border border-brand-dark/15 bg-white p-3 shadow-sm sm:p-4">
                         <div class="grid min-w-[760px] grid-cols-7 gap-px overflow-hidden rounded-lg border border-brand-dark/10 bg-brand-dark/10">
                             @foreach([1, 2, 3, 4, 5, 6, 7] as $dayNumber)
                                 <div class="bg-brand-light px-3 py-2 text-center text-xs font-black uppercase text-brand-dark">
@@ -277,7 +277,7 @@
             </div>
 
             @if($isManagerOrAdmin)
-                <aside class="h-fit rounded-lg border border-brand-dark/15 bg-white p-5 shadow-sm xl:sticky xl:top-28">
+                <aside class="h-fit min-w-0 rounded-lg border border-brand-dark/15 bg-white p-4 shadow-sm sm:p-5 xl:sticky xl:top-28">
                     <span class="text-sm font-bold uppercase tracking-wide text-brand-accent">
                         {{ $formSchedule ? 'Edycja zmiany' : 'Nowa zmiana' }}
                     </span>
@@ -287,7 +287,7 @@
 
                     <form method="POST"
                           action="{{ $formSchedule ? route('manager.schedules.update', $formSchedule) : route('manager.schedules.store') }}"
-                          class="mt-6 space-y-4">
+                          class="mt-6 min-w-0 space-y-4">
                         @csrf
                         @if($formSchedule)
                             @method('PUT')
@@ -295,7 +295,7 @@
 
                         <div>
                             <label for="user_id" class="block text-sm font-bold text-brand-dark">Pracownik</label>
-                            <select id="user_id" name="user_id" required class="mt-1 w-full rounded-md border border-brand-dark/20 bg-white px-3 py-2 text-sm text-brand-dark focus:border-brand-dark focus:outline-none">
+                            <select id="user_id" name="user_id" required class="mt-1 w-full max-w-full rounded-md border border-brand-dark/20 bg-white px-3 py-2 text-sm text-brand-dark overflow-hidden text-ellipsis focus:border-brand-dark focus:outline-none">
                                 <option value="">Wybierz pracownika</option>
                                 @foreach($employees as $employee)
                                     <option value="{{ $employee->id }}" {{ (int) old('user_id', $formSchedule?->user_id) === $employee->id ? 'selected' : '' }}>
@@ -312,7 +312,7 @@
                                    class="mt-1 w-full rounded-md border border-brand-dark/20 px-3 py-2 text-sm text-brand-dark focus:border-brand-dark focus:outline-none">
                         </div>
 
-                        <div class="grid grid-cols-2 gap-4">
+                        <div class="grid min-w-0 grid-cols-2 gap-3 sm:gap-4">
                             <div>
                                 <label for="start_time" class="block text-sm font-bold text-brand-dark">Od</label>
                                 <input id="start_time" name="start_time" type="time" required
@@ -329,7 +329,7 @@
 
                         <div>
                             <label for="zone_id" class="block text-sm font-bold text-brand-dark">Strefa</label>
-                            <select id="zone_id" name="zone_id" class="mt-1 w-full rounded-md border border-brand-dark/20 bg-white px-3 py-2 text-sm text-brand-dark focus:border-brand-dark focus:outline-none">
+                            <select id="zone_id" name="zone_id" class="mt-1 w-full max-w-full rounded-md border border-brand-dark/20 bg-white px-3 py-2 text-sm text-brand-dark overflow-hidden text-ellipsis focus:border-brand-dark focus:outline-none">
                                 <option value="">Bez strefy</option>
                                 @foreach($zones as $zone)
                                     <option value="{{ $zone->id }}" {{ (int) old('zone_id', $formSchedule?->zone_id) === $zone->id ? 'selected' : '' }}>
