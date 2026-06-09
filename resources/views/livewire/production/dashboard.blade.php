@@ -86,15 +86,42 @@
                                 ->sortKeysDesc();
                         @endphp
 
-                        <section class="rounded-xl border-2 bg-brand-light/40 p-5 {{ $columnFrameClass[$status] ?? 'border-brand-dark' }}">
-                            <div class="mb-4">
+                        <section class="relative overflow-hidden rounded-xl border-2 bg-brand-light/40 {{ $columnFrameClass[$status] ?? 'border-brand-dark' }} xl:overflow-visible xl:p-5">
+                            <input
+                                id="production-status-{{ $loop->index }}"
+                                type="checkbox"
+                                class="peer sr-only"
+                            >
+                            <label
+                                for="production-status-{{ $loop->index }}"
+                                class="flex cursor-pointer items-center justify-between gap-3 px-4 py-4 pr-12 xl:hidden"
+                            >
+                                <span class="min-w-0 text-sm font-black uppercase tracking-[0.14em] {{ $columnHeadingClass[$status] ?? 'border-brand-dark text-brand-dark' }}">
+                                    {{ $column['title'] }}
+                                </span>
+                                <span class="shrink-0 rounded-md bg-white px-2.5 py-1 text-xs font-black text-brand-dark">
+                                    {{ $column['items']->count() }}
+                                </span>
+                            </label>
+                            <label
+                                for="production-status-{{ $loop->index }}"
+                                class="absolute right-4 top-4 flex h-6 w-6 cursor-pointer items-center justify-center transition-transform peer-checked:rotate-180 xl:hidden"
+                                aria-label="Przełącz widoczność sekcji {{ $column['title'] }}"
+                            >
+                                <svg class="h-5 w-5 text-brand-dark" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                                    <path fill-rule="evenodd" d="M5.23 7.21a.75.75 0 0 1 1.06.02L10 11.168l3.71-3.938a.75.75 0 1 1 1.08 1.04l-4.25 4.5a.75.75 0 0 1-1.08 0l-4.25-4.5a.75.75 0 0 1 .02-1.06Z" clip-rule="evenodd" />
+                                </svg>
+                            </label>
+
+                            <div class="mb-4 hidden xl:block">
                                 <h2 class="border-b-2 pb-3 text-center text-sm font-black uppercase tracking-[0.14em] {{ $columnHeadingClass[$status] ?? 'border-brand-dark text-brand-dark' }}">
                                     {{ $column['title'] }}
                                 </h2>
                                 <p class="mt-1 text-sm text-brand-accent">{{ $column['description'] }}</p>
                             </div>
 
-                            <div class="space-y-4">
+                            <div class="hidden space-y-4 px-4 pb-4 peer-checked:block xl:block xl:px-0 xl:pb-0">
+                                <p class="text-sm text-brand-accent xl:hidden">{{ $column['description'] }}</p>
                                 @forelse($groupedItems as $orderItems)
                                     @php
                                         $order = $orderItems->first()->order;
