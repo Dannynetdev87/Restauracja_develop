@@ -86,32 +86,18 @@
                                 ->sortKeysDesc();
                         @endphp
 
-                        <section class="relative overflow-hidden rounded-xl border-2 bg-brand-light/40 {{ $columnFrameClass[$status] ?? 'border-brand-dark' }} xl:overflow-visible xl:p-5">
-                            <input
-                                id="production-status-{{ $loop->index }}"
-                                type="checkbox"
-                                class="peer sr-only"
-                            >
-                            <label
-                                for="production-status-{{ $loop->index }}"
-                                class="flex cursor-pointer items-center justify-between gap-3 px-4 py-4 pr-12 xl:hidden"
-                            >
-                                <span class="min-w-0 text-sm font-black uppercase tracking-[0.14em] {{ $columnHeadingClass[$status] ?? 'border-brand-dark text-brand-dark' }}">
-                                    {{ $column['title'] }}
-                                </span>
-                                <span class="shrink-0 rounded-md bg-white px-2.5 py-1 text-xs font-black text-brand-dark">
-                                    {{ $column['items']->count() }}
-                                </span>
-                            </label>
-                            <label
-                                for="production-status-{{ $loop->index }}"
-                                class="absolute right-4 top-4 flex h-6 w-6 cursor-pointer items-center justify-center transition-transform peer-checked:rotate-180 xl:hidden"
-                                aria-label="Przełącz widoczność sekcji {{ $column['title'] }}"
-                            >
-                                <svg class="h-5 w-5 text-brand-dark" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
-                                    <path fill-rule="evenodd" d="M5.23 7.21a.75.75 0 0 1 1.06.02L10 11.168l3.71-3.938a.75.75 0 1 1 1.08 1.04l-4.25 4.5a.75.75 0 0 1-1.08 0l-4.25-4.5a.75.75 0 0 1 .02-1.06Z" clip-rule="evenodd" />
-                                </svg>
-                            </label>
+                        <section class="relative overflow-hidden rounded-xl border-2 bg-brand-light/40 p-4 {{ $columnFrameClass[$status] ?? 'border-brand-dark' }} xl:overflow-visible xl:p-5">
+                            <div class="mb-4 xl:hidden">
+                                <div class="flex items-center justify-between gap-3">
+                                    <h2 class="min-w-0 text-sm font-black uppercase tracking-[0.14em] {{ $columnHeadingClass[$status] ?? 'border-brand-dark text-brand-dark' }}">
+                                        {{ $column['title'] }}
+                                    </h2>
+                                    <span class="shrink-0 rounded-md bg-white px-2.5 py-1 text-xs font-black text-brand-dark">
+                                        {{ $column['items']->count() }}
+                                    </span>
+                                </div>
+                                <p class="mt-2 text-sm text-brand-accent">{{ $column['description'] }}</p>
+                            </div>
 
                             <div class="mb-4 hidden xl:block">
                                 <h2 class="border-b-2 pb-3 text-center text-sm font-black uppercase tracking-[0.14em] {{ $columnHeadingClass[$status] ?? 'border-brand-dark text-brand-dark' }}">
@@ -120,30 +106,57 @@
                                 <p class="mt-1 text-sm text-brand-accent">{{ $column['description'] }}</p>
                             </div>
 
-                            <div class="hidden space-y-4 px-4 pb-4 peer-checked:block xl:block xl:px-0 xl:pb-0">
-                                <p class="text-sm text-brand-accent xl:hidden">{{ $column['description'] }}</p>
+                            <div class="space-y-4">
                                 @forelse($groupedItems as $orderItems)
                                     @php
                                         $order = $orderItems->first()->order;
                                         $oldestItem = $orderItems->sortBy('created_at')->first();
                                         $oldestItemAt = $oldestItem?->created_at;
                                         $orderWaitingMinutes = $oldestItemAt ? (int) round($oldestItemAt->diffInMinutes(now())) : 0;
+                                        $orderCardId = 'production-order-'.md5($status.'-'.$order->id);
                                     @endphp
 
-                                    <article class="rounded-lg border border-brand-dark/20 bg-white/85 p-4 shadow-sm">
-                                        <div class="mb-4 flex items-start justify-between gap-4 border-b border-brand-dark/10 pb-3">
-                                            <div>
+                                    <article class="overflow-hidden rounded-lg border border-brand-dark/20 bg-white/85 shadow-sm">
+                                        <input
+                                            id="{{ $orderCardId }}"
+                                            type="checkbox"
+                                            class="peer sr-only xl:hidden"
+                                        >
+                                        <label
+                                            for="{{ $orderCardId }}"
+                                            class="flex cursor-pointer items-start justify-between gap-3 p-4 xl:cursor-default"
+                                        >
+                                            <div class="min-w-0">
                                                 <h3 class="font-black text-brand-dark">Zamówienie #{{ $order->id }}</h3>
                                                 <p class="mt-1 text-sm text-brand-accent">
                                                     Stolik {{ $order->table->number }} · {{ $formatItemsCount($orderItems->count()) }}
                                                 </p>
                                             </div>
-                                            <span class="rounded-md bg-amber-50 px-2 py-1 text-xs font-bold text-amber-700">
-                                                {{ $formatMinutes($orderWaitingMinutes) }}
-                                            </span>
-                                        </div>
+                                            <div class="flex shrink-0 items-center gap-2">
+                                                <span class="rounded-md bg-amber-50 px-2 py-1 text-xs font-bold text-amber-700">
+                                                    {{ $formatMinutes($orderWaitingMinutes) }}
+                                                </span>
+                                                <span class="flex h-7 w-7 items-center justify-center rounded-md border border-brand-dark/10 bg-white text-brand-dark xl:hidden" aria-hidden="true">
+                                                    <svg class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
+                                                        <path fill-rule="evenodd" d="M5.23 7.21a.75.75 0 0 1 1.06.02L10 11.168l3.71-3.938a.75.75 0 1 1 1.08 1.04l-4.25 4.5a.75.75 0 0 1-1.08 0l-4.25-4.5a.75.75 0 0 1 .02-1.06Z" clip-rule="evenodd" />
+                                                    </svg>
+                                                </span>
+                                            </div>
+                                        </label>
+                                        <label
+                                            for="{{ $orderCardId }}"
+                                            class="block border-t border-brand-dark/10 px-4 py-2 text-xs font-bold text-brand-accent peer-checked:hidden xl:hidden"
+                                        >
+                                            Pokaż pozycje
+                                        </label>
+                                        <label
+                                            for="{{ $orderCardId }}"
+                                            class="hidden border-t border-brand-dark/10 px-4 py-2 text-xs font-bold text-brand-accent peer-checked:block xl:hidden"
+                                        >
+                                            Ukryj pozycje
+                                        </label>
 
-                                        <div class="space-y-4">
+                                        <div class="hidden space-y-4 border-t border-brand-dark/10 p-4 peer-checked:block xl:block">
                                             @foreach($orderItems as $item)
                                                 @php
                                                     $placedAt = $item->created_at;
