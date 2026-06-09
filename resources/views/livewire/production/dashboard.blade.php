@@ -125,6 +125,7 @@
                                         <label
                                             for="{{ $orderCardId }}"
                                             class="flex cursor-pointer items-start justify-between gap-3 p-4 xl:cursor-default"
+                                            aria-label="Przełącz widoczność pozycji zamówienia #{{ $order->id }}"
                                         >
                                             <div class="min-w-0">
                                                 <h3 class="font-black text-brand-dark">Zamówienie #{{ $order->id }}</h3>
