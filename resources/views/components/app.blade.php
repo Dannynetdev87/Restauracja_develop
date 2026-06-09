@@ -49,6 +49,9 @@
                         <a href="{{ route('manager.podglad') }}" class="nav-link {{ request()->routeIs('manager.podglad', 'manager.menu-categories.*', 'manager.menu-items.*') ? $activeNavClass : '' }}">
                             Zarządzanie menu
                         </a>
+                        <a href="{{ route('manager.statistics') }}" class="nav-link {{ request()->routeIs('manager.statistics') ? $activeNavClass : '' }}">
+                            Statystyka
+                        </a>
                         <a href="{{ route('manager.tables.index') }}" class="nav-link {{ request()->routeIs('manager.tables.*') ? $activeNavClass : '' }}">
                             Stoliki
                         </a>

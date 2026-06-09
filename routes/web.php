@@ -97,6 +97,7 @@ Route::middleware('auth')->group(function () {
         Route::put('/manager/schedules/{schedule}', [ScheduleController::class, 'update'])->name('manager.schedules.update');
         Route::delete('/manager/schedules/{schedule}', [ScheduleController::class, 'destroy'])->name('manager.schedules.destroy');
 
+        Route::get('/manager/statystyka', [ManagerDashboardController::class, 'statistics'])->name('manager.statistics');
         Route::get('/manager/menu', [MenuManagementController::class, 'index'])->name('manager.podglad');
 
         Route::get('/manager/tables', [RestaurantTableController::class, 'index'])->name('manager.tables.index');
