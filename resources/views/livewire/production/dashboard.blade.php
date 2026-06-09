@@ -21,6 +21,49 @@
     ];
 @endphp
 
+<style>
+    .production-order-items,
+    .production-order-hide-mobile,
+    .production-order-show-desktop,
+    .production-order-hide-desktop {
+        display: none;
+    }
+
+    .production-order-toggle-mobile:checked ~ .production-order-items,
+    .production-order-toggle-mobile:checked ~ .production-order-hide-mobile {
+        display: block;
+    }
+
+    .production-order-toggle-mobile:checked ~ .production-order-show-mobile {
+        display: none;
+    }
+
+    @media (min-width: 1280px) {
+        .production-order-items,
+        .production-order-hide-desktop {
+            display: none;
+        }
+
+        .production-order-show-mobile,
+        .production-order-hide-mobile {
+            display: none;
+        }
+
+        .production-order-show-desktop {
+            display: block;
+        }
+
+        .production-order-toggle-desktop:checked ~ .production-order-items,
+        .production-order-toggle-desktop:checked ~ .production-order-hide-desktop {
+            display: block;
+        }
+
+        .production-order-toggle-desktop:checked ~ .production-order-show-desktop {
+            display: none;
+        }
+    }
+</style>
+
 <section
     wire:poll.5s
     class="{{ $containerClass ?? 'w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10' }}"
@@ -114,17 +157,23 @@
                                         $oldestItemAt = $oldestItem?->created_at;
                                         $orderWaitingMinutes = $oldestItemAt ? (int) round($oldestItemAt->diffInMinutes(now())) : 0;
                                         $orderCardId = 'production-order-'.md5($status.'-'.$order->id);
+                                        $desktopOrderCardId = $orderCardId.'-desktop';
                                     @endphp
 
                                     <article class="overflow-hidden rounded-lg border border-brand-dark/20 bg-white/85 shadow-sm">
                                         <input
                                             id="{{ $orderCardId }}"
                                             type="checkbox"
-                                            class="peer sr-only xl:hidden"
+                                            class="production-order-toggle-mobile sr-only"
+                                        >
+                                        <input
+                                            id="{{ $desktopOrderCardId }}"
+                                            type="checkbox"
+                                            class="production-order-toggle-desktop sr-only"
                                         >
                                         <label
                                             for="{{ $orderCardId }}"
-                                            class="flex cursor-pointer items-start justify-between gap-3 p-4 xl:cursor-default"
+                                            class="flex cursor-pointer items-start justify-between gap-3 p-4 xl:hidden"
                                             aria-label="Przełącz widoczność pozycji zamówienia #{{ $order->id }}"
                                         >
                                             <div class="min-w-0">
@@ -145,19 +194,53 @@
                                             </div>
                                         </label>
                                         <label
+                                            for="{{ $desktopOrderCardId }}"
+                                            class="hidden cursor-pointer items-start justify-between gap-3 p-4 xl:flex"
+                                            aria-label="Przełącz widoczność pozycji zamówienia #{{ $order->id }}"
+                                        >
+                                            <div class="min-w-0">
+                                                <h3 class="font-black text-brand-dark">Zamówienie #{{ $order->id }}</h3>
+                                                <p class="mt-1 text-sm text-brand-accent">
+                                                    Stolik {{ $order->table->number }} · {{ $formatItemsCount($orderItems->count()) }}
+                                                </p>
+                                            </div>
+                                            <div class="flex shrink-0 items-center gap-2">
+                                                <span class="rounded-md bg-amber-50 px-2 py-1 text-xs font-bold text-amber-700">
+                                                    {{ $formatMinutes($orderWaitingMinutes) }}
+                                                </span>
+                                                <span class="flex h-7 w-7 items-center justify-center rounded-md border border-brand-dark/10 bg-white text-brand-dark" aria-hidden="true">
+                                                    <svg class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
+                                                        <path fill-rule="evenodd" d="M5.23 7.21a.75.75 0 0 1 1.06.02L10 11.168l3.71-3.938a.75.75 0 1 1 1.08 1.04l-4.25 4.5a.75.75 0 0 1-1.08 0l-4.25-4.5a.75.75 0 0 1 .02-1.06Z" clip-rule="evenodd" />
+                                                    </svg>
+                                                </span>
+                                            </div>
+                                        </label>
+                                        <label
                                             for="{{ $orderCardId }}"
-                                            class="block border-t border-brand-dark/10 px-4 py-2 text-xs font-bold text-brand-accent peer-checked:hidden xl:hidden"
+                                            class="production-order-show-mobile block border-t border-brand-dark/10 px-4 py-2 text-xs font-bold text-brand-accent xl:hidden"
                                         >
                                             Pokaż pozycje
                                         </label>
                                         <label
                                             for="{{ $orderCardId }}"
-                                            class="hidden border-t border-brand-dark/10 px-4 py-2 text-xs font-bold text-brand-accent peer-checked:block xl:hidden"
+                                            class="production-order-hide-mobile border-t border-brand-dark/10 px-4 py-2 text-xs font-bold text-brand-accent xl:hidden"
+                                        >
+                                            Ukryj pozycje
+                                        </label>
+                                        <label
+                                            for="{{ $desktopOrderCardId }}"
+                                            class="production-order-show-desktop border-t border-brand-dark/10 px-4 py-2 text-xs font-bold text-brand-accent"
+                                        >
+                                            Pokaż pozycje
+                                        </label>
+                                        <label
+                                            for="{{ $desktopOrderCardId }}"
+                                            class="production-order-hide-desktop border-t border-brand-dark/10 px-4 py-2 text-xs font-bold text-brand-accent"
                                         >
                                             Ukryj pozycje
                                         </label>
 
-                                        <div class="hidden space-y-4 border-t border-brand-dark/10 p-4 peer-checked:block xl:block">
+                                        <div class="production-order-items space-y-4 border-t border-brand-dark/10 p-4">
                                             @foreach($orderItems as $item)
                                                 @php
                                                     $placedAt = $item->created_at;
