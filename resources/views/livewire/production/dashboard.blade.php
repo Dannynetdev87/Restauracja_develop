@@ -62,6 +62,50 @@
             display: none;
         }
     }
+
+    @keyframes kitchenPop {
+        0% {
+            opacity: 0;
+            transform: translateY(8px) scale(0.98);
+        }
+
+        100% {
+            opacity: 1;
+            transform: translateY(0) scale(1);
+        }
+    }
+
+    @keyframes pulseSlow {
+        0%, 100% {
+            opacity: 1;
+        }
+
+        50% {
+            opacity: 0.6;
+        }
+    }
+
+    @keyframes fadeIn {
+        from {
+            opacity: 0;
+        }
+
+        to {
+            opacity: 1;
+        }
+    }
+
+    .animate-kitchen-pop {
+        animation: kitchenPop 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    }
+
+    .animate-pulse-slow {
+        animation: pulseSlow 2s infinite ease-in-out;
+    }
+
+    .animate-fade-in {
+        animation: fadeIn 0.3s ease-out forwards;
+    }
 </style>
 
 <section
@@ -69,13 +113,13 @@
     class="{{ $containerClass ?? 'w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10' }}"
 >
     @if(session('success'))
-        <div class="mb-6 rounded-lg border border-green-700 bg-green-50 px-4 py-3 text-sm font-semibold text-green-800">
+        <div class="mb-6 rounded-lg border border-green-700 bg-green-50 px-4 py-3 text-sm font-semibold text-green-800 animate-fade-in">
             {{ session('success') }}
         </div>
     @endif
 
     @if($errors->any())
-        <div class="mb-6 rounded-lg border border-red-700 bg-red-50 px-4 py-3 text-sm font-semibold text-red-800">
+        <div class="mb-6 rounded-lg border border-red-700 bg-red-50 px-4 py-3 text-sm font-semibold text-red-800 animate-fade-in">
             {{ $errors->first() }}
         </div>
     @endif
@@ -160,7 +204,7 @@
                                         $desktopOrderCardId = $orderCardId.'-desktop';
                                     @endphp
 
-                                    <article class="overflow-hidden rounded-lg border border-brand-dark/20 bg-white/85 shadow-sm">
+                                    <article class="animate-kitchen-pop overflow-hidden rounded-lg border border-brand-dark/20 bg-white/85 shadow-sm transition-all duration-200 hover:scale-[1.01] hover:shadow-md">
                                         <input
                                             id="{{ $orderCardId }}"
                                             type="checkbox"
@@ -273,7 +317,7 @@
                                                             Godzina złożenia:
                                                             <strong class="text-brand-dark">{{ $placedAt?->format('H:i') ?? '--:--' }}</strong>
                                                         </div>
-                                                        <div class="rounded-md px-3 py-2 {{ $isDelayed ? 'bg-red-50 text-red-700' : 'bg-white text-brand-accent' }}">
+                                                        <div class="rounded-md px-3 py-2 transition-colors duration-300 {{ $isDelayed ? 'bg-red-50 text-red-700 font-bold animate-pulse-slow' : 'bg-white text-brand-accent' }}">
                                                             Czas oczekiwania:
                                                             <strong>{{ $formatMinutes($waitingMinutes) }}</strong>
                                                         </div>
@@ -384,7 +428,7 @@
                                 </div>
                                 <div class="mt-2 flex flex-wrap items-center justify-between gap-2 text-sm text-brand-accent">
                                     <span>Stolik {{ $order->table->number }} · od {{ $oldestItemAt?->format('H:i') ?? '--:--' }}</span>
-                                    <span class="font-bold {{ $isDelayed ? 'text-red-700' : 'text-brand-accent' }}">Czeka {{ $formatMinutes($waitingMinutes) }}</span>
+                                    <span class="font-bold {{ $isDelayed ? 'text-red-700 animate-pulse-slow' : 'text-brand-accent' }}">Czeka {{ $formatMinutes($waitingMinutes) }}</span>
                                 </div>
                             </div>
                         @empty

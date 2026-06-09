@@ -16,6 +16,54 @@
     $formatShiftDate = fn () => now()->locale('pl')->translatedFormat('l, d F');
 @endphp
 
+<style>
+    @keyframes itemPop {
+        0% {
+            opacity: 0;
+            transform: translateY(8px) scale(0.98);
+        }
+
+        100% {
+            opacity: 1;
+            transform: translateY(0) scale(1);
+        }
+    }
+
+    @keyframes buttonGlow {
+        0%, 100% {
+            transform: scale(1);
+            box-shadow: 0 1px 2px 0 rgba(4, 120, 87, 0.3);
+        }
+
+        50% {
+            transform: scale(1.01);
+            box-shadow: 0 4px 10px 0 rgba(4, 120, 87, 0.5);
+        }
+    }
+
+    @keyframes fadeIn {
+        from {
+            opacity: 0;
+        }
+
+        to {
+            opacity: 1;
+        }
+    }
+
+    .animate-item-pop {
+        animation: itemPop 0.25s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    }
+
+    .animate-button-glow {
+        animation: buttonGlow 2s infinite ease-in-out;
+    }
+
+    .animate-fade-in {
+        animation: fadeIn 0.3s ease-out forwards;
+    }
+</style>
+
 <section
     id="waiter-dashboard-refresh"
     wire:poll.5s
@@ -23,13 +71,13 @@
 >
     <div class="mx-auto max-w-6xl min-w-0">
         @if(session('success'))
-            <div class="mb-6 rounded-lg border border-green-700 bg-green-50 px-4 py-3 text-sm font-semibold text-green-800">
+            <div class="mb-6 rounded-lg border border-green-700 bg-green-50 px-4 py-3 text-sm font-semibold text-green-800 animate-fade-in">
                 {{ session('success') }}
             </div>
         @endif
 
         @if(session('error'))
-            <div class="mb-6 rounded-lg border border-red-700 bg-red-50 px-4 py-3 text-sm font-semibold text-red-800">
+            <div class="mb-6 rounded-lg border border-red-700 bg-red-50 px-4 py-3 text-sm font-semibold text-red-800 animate-fade-in">
                 {{ session('error') }}
             </div>
         @endif
@@ -57,7 +105,7 @@
 
                 <div class="mt-4 space-y-3">
                     @forelse($inProgressItems->take(4) as $item)
-                        <article wire:key="waiter-dashboard-progress-{{ $item->id }}" class="rounded-lg border border-brand-dark/20 bg-white/80 p-4 shadow-sm">
+                        <article wire:key="waiter-dashboard-progress-{{ $item->id }}" class="animate-item-pop rounded-lg border border-brand-dark/20 bg-white/80 p-4 shadow-sm transition-all duration-200 hover:scale-[1.01] hover:shadow-md">
                             <div class="flex flex-wrap items-start justify-between gap-3">
                                 <div class="min-w-0">
                                     <h3 class="break-words font-black text-brand-dark">{{ $formatItemTitle($item) }}</h3>
@@ -85,7 +133,7 @@
 
                 <div class="mt-4 space-y-3">
                     @forelse($cancelledItems->take(4) as $item)
-                        <article wire:key="waiter-dashboard-cancelled-{{ $item->id }}" class="rounded-lg border border-red-200 bg-white/90 p-4 shadow-sm">
+                        <article wire:key="waiter-dashboard-cancelled-{{ $item->id }}" class="animate-item-pop rounded-lg border border-red-200 bg-white/90 p-4 shadow-sm transition-all duration-200 hover:scale-[1.01]">
                             <div class="flex flex-wrap items-start justify-between gap-3">
                                 <div class="min-w-0">
                                     <h3 class="break-words font-black text-brand-dark line-through decoration-red-700/60">
@@ -112,14 +160,14 @@
                 </div>
             </section>
 
-            <section class="rounded-xl border-2 border-emerald-900 bg-emerald-50/20 p-4 sm:p-5">
+            <section class="rounded-xl border-2 border-emerald-900 bg-emerald-50/20 p-4 transition-all duration-300 sm:p-5">
                 <h2 class="border-b-2 border-emerald-900 pb-3 text-center text-sm font-black uppercase tracking-wide text-emerald-950 sm:tracking-[0.16em]">
                     Do odbioru
                 </h2>
 
                 <div class="mt-4 space-y-3">
                     @forelse($readyItems->take(4) as $item)
-                        <article wire:key="waiter-dashboard-ready-{{ $item->id }}" class="rounded-lg border border-emerald-200 bg-white/90 p-4 shadow-sm">
+                        <article wire:key="waiter-dashboard-ready-{{ $item->id }}" class="animate-item-pop rounded-lg border border-emerald-200 bg-white/90 p-4 shadow-sm transition-all duration-200 hover:scale-[1.01] ring-1 ring-emerald-500/10">
                             <div class="flex flex-wrap items-start justify-between gap-3">
                                 <div class="min-w-0">
                                     <h3 class="break-words font-black text-brand-dark">{{ $formatItemTitle($item) }}</h3>
@@ -135,7 +183,7 @@
                                 @csrf
                                 @method('PATCH')
                                 <button type="submit"
-                                        class="w-full rounded-md bg-brand-dark px-4 py-2 text-xs font-black uppercase tracking-wide text-brand-light transition-all duration-200 ease-out hover:bg-brand-accent hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-accent/40">
+                                        class="w-full rounded-md bg-brand-dark px-4 py-2 text-xs font-black uppercase tracking-wide text-brand-light transition-all duration-200 ease-out hover:bg-brand-accent hover:shadow-md active:scale-95 animate-button-glow focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-accent/40">
                                     Odbierz z kuchni
                                 </button>
                             </form>

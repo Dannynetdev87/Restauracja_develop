@@ -42,7 +42,7 @@
 
         <div class="grid min-w-0 gap-6 lg:grid-cols-[0.9fr_1.1fr]">
             <div class="rounded-lg border border-brand-dark/15 bg-white p-4 shadow-sm sm:p-5">
-                <h2 class="text-xl font-black text-brand-dark">Dodaj kategorię</h2>
+                <h2 class="text-xl font-black text-brand-dark transition-all duration-200 ease-out hover:shadow-md active:scale-95">Dodaj kategorię</h2>
 
                 <form method="POST" action="{{ route('manager.menu-categories.store') }}" class="mt-5 space-y-4">
                     @csrf
@@ -182,7 +182,7 @@
                                             </span>
                                     </td>
                                     <td class="py-3 pr-4">
-                                        <div class="flex flex-col justify-end gap-2 sm:flex-row">
+                                        <div class="flex flex-col justify-end gap-2 transition-all duration-200 ease-out hover:shadow-md active:scale-95 sm:flex-row">
                                             <a href="{{ route('manager.menu-items.edit', $item) }}" class="rounded-md border border-brand-dark/20 px-3 py-2 text-center text-xs font-bold text-brand-dark transition-all duration-200 ease-out hover:bg-brand-light hover:shadow-md active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-accent/40">
                                                 Edytuj
                                             </a>
