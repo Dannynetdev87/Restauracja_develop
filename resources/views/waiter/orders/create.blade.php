@@ -65,17 +65,22 @@
                 <div class="space-y-6">
                     @forelse($categories as $category)
                         @if($category->availableItems->isNotEmpty())
-                            <section class="rounded-lg border border-brand-dark/15 bg-white p-5 shadow-sm">
-                                <div class="mb-4 flex items-center justify-between gap-4">
-                                    <h2 class="text-xl font-black text-brand-dark">{{ $category->name }}</h2>
-                                    <span class="text-xs font-bold uppercase text-brand-accent">
-                                        {{ $category->availableItems->count() }} pozycji
-                                    </span>
-                                </div>
+                            @php
+                                $categoryHasOldInput = $category->availableItems->contains(fn ($item) => (int) old('items.'.$item->id.'.quantity', 0) > 0 || filled(old('items.'.$item->id.'.notes')));
+                            @endphp
 
-                                <div class="divide-y divide-brand-dark/10">
+                            <details class="group rounded-lg border border-brand-dark/15 bg-white shadow-sm" data-menu-category @if($categoryHasOldInput) open @endif>
+                                <summary class="flex cursor-pointer list-none items-center justify-between gap-4 rounded-lg px-5 py-4 transition hover:bg-brand-card [&::-webkit-details-marker]:hidden">
+                                    <h2 class="text-xl font-black text-brand-dark">{{ $category->name }}</h2>
+                                    <span class="flex items-center gap-3 text-xs font-bold uppercase text-brand-accent">
+                                        {{ $category->availableItems->count() }} pozycji
+                                        <span class="text-base leading-none transition-transform group-open:rotate-180">⌄</span>
+                                    </span>
+                                </summary>
+
+                                <div class="divide-y divide-brand-dark/10 border-t border-brand-dark/10 px-5">
                                     @foreach($category->availableItems as $item)
-                                        <div class="grid gap-4 py-4 md:grid-cols-[1fr_112px] md:items-start">
+                                        <div class="grid gap-4 py-4 md:grid-cols-[1fr_150px] md:items-start">
                                             <div>
                                                 <div class="flex flex-col gap-1 sm:flex-row sm:items-baseline sm:justify-between">
                                                     <h3 class="font-black text-brand-dark">{{ $item->name }}</h3>
@@ -102,21 +107,37 @@
                                                 <label for="item-quantity-{{ $item->id }}" class="block text-xs font-bold uppercase text-brand-accent">
                                                     Ilość
                                                 </label>
-                                                <input id="item-quantity-{{ $item->id }}"
-                                                       name="items[{{ $item->id }}][quantity]"
-                                                       value="{{ old('items.'.$item->id.'.quantity', 0) }}"
-                                                       type="number"
-                                                       min="0"
-                                                       max="99"
-                                                       inputmode="numeric"
-                                                       data-order-quantity
-                                                       data-price="{{ $item->price }}"
-                                                       class="mt-1 w-full rounded-md border border-brand-dark/20 bg-white px-3 py-2 text-sm font-bold text-brand-dark focus:border-brand-dark focus:outline-none">
+                                                <div class="mt-1 grid h-12 grid-cols-[38px_1fr_38px] overflow-hidden rounded-md border border-brand-dark/20 bg-white shadow-sm">
+                                                    <button type="button"
+                                                            class="flex items-center justify-center border-r border-brand-dark/20 bg-brand-light text-lg font-black text-brand-dark transition hover:bg-brand-dark hover:text-brand-light focus:outline-none focus:ring-2 focus:ring-brand-accent focus:ring-inset"
+                                                            data-quantity-step="-1"
+                                                            data-quantity-target="item-quantity-{{ $item->id }}"
+                                                            aria-label="Zmniejsz ilość dla {{ $item->name }}">
+                                                        -
+                                                    </button>
+                                                    <input id="item-quantity-{{ $item->id }}"
+                                                           name="items[{{ $item->id }}][quantity]"
+                                                           value="{{ old('items.'.$item->id.'.quantity', 0) }}"
+                                                           type="number"
+                                                           min="0"
+                                                           max="99"
+                                                           inputmode="numeric"
+                                                           data-order-quantity
+                                                           data-price="{{ $item->price }}"
+                                                           class="h-full w-full border-0 bg-white px-2 text-center text-lg font-black text-brand-dark [appearance:textfield] focus:outline-none [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none">
+                                                    <button type="button"
+                                                            class="flex items-center justify-center border-l border-brand-dark/20 bg-brand-light text-lg font-black text-brand-dark transition hover:bg-brand-dark hover:text-brand-light focus:outline-none focus:ring-2 focus:ring-brand-accent focus:ring-inset"
+                                                            data-quantity-step="1"
+                                                            data-quantity-target="item-quantity-{{ $item->id }}"
+                                                            aria-label="Zwiększ ilość dla {{ $item->name }}">
+                                                        +
+                                                    </button>
+                                                </div>
                                             </div>
                                         </div>
                                     @endforeach
                                 </div>
-                            </section>
+                            </details>
                         @endif
                     @empty
                         <div class="rounded-lg border border-brand-dark/15 bg-white p-8 text-center text-brand-accent">
@@ -180,6 +201,7 @@
                 const selectedTotalElement = form.querySelector('[data-selected-total]');
                 const grandTotalElement = form.querySelector('[data-grand-total]');
                 const quantityInputs = form.querySelectorAll('[data-order-quantity]');
+                const quantityButtons = form.querySelectorAll('[data-quantity-step]');
                 const formatter = new Intl.NumberFormat('pl-PL', {
                     minimumFractionDigits: 2,
                     maximumFractionDigits: 2,
@@ -200,6 +222,25 @@
                     selectedTotalElement.textContent = formatter.format(selectedTotal);
                     grandTotalElement.textContent = formatter.format(currentTotal + selectedTotal);
                 };
+
+                quantityButtons.forEach((button) => {
+                    button.addEventListener('click', () => {
+                        const input = document.getElementById(button.dataset.quantityTarget);
+
+                        if (!input) {
+                            return;
+                        }
+
+                        const step = Number.parseInt(button.dataset.quantityStep || '0', 10);
+                        const min = Number.parseInt(input.getAttribute('min') || '0', 10);
+                        const max = Number.parseInt(input.getAttribute('max') || '99', 10);
+                        const currentValue = Number.parseInt(input.value || '0', 10);
+                        const nextValue = Math.min(max, Math.max(min, currentValue + step));
+
+                        input.value = String(nextValue);
+                        input.dispatchEvent(new Event('input', { bubbles: true }));
+                    });
+                });
 
                 quantityInputs.forEach((input) => {
                     input.addEventListener('input', updateTotals);

@@ -337,6 +337,9 @@ class WaiterTableWorkflowTest extends TestCase
             ->get(route('waiter.orders.create', ['table_id' => $table->id]))
             ->assertOk()
             ->assertSee('Stolik 925')
+            ->assertSee('data-menu-category', false)
+            ->assertSee('data-quantity-step="-1"', false)
+            ->assertSee('data-quantity-step="1"', false)
             ->assertSee('Testowy rosół')
             ->assertSee('Zapisz pozycje');
     }
