@@ -13,7 +13,7 @@
             </div>
 
             <a href="{{ route('manager.dashboard') }}"
-               class="w-full rounded-md border border-brand-dark/20 bg-white px-4 py-2 text-center text-sm font-bold text-brand-dark hover:bg-brand-light lg:w-auto">
+               class="w-full rounded-md border border-brand-dark/20 bg-white px-4 py-2 text-center text-sm font-bold text-brand-dark transition-all duration-200 ease-out hover:bg-brand-light hover:shadow-md active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-accent/40 lg:w-auto">
                 Powrót do panelu
             </a>
         </div>
@@ -91,7 +91,7 @@
                         </select>
                     </div>
 
-                    <button type="submit" class="w-full rounded-md bg-brand-dark px-4 py-2 text-sm font-bold text-brand-light hover:bg-brand-accent sm:w-auto">
+                    <button type="submit" class="w-full rounded-md bg-brand-dark px-4 py-2 text-sm font-bold text-brand-light transition-all duration-200 ease-out hover:bg-brand-accent hover:shadow-md active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-accent/40 sm:w-auto">
                         Dodaj stolik
                     </button>
                 </form>
@@ -147,13 +147,13 @@
                                 <td class="py-3 pr-4">{{ $table->orders_count }}</td>
                                 <td class="py-3 pr-4">
                                     <div class="flex flex-col justify-end gap-2 sm:flex-row">
-                                        <a href="{{ route('manager.tables.edit', $table) }}" class="rounded-md border border-brand-dark/20 px-3 py-2 text-center text-xs font-bold text-brand-dark hover:bg-brand-light">
+                                        <a href="{{ route('manager.tables.edit', $table) }}" class="rounded-md border border-brand-dark/20 px-3 py-2 text-center text-xs font-bold text-brand-dark transition-all duration-200 ease-out hover:bg-brand-light hover:shadow-md active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-accent/40">
                                             Edytuj
                                         </a>
                                         <form method="POST" action="{{ route('manager.tables.destroy', $table) }}" onsubmit="return confirm('Usunąć stolik?');">
                                             @csrf
                                             @method('DELETE')
-                                            <button type="submit" class="w-full rounded-md border border-red-700 px-3 py-2 text-xs font-bold text-red-700 hover:bg-red-50">
+                                            <button type="submit" class="w-full rounded-md border border-red-700 px-3 py-2 text-xs font-bold text-red-700 transition-all duration-200 ease-out hover:bg-red-50 hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-700/30">
                                                 Usuń
                                             </button>
                                         </form>
@@ -201,7 +201,7 @@
                     </select>
                 </div>
 
-                <button type="submit" class="w-full rounded-md bg-brand-dark px-4 py-2 text-sm font-bold text-brand-light hover:bg-brand-accent md:w-auto">
+                <button type="submit" class="w-full rounded-md bg-brand-dark px-4 py-2 text-sm font-bold text-brand-light transition-all duration-200 ease-out hover:bg-brand-accent hover:shadow-md active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-accent/40 md:w-auto">
                     Dodaj strefę
                 </button>
             </form>
@@ -235,7 +235,7 @@
                                     {{ $zone->is_active ? 'Aktywna' : 'Nieaktywna' }} · {{ $zone->tables_count }} stolików
                                 </span>
 
-                                <button type="submit" class="w-full rounded-md border border-brand-dark/20 bg-white px-3 py-2 text-xs font-bold text-brand-dark hover:bg-brand-light sm:w-auto">
+                                <button type="submit" class="w-full rounded-md border border-brand-dark/20 bg-white px-3 py-2 text-xs font-bold text-brand-dark transition-all duration-200 ease-out hover:bg-brand-light hover:shadow-md active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-accent/40 sm:w-auto">
                                     Zapisz
                                 </button>
                             </div>
@@ -245,7 +245,7 @@
                             <form method="POST" action="{{ route('manager.zones.toggle', $zone) }}">
                                 @csrf
                                 @method('PATCH')
-                                <button type="submit" class="w-full rounded-md border border-brand-dark/20 bg-white px-3 py-2 text-xs font-bold text-brand-dark hover:bg-brand-light">
+                                <button type="submit" class="w-full rounded-md border border-brand-dark/20 bg-white px-3 py-2 text-xs font-bold text-brand-dark transition-all duration-200 ease-out hover:bg-brand-light hover:shadow-md active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-accent/40">
                                     {{ $zone->is_active ? 'Wyłącz' : 'Aktywuj' }}
                                 </button>
                             </form>
@@ -253,7 +253,7 @@
                             <form method="POST" action="{{ route('manager.zones.destroy', $zone) }}" onsubmit="return confirm('Usunąć strefę? Stoliki zostaną przeniesione poza strefę.');">
                                 @csrf
                                 @method('DELETE')
-                                <button type="submit" class="w-full rounded-md border border-red-700 bg-white px-3 py-2 text-xs font-bold text-red-700 hover:bg-red-50">
+                                <button type="submit" class="w-full rounded-md border border-red-700 bg-white px-3 py-2 text-xs font-bold text-red-700 transition-all duration-200 ease-out hover:bg-red-50 hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-700/30">
                                     Usuń
                                 </button>
                             </form>

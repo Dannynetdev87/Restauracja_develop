@@ -40,11 +40,11 @@
                 Dashboard
             </button>
             <a href="{{ route('waiter.tables.index') }}"
-               class="min-w-0 rounded-xl bg-brand-dark px-2 py-3 text-center text-xs font-black uppercase tracking-wide text-brand-light shadow-sm transition hover:bg-brand-accent sm:min-w-40 sm:px-8 sm:py-4 sm:text-sm">
+               class="min-w-0 rounded-xl bg-brand-dark px-2 py-3 text-center text-xs font-black uppercase tracking-wide text-brand-light shadow-sm transition-all duration-200 ease-out hover:bg-brand-accent hover:shadow-md active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-accent/40 sm:min-w-40 sm:px-8 sm:py-4 sm:text-sm">
                 Stoliki
             </a>
             <a href="{{ route('waiter.stats') }}"
-               class="min-w-0 rounded-xl bg-brand-dark px-2 py-3 text-center text-xs font-black uppercase tracking-wide text-brand-light shadow-sm transition hover:bg-brand-accent sm:min-w-40 sm:px-8 sm:py-4 sm:text-sm">
+               class="min-w-0 rounded-xl bg-brand-dark px-2 py-3 text-center text-xs font-black uppercase tracking-wide text-brand-light shadow-sm transition-all duration-200 ease-out hover:bg-brand-accent hover:shadow-md active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-accent/40 sm:min-w-40 sm:px-8 sm:py-4 sm:text-sm">
                 Napiwki
             </a>
         </div>
@@ -100,7 +100,7 @@
                                 </span>
                             </div>
                             <a href="{{ route('waiter.orders.show', $item->order) }}"
-                               class="mt-3 block rounded-md bg-brand-dark px-4 py-2 text-center text-xs font-black uppercase tracking-wide text-brand-light transition hover:bg-brand-accent">
+                               class="mt-3 block rounded-md bg-brand-dark px-4 py-2 text-center text-xs font-black uppercase tracking-wide text-brand-light transition-all duration-200 ease-out hover:bg-brand-accent hover:shadow-md active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-accent/40">
                                 Sprawdź zamówienie
                             </a>
                         </article>
@@ -135,7 +135,7 @@
                                 @csrf
                                 @method('PATCH')
                                 <button type="submit"
-                                        class="w-full rounded-md bg-brand-dark px-4 py-2 text-xs font-black uppercase tracking-wide text-brand-light transition hover:bg-brand-accent">
+                                        class="w-full rounded-md bg-brand-dark px-4 py-2 text-xs font-black uppercase tracking-wide text-brand-light transition-all duration-200 ease-out hover:bg-brand-accent hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-accent/40">
                                     Odbierz z kuchni
                                 </button>
                             </form>
@@ -170,12 +170,12 @@
 
                         @if($activeOrder)
                             <a wire:key="waiter-dashboard-table-order-{{ $table->id }}" href="{{ route('waiter.orders.show', $activeOrder) }}"
-                               class="rounded-lg px-4 py-2 text-xs font-black transition {{ $chipClass }}">
+                               class="rounded-lg px-4 py-2 text-xs font-black transition-all duration-200 ease-out hover:shadow-md active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-accent/40 {{ $chipClass }}">
                                 Stolik {{ $table->number }}
                             </a>
                         @elseif($table->status === \App\Models\RestaurantTable::STATUS_FREE)
                             <a wire:key="waiter-dashboard-table-free-{{ $table->id }}" href="{{ route('waiter.orders.create', ['table_id' => $table->id]) }}"
-                               class="rounded-lg px-4 py-2 text-xs font-black transition {{ $chipClass }}">
+                               class="rounded-lg px-4 py-2 text-xs font-black transition-all duration-200 ease-out hover:shadow-md active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-accent/40 {{ $chipClass }}">
                                 Stolik {{ $table->number }}
                             </a>
                         @else

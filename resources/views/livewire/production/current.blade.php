@@ -27,7 +27,7 @@
         </div>
 
         <a href="{{ route($dashboardRouteName) }}"
-           class="inline-flex w-fit rounded-md border border-brand-dark/20 bg-white px-4 py-2 text-sm font-bold text-brand-dark hover:bg-brand-light">
+           class="inline-flex w-fit rounded-md border border-brand-dark/20 bg-white px-4 py-2 text-sm font-bold text-brand-dark transition-all duration-200 ease-out hover:bg-brand-light hover:shadow-md active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-accent/40">
             Pełny dashboard
         </a>
     </div>
@@ -81,7 +81,7 @@
                                         @method('PATCH')
                                         <input type="hidden" name="status" value="{{ \App\Models\OrderItem::STATUS_PREPARING }}">
                                         <input type="hidden" name="redirect_to" value="{{ $dashboardRouteName === 'kitchen.dashboard' ? 'kitchen.current' : 'bar.current' }}">
-                                        <button type="submit" class="w-full rounded-md bg-brand-dark px-4 py-2 text-sm font-bold text-brand-light hover:bg-brand-accent">
+                                        <button type="submit" class="w-full rounded-md bg-brand-dark px-4 py-2 text-sm font-bold text-brand-light transition-all duration-200 ease-out hover:bg-brand-accent hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-accent/40">
                                             Rozpocznij
                                         </button>
                                     </form>
@@ -91,7 +91,7 @@
                                         @method('PATCH')
                                         <input type="hidden" name="status" value="{{ \App\Models\OrderItem::STATUS_READY }}">
                                         <input type="hidden" name="redirect_to" value="{{ $dashboardRouteName === 'kitchen.dashboard' ? 'kitchen.current' : 'bar.current' }}">
-                                        <button type="submit" class="w-full rounded-md bg-green-700 px-4 py-2 text-sm font-bold text-white hover:bg-green-800">
+                                        <button type="submit" class="w-full rounded-md bg-green-700 px-4 py-2 text-sm font-bold text-white transition-all duration-200 ease-out hover:bg-green-800 hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-green-700/30">
                                             Oznacz jako gotowe
                                         </button>
                                     </form>

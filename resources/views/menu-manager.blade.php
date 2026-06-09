@@ -12,7 +12,7 @@
             </div>
 
             <a href="{{ route('manager.dashboard') }}"
-               class="w-full rounded-md border border-brand-dark/20 bg-white px-4 py-2 text-center text-sm font-bold text-brand-dark hover:bg-brand-light sm:w-auto">
+               class="w-full rounded-md border border-brand-dark/20 bg-white px-4 py-2 text-center text-sm font-bold text-brand-dark transition-all duration-200 ease-out hover:bg-brand-light hover:shadow-md active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-accent/40 sm:w-auto">
                 Powrót do panelu
             </a>
         </div>
@@ -62,7 +62,7 @@
                         Aktywna
                     </label>
 
-                    <button type="submit" class="w-full rounded-md bg-brand-dark px-4 py-2 text-sm font-bold text-brand-light hover:bg-brand-accent sm:w-auto">
+                    <button type="submit" class="w-full rounded-md bg-brand-dark px-4 py-2 text-sm font-bold text-brand-light transition-all duration-200 ease-out hover:bg-brand-accent hover:shadow-md active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-accent/40 sm:w-auto">
                         Dodaj kategorię
                     </button>
                 </form>
@@ -115,7 +115,7 @@
                     </div>
 
                     <div class="sm:col-span-2">
-                        <button type="submit" class="w-full rounded-md bg-brand-dark px-4 py-2 text-sm font-bold text-brand-light hover:bg-brand-accent sm:w-auto">
+                        <button type="submit" class="w-full rounded-md bg-brand-dark px-4 py-2 text-sm font-bold text-brand-light transition-all duration-200 ease-out hover:bg-brand-accent hover:shadow-md active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-accent/40 sm:w-auto">
                             Dodaj pozycję
                         </button>
                     </div>
@@ -141,13 +141,13 @@
                         </div>
 
                         <div class="flex w-full flex-col gap-2 sm:w-auto sm:flex-row">
-                            <a href="{{ route('manager.menu-categories.edit', $category) }}" class="rounded-md border border-brand-dark/20 px-3 py-2 text-center text-sm font-bold text-brand-dark hover:bg-brand-light">
+                            <a href="{{ route('manager.menu-categories.edit', $category) }}" class="rounded-md border border-brand-dark/20 px-3 py-2 text-center text-sm font-bold text-brand-dark transition-all duration-200 ease-out hover:bg-brand-light hover:shadow-md active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-accent/40">
                                 Edytuj
                             </a>
                             <form method="POST" action="{{ route('manager.menu-categories.destroy', $category) }}" onsubmit="return confirm('Usunąć kategorię?');">
                                 @csrf
                                 @method('DELETE')
-                                <button type="submit" class="w-full rounded-md border border-red-700 px-3 py-2 text-sm font-bold text-red-700 hover:bg-red-50">
+                                <button type="submit" class="w-full rounded-md border border-red-700 px-3 py-2 text-sm font-bold text-red-700 transition-all duration-200 ease-out hover:bg-red-50 hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-700/30">
                                     Usuń
                                 </button>
                             </form>
@@ -183,20 +183,20 @@
                                     </td>
                                     <td class="py-3 pr-4">
                                         <div class="flex flex-col justify-end gap-2 sm:flex-row">
-                                            <a href="{{ route('manager.menu-items.edit', $item) }}" class="rounded-md border border-brand-dark/20 px-3 py-2 text-center text-xs font-bold text-brand-dark hover:bg-brand-light">
+                                            <a href="{{ route('manager.menu-items.edit', $item) }}" class="rounded-md border border-brand-dark/20 px-3 py-2 text-center text-xs font-bold text-brand-dark transition-all duration-200 ease-out hover:bg-brand-light hover:shadow-md active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-accent/40">
                                                 Edytuj
                                             </a>
                                             <form method="POST" action="{{ route('manager.menu-items.availability', $item) }}">
                                                 @csrf
                                                 @method('PATCH')
-                                                <button type="submit" class="w-full rounded-md border border-brand-dark/20 px-3 py-2 text-xs font-bold text-brand-dark hover:bg-brand-light">
+                                                <button type="submit" class="w-full rounded-md border border-brand-dark/20 px-3 py-2 text-xs font-bold text-brand-dark transition-all duration-200 ease-out hover:bg-brand-light hover:shadow-md active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-accent/40">
                                                     {{ $item->available ? 'Wyłącz' : 'Włącz' }}
                                                 </button>
                                             </form>
                                             <form method="POST" action="{{ route('manager.menu-items.destroy', $item) }}" onsubmit="return confirm('Usunąć lub dezaktywować pozycję menu?');">
                                                 @csrf
                                                 @method('DELETE')
-                                                <button type="submit" class="w-full rounded-md border border-red-700 px-3 py-2 text-xs font-bold text-red-700 hover:bg-red-50">
+                                                <button type="submit" class="w-full rounded-md border border-red-700 px-3 py-2 text-xs font-bold text-red-700 transition-all duration-200 ease-out hover:bg-red-50 hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-700/30">
                                                     Usuń
                                                 </button>
                                             </form>

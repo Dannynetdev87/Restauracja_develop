@@ -5,11 +5,11 @@
         <div class="mx-auto max-w-3xl min-w-0">
             <div class="mb-6 grid grid-cols-3 gap-2 sm:mb-8 sm:flex sm:flex-wrap sm:justify-center sm:gap-4">
                 <a href="{{ route('waiter.dashboard') }}"
-                   class="min-w-0 rounded-xl bg-brand-dark px-2 py-3 text-center text-xs font-black uppercase tracking-wide text-brand-light shadow-sm transition hover:bg-brand-accent sm:min-w-40 sm:px-8 sm:py-4 sm:text-sm">
+                   class="min-w-0 rounded-xl bg-brand-dark px-2 py-3 text-center text-xs font-black uppercase tracking-wide text-brand-light shadow-sm transition-all duration-200 ease-out hover:bg-brand-accent hover:shadow-md active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-accent/40 sm:min-w-40 sm:px-8 sm:py-4 sm:text-sm">
                     Dashboard
                 </a>
                 <a href="{{ route('waiter.tables.index') }}"
-                   class="min-w-0 rounded-xl bg-brand-dark px-2 py-3 text-center text-xs font-black uppercase tracking-wide text-brand-light shadow-sm transition hover:bg-brand-accent sm:min-w-40 sm:px-8 sm:py-4 sm:text-sm">
+                   class="min-w-0 rounded-xl bg-brand-dark px-2 py-3 text-center text-xs font-black uppercase tracking-wide text-brand-light shadow-sm transition-all duration-200 ease-out hover:bg-brand-accent hover:shadow-md active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-accent/40 sm:min-w-40 sm:px-8 sm:py-4 sm:text-sm">
                     Stoliki
                 </a>
                 <button type="button" disabled

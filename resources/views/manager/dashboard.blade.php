@@ -11,19 +11,19 @@
 
             <div class="flex w-full flex-col gap-2 sm:w-auto sm:flex-row sm:flex-wrap">
                 <a href="{{ route('manager.podglad') }}"
-                   class="rounded-md border border-brand-dark/20 bg-white px-4 py-2 text-center text-sm font-bold text-brand-dark hover:bg-brand-light">
+                   class="rounded-md border border-brand-dark/20 bg-white px-4 py-2 text-center text-sm font-bold text-brand-dark transition-all duration-200 ease-out hover:bg-brand-light hover:shadow-md active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-accent/40">
                     Zarządzanie menu
                 </a>
                 <a href="{{ route('manager.tables.index') }}"
-                   class="rounded-md border border-brand-dark/20 bg-white px-4 py-2 text-center text-sm font-bold text-brand-dark hover:bg-brand-light">
+                   class="rounded-md border border-brand-dark/20 bg-white px-4 py-2 text-center text-sm font-bold text-brand-dark transition-all duration-200 ease-out hover:bg-brand-light hover:shadow-md active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-accent/40">
                     Zarządzanie stolikami
                 </a>
                 <a href="{{ route('manager.discount-codes.index') }}"
-                   class="rounded-md border border-brand-dark/20 bg-white px-4 py-2 text-center text-sm font-bold text-brand-dark hover:bg-brand-light">
+                   class="rounded-md border border-brand-dark/20 bg-white px-4 py-2 text-center text-sm font-bold text-brand-dark transition-all duration-200 ease-out hover:bg-brand-light hover:shadow-md active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-accent/40">
                     Kody rabatowe
                 </a>
                 <a href="{{ route('manager.orders.history') }}"
-                   class="rounded-md bg-brand-dark px-4 py-2 text-center text-sm font-bold text-brand-light hover:bg-brand-accent">
+                   class="rounded-md bg-brand-dark px-4 py-2 text-center text-sm font-bold text-brand-light transition-all duration-200 ease-out hover:bg-brand-accent hover:shadow-md active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-accent/40">
                     Historia zamówień
                 </a>
             </div>
@@ -156,7 +156,7 @@
                                     @method('PATCH')
                                     <button
                                         type="submit"
-                                        class="w-full rounded-lg bg-green-700 px-3 py-2 text-xs font-black text-white hover:bg-green-800 transition-colors"
+                                        class="w-full rounded-lg bg-green-700 px-3 py-2 text-xs font-black text-white transition-all duration-200 ease-out hover:bg-green-800 hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-green-700/30"
                                     >
                                         Rozwiązane
                                     </button>

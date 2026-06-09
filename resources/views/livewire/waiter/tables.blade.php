@@ -4,7 +4,7 @@
 >
     <div class="mb-6 grid grid-cols-3 gap-2 sm:mb-8 sm:flex sm:flex-wrap sm:justify-center sm:gap-4">
         <a href="{{ route('waiter.dashboard') }}"
-           class="min-w-0 rounded-xl bg-brand-dark px-2 py-3 text-center text-xs font-black uppercase tracking-wide text-brand-light shadow-sm transition hover:bg-brand-accent sm:min-w-40 sm:px-8 sm:py-4 sm:text-sm">
+           class="min-w-0 rounded-xl bg-brand-dark px-2 py-3 text-center text-xs font-black uppercase tracking-wide text-brand-light shadow-sm transition-all duration-200 ease-out hover:bg-brand-accent hover:shadow-md active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-accent/40 sm:min-w-40 sm:px-8 sm:py-4 sm:text-sm">
             Dashboard
         </a>
         <button type="button" disabled
@@ -12,7 +12,7 @@
             Stoliki
         </button>
         <a href="{{ route('waiter.stats') }}"
-           class="min-w-0 rounded-xl bg-brand-dark px-2 py-3 text-center text-xs font-black uppercase tracking-wide text-brand-light shadow-sm transition hover:bg-brand-accent sm:min-w-40 sm:px-8 sm:py-4 sm:text-sm">
+           class="min-w-0 rounded-xl bg-brand-dark px-2 py-3 text-center text-xs font-black uppercase tracking-wide text-brand-light shadow-sm transition-all duration-200 ease-out hover:bg-brand-accent hover:shadow-md active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-accent/40 sm:min-w-40 sm:px-8 sm:py-4 sm:text-sm">
             Napiwki
         </a>
     </div>
@@ -137,16 +137,16 @@
                 <div class="mt-4 flex flex-col gap-2 sm:mt-5">
                     @if($canOpenOrder)
                         <a href="{{ route('waiter.orders.create', ['table_id' => $table->id]) }}"
-                           class="block w-full rounded-md bg-brand-dark px-4 py-3 text-center text-sm font-bold text-brand-light hover:bg-brand-accent sm:py-2">
+                           class="block w-full rounded-md bg-brand-dark px-4 py-3 text-center text-sm font-bold text-brand-light transition-all duration-200 ease-out hover:bg-brand-accent hover:shadow-md active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-accent/40 sm:py-2">
                             Rozpocznij zamówienie
                         </a>
                     @elseif($isOwnActiveOrder)
                         <a href="{{ route('waiter.orders.show', $activeOrder) }}"
-                           class="block w-full rounded-md border border-brand-dark/20 bg-white px-4 py-3 text-center text-sm font-bold text-brand-dark hover:bg-brand-light sm:py-2">
+                           class="block w-full rounded-md border border-brand-dark/20 bg-white px-4 py-3 text-center text-sm font-bold text-brand-dark transition-all duration-200 ease-out hover:bg-brand-light hover:shadow-md active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-accent/40 sm:py-2">
                             Zobacz zamówienie
                         </a>
                         <a href="{{ route('waiter.orders.create', ['table_id' => $table->id]) }}"
-                           class="block w-full rounded-md bg-brand-dark px-4 py-3 text-center text-sm font-bold text-brand-light hover:bg-brand-accent sm:py-2">
+                           class="block w-full rounded-md bg-brand-dark px-4 py-3 text-center text-sm font-bold text-brand-light transition-all duration-200 ease-out hover:bg-brand-accent hover:shadow-md active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-accent/40 sm:py-2">
                             Dodaj pozycje
                         </a>
                     @elseif($activeOrder)
@@ -165,7 +165,7 @@
                         <button
                             type="button"
                             wire:click="closeReportForm"
-                            class="inline-flex w-full cursor-pointer items-center justify-center rounded-lg border border-red-200 bg-red-50 px-3 py-3 text-xs font-bold text-red-700 transition-colors hover:bg-red-100 sm:py-2"
+                            class="inline-flex w-full cursor-pointer items-center justify-center rounded-lg border border-red-200 bg-red-50 px-3 py-3 text-xs font-bold text-red-700 transition-all duration-200 ease-out hover:bg-red-100 hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-700/30 sm:py-2"
                         >
                             Anuluj zgłoszenie
                         </button>
@@ -214,7 +214,7 @@
 
                                 <button
                                     type="submit"
-                                    class="w-full rounded-lg bg-red-700 px-4 py-2 text-xs font-black text-white transition-colors hover:bg-red-800"
+                                    class="w-full rounded-lg bg-red-700 px-4 py-2 text-xs font-black text-white transition-all duration-200 ease-out hover:bg-red-800 hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-700/30"
                                 >
                                     Wyślij zgłoszenie do managera
                                 </button>
@@ -225,7 +225,7 @@
                         <button
                             type="button"
                             wire:click="openReportForm({{ $table->id }})"
-                            class="inline-flex w-full cursor-pointer items-center justify-center rounded-lg border border-red-200 bg-red-50 px-3 py-3 text-xs font-bold text-red-700 transition-colors hover:bg-red-100 sm:py-2"
+                            class="inline-flex w-full cursor-pointer items-center justify-center rounded-lg border border-red-200 bg-red-50 px-3 py-3 text-xs font-bold text-red-700 transition-all duration-200 ease-out hover:bg-red-100 hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-700/30 sm:py-2"
                         >
                             Zgłoś problem ze stolikiem
                         </button>

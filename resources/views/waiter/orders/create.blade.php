@@ -12,7 +12,7 @@
             </div>
 
             <a href="{{ route('waiter.tables.index') }}"
-               class="inline-flex w-fit rounded-md border border-brand-dark/20 bg-white px-4 py-2 text-sm font-bold text-brand-dark hover:bg-brand-light">
+               class="inline-flex w-fit rounded-md border border-brand-dark/20 bg-white px-4 py-2 text-sm font-bold text-brand-dark transition-all duration-200 ease-out hover:bg-brand-light hover:shadow-md active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-accent/40">
                 Wróć do stolików
             </a>
         </div>
@@ -36,7 +36,7 @@
 
                     @if($canUseTable)
                         <a href="{{ route('waiter.orders.create', ['table_id' => $table->id]) }}"
-                           class="rounded-md border px-4 py-3 text-sm font-bold {{ $isSelected ? 'border-brand-dark bg-brand-dark text-brand-light' : 'border-brand-dark/15 bg-brand-card text-brand-dark hover:bg-brand-light' }}">
+                           class="rounded-md border px-4 py-3 text-sm font-bold transition-all duration-200 ease-out hover:shadow-md active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-accent/40 {{ $isSelected ? 'border-brand-dark bg-brand-dark text-brand-light' : 'border-brand-dark/15 bg-brand-card text-brand-dark hover:bg-brand-light' }}">
                             Stolik {{ $table->number }}
                             <span class="mt-1 block text-xs font-semibold opacity-80">
                                 {{ $tableActiveOrder ? 'Aktywne zamówienie #'.$tableActiveOrder->id : 'Wolny' }}
@@ -109,7 +109,7 @@
                                                 </label>
                                                 <div class="mt-1 grid h-12 grid-cols-[38px_1fr_38px] overflow-hidden rounded-md border border-brand-dark/20 bg-white shadow-sm">
                                                     <button type="button"
-                                                            class="flex items-center justify-center border-r border-brand-dark/20 bg-brand-light text-lg font-black text-brand-dark transition hover:bg-brand-dark hover:text-brand-light focus:outline-none focus:ring-2 focus:ring-brand-accent focus:ring-inset"
+                                                            class="flex items-center justify-center border-r border-brand-dark/20 bg-brand-light text-lg font-black text-brand-dark transition-all duration-200 ease-out hover:bg-brand-dark hover:text-brand-light active:scale-95 focus:outline-none focus:ring-2 focus:ring-brand-accent focus:ring-inset"
                                                             data-quantity-step="-1"
                                                             data-quantity-target="item-quantity-{{ $item->id }}"
                                                             aria-label="Zmniejsz ilość dla {{ $item->name }}">
@@ -126,7 +126,7 @@
                                                            data-price="{{ $item->price }}"
                                                            class="h-full w-full border-0 bg-white px-2 text-center text-lg font-black text-brand-dark [appearance:textfield] focus:outline-none [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none">
                                                     <button type="button"
-                                                            class="flex items-center justify-center border-l border-brand-dark/20 bg-brand-light text-lg font-black text-brand-dark transition hover:bg-brand-dark hover:text-brand-light focus:outline-none focus:ring-2 focus:ring-brand-accent focus:ring-inset"
+                                                            class="flex items-center justify-center border-l border-brand-dark/20 bg-brand-light text-lg font-black text-brand-dark transition-all duration-200 ease-out hover:bg-brand-dark hover:text-brand-light active:scale-95 focus:outline-none focus:ring-2 focus:ring-brand-accent focus:ring-inset"
                                                             data-quantity-step="1"
                                                             data-quantity-target="item-quantity-{{ $item->id }}"
                                                             aria-label="Zwiększ ilość dla {{ $item->name }}">
@@ -176,7 +176,7 @@
                         </div>
                     </div>
 
-                    <button type="submit" class="mt-5 w-full rounded-md bg-brand-dark px-4 py-3 text-sm font-bold text-brand-light hover:bg-brand-accent">
+                    <button type="submit" class="mt-5 w-full rounded-md bg-brand-dark px-4 py-3 text-sm font-bold text-brand-light transition-all duration-200 ease-out hover:bg-brand-accent hover:shadow-md active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-accent/40">
                         Zapisz pozycje
                     </button>
                 </aside>

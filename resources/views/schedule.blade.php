@@ -56,30 +56,30 @@
             <div class="flex w-full flex-col gap-3 sm:flex-row sm:items-center lg:w-auto">
                 <div class="inline-flex w-full rounded-lg border border-brand-dark/15 bg-white p-1 sm:w-auto">
                     <a href="{{ route('schedule.index', ['view' => 'week', 'date' => $selectedDate->toDateString()]) }}"
-                       class="flex-1 rounded-md px-4 py-2 text-center text-sm font-bold sm:flex-none {{ $viewMode === 'week' ? 'bg-brand-dark text-brand-light' : 'text-brand-dark hover:bg-brand-light' }}">
+                       class="flex-1 rounded-md px-4 py-2 text-center text-sm font-bold transition-all duration-200 ease-out hover:shadow-md active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-accent/40 sm:flex-none {{ $viewMode === 'week' ? 'bg-brand-dark text-brand-light' : 'text-brand-dark hover:bg-brand-light' }}">
                         Tydzień
                     </a>
                     <a href="{{ route('schedule.index', ['view' => 'month', 'date' => $selectedDate->toDateString()]) }}"
-                       class="flex-1 rounded-md px-4 py-2 text-center text-sm font-bold sm:flex-none {{ $viewMode === 'month' ? 'bg-brand-dark text-brand-light' : 'text-brand-dark hover:bg-brand-light' }}">
+                       class="flex-1 rounded-md px-4 py-2 text-center text-sm font-bold transition-all duration-200 ease-out hover:shadow-md active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-accent/40 sm:flex-none {{ $viewMode === 'month' ? 'bg-brand-dark text-brand-light' : 'text-brand-dark hover:bg-brand-light' }}">
                         Miesiąc
                     </a>
                 </div>
 
                 <div class="flex w-full flex-wrap items-center gap-2 sm:w-auto">
                     <a href="{{ route('schedule.index', ['view' => $viewMode, 'date' => $previousDate->toDateString()]) }}"
-                       class="flex-1 rounded-md border border-brand-dark/20 bg-white px-3 py-2 text-center text-sm font-bold text-brand-dark hover:bg-brand-light sm:flex-none">
+                       class="flex-1 rounded-md border border-brand-dark/20 bg-white px-3 py-2 text-center text-sm font-bold text-brand-dark transition-all duration-200 ease-out hover:bg-brand-light hover:shadow-md active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-accent/40 sm:flex-none">
                         Poprzedni
                     </a>
                     <form method="GET" action="{{ route('schedule.index') }}" class="flex min-w-0 flex-1 items-center gap-2 sm:flex-none">
                         <input type="hidden" name="view" value="{{ $viewMode }}">
                         <input type="date" name="date" value="{{ $selectedDate->toDateString() }}"
                                class="w-full min-w-0 rounded-md border border-brand-dark/20 bg-white px-3 py-2 text-sm text-brand-dark focus:border-brand-dark focus:outline-none sm:w-36">
-                        <button type="submit" class="rounded-md bg-brand-dark px-3 py-2 text-sm font-bold text-brand-light hover:bg-brand-accent">
+                        <button type="submit" class="rounded-md bg-brand-dark px-3 py-2 text-sm font-bold text-brand-light transition-all duration-200 ease-out hover:bg-brand-accent hover:shadow-md active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-accent/40">
                             Pokaż
                         </button>
                     </form>
                     <a href="{{ route('schedule.index', ['view' => $viewMode, 'date' => $nextDate->toDateString()]) }}"
-                       class="flex-1 rounded-md border border-brand-dark/20 bg-white px-3 py-2 text-center text-sm font-bold text-brand-dark hover:bg-brand-light sm:flex-none">
+                       class="flex-1 rounded-md border border-brand-dark/20 bg-white px-3 py-2 text-center text-sm font-bold text-brand-dark transition-all duration-200 ease-out hover:bg-brand-light hover:shadow-md active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-accent/40 sm:flex-none">
                         Następny
                     </a>
                 </div>
@@ -143,13 +143,13 @@
                                                                 </div>
                                                                 <div class="flex shrink-0 gap-1">
                                                                     <a href="{{ route('manager.schedules.edit', ['schedule' => $shift, 'view' => $viewMode, 'date' => $selectedDate->toDateString()]) }}"
-                                                                       class="rounded bg-white/80 px-2 py-1 font-black text-brand-dark hover:bg-white">
+                                                                       class="rounded bg-white/80 px-2 py-1 font-black text-brand-dark transition-all duration-200 ease-out hover:bg-white hover:shadow-md active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-accent/40">
                                                                         Edytuj
                                                                     </a>
                                                                     <form method="POST" action="{{ route('manager.schedules.destroy', $shift) }}" onsubmit="return confirm('Usunąć tę zmianę?');">
                                                                         @csrf
                                                                         @method('DELETE')
-                                                                        <button type="submit" class="rounded bg-white/80 px-2 py-1 font-black text-red-700 hover:bg-white">
+                                                                        <button type="submit" class="rounded bg-white/80 px-2 py-1 font-black text-red-700 transition-all duration-200 ease-out hover:bg-white hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-700/30">
                                                                             Usuń
                                                                         </button>
                                                                     </form>
@@ -347,13 +347,13 @@
                                    class="mt-1 w-full rounded-md border border-brand-dark/20 px-3 py-2 text-sm text-brand-dark focus:border-brand-dark focus:outline-none">
                         </div>
 
-                        <button type="submit" class="w-full rounded-md bg-brand-dark px-4 py-3 text-sm font-bold text-brand-light hover:bg-brand-accent">
+                        <button type="submit" class="w-full rounded-md bg-brand-dark px-4 py-3 text-sm font-bold text-brand-light transition-all duration-200 ease-out hover:bg-brand-accent hover:shadow-md active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-accent/40">
                             {{ $formSchedule ? 'Zapisz zmiany' : 'Dodaj zmianę' }}
                         </button>
 
                         @if($formSchedule)
                             <a href="{{ route('schedule.index', ['view' => 'week', 'date' => $formSchedule->date->toDateString()]) }}"
-                               class="block w-full rounded-md border border-brand-dark/20 bg-white px-4 py-3 text-center text-sm font-bold text-brand-dark hover:bg-brand-light">
+                               class="block w-full rounded-md border border-brand-dark/20 bg-white px-4 py-3 text-center text-sm font-bold text-brand-dark transition-all duration-200 ease-out hover:bg-brand-light hover:shadow-md active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-accent/40">
                                 Anuluj edycję
                             </a>
                         @endif

@@ -2,7 +2,7 @@
     <x-slot:title>Edycja stolika - SmakPrzeszłości</x-slot>
 
     <section class="w-full max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
-        <a href="{{ route('manager.tables.index') }}" class="inline-block text-sm font-bold text-brand-accent hover:text-brand-dark">← Wróć do stolików</a>
+        <a href="{{ route('manager.tables.index') }}" class="inline-block text-sm font-bold text-brand-accent transition-colors duration-200 ease-out hover:text-brand-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-accent/40">← Wróć do stolików</a>
 
         <div class="mt-6 rounded-lg border border-brand-dark/15 bg-white p-4 shadow-sm sm:p-6">
             <h1 class="text-3xl font-black text-brand-dark">Edytuj stolik</h1>
@@ -70,7 +70,7 @@
                     @endif
                 </div>
 
-                <button type="submit" class="w-full rounded-md bg-brand-dark px-4 py-2 text-sm font-bold text-brand-light hover:bg-brand-accent sm:w-auto">
+                <button type="submit" class="w-full rounded-md bg-brand-dark px-4 py-2 text-sm font-bold text-brand-light transition-all duration-200 ease-out hover:bg-brand-accent hover:shadow-md active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-accent/40 sm:w-auto">
                     Zapisz zmiany
                 </button>
             </form>

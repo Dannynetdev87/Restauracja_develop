@@ -26,8 +26,8 @@
     .welcome-actions { @apply flex flex-wrap justify-center gap-4; }
 
     /* Przyciski strony głównej */
-    .btn-welcome-primary { @apply bg-brand-dark text-brand-light font-bold px-8 py-3.5 rounded-xl transition-all shadow-md hover:bg-brand-accent; }
-    .btn-welcome-secondary { @apply bg-white/50 hover:bg-white text-brand-dark font-bold px-8 py-3.5 rounded-xl border border-brand-dark/20 transition shadow-sm; }
+    .btn-welcome-primary { @apply bg-brand-dark text-brand-light font-bold px-8 py-3.5 rounded-xl shadow-md transition-all duration-200 ease-out hover:bg-brand-accent hover:shadow-md active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-accent/40; }
+    .btn-welcome-secondary { @apply bg-white/50 hover:bg-white text-brand-dark font-bold px-8 py-3.5 rounded-xl border border-brand-dark/20 shadow-sm transition-all duration-200 ease-out hover:shadow-md active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-accent/40; }
 
     /* --- MODUŁ STOLIKÓW (Dla menedżera, wyświetlany na dashboardzie) --- */
     .tables-grid { @apply grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 mt-8; }

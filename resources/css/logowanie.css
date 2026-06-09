@@ -43,6 +43,6 @@
     .checkbox-label { @apply text-sm text-brand-accent; }
     .auth-link { @apply text-sm font-medium text-brand-accent transition-colors hover:text-brand-dark; }
 
-    .btn-primary { @apply w-full bg-brand-dark text-white font-medium py-2.5 rounded-lg transition-all hover:bg-brand-accent focus:ring-4 focus:ring-brand-accent/30; }
+    .btn-primary { @apply w-full bg-brand-dark text-white font-medium py-2.5 rounded-lg transition-all duration-200 ease-out hover:bg-brand-accent hover:shadow-md active:scale-95 focus:ring-4 focus:ring-brand-accent/30; }
     .login-footer { @apply text-center text-sm text-brand-accent; }
 }

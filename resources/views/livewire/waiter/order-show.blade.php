@@ -4,7 +4,7 @@
 >
     <div class="mb-8 flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
         <div>
-            <a href="{{ route('waiter.tables.index') }}" class="text-sm font-bold text-brand-accent hover:text-brand-dark">Wróć do stolików</a>
+            <a href="{{ route('waiter.tables.index') }}" class="text-sm font-bold text-brand-accent transition-colors duration-200 ease-out hover:text-brand-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-accent/40">Wróć do stolików</a>
             <h1 class="mt-3 text-3xl font-black text-brand-dark">Zamówienie #{{ $order->id }}</h1>
             <p class="mt-1 text-brand-accent">
                 Stolik {{ $order->table->number }} · {{ $order->opened_at->format('d.m.Y H:i') }}
@@ -13,13 +13,13 @@
 
         <div class="flex flex-col gap-2 sm:flex-row">
             <a href="{{ route('waiter.orders.bill', $order) }}"
-               class="inline-flex w-fit rounded-md border border-brand-dark/20 bg-white px-4 py-2 text-sm font-bold text-brand-dark hover:bg-brand-light">
+               class="inline-flex w-fit rounded-md border border-brand-dark/20 bg-white px-4 py-2 text-sm font-bold text-brand-dark transition-all duration-200 ease-out hover:bg-brand-light hover:shadow-md active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-accent/40">
                 Rachunek
             </a>
 
             @if($order->canAcceptItems())
                 <a href="{{ route('waiter.orders.create', ['table_id' => $order->table->id]) }}"
-                   class="inline-flex w-fit rounded-md bg-brand-dark px-4 py-2 text-sm font-bold text-brand-light hover:bg-brand-accent">
+                   class="inline-flex w-fit rounded-md bg-brand-dark px-4 py-2 text-sm font-bold text-brand-light transition-all duration-200 ease-out hover:bg-brand-accent hover:shadow-md active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-accent/40">
                     Dodaj pozycje
                 </a>
             @endif
@@ -94,7 +94,7 @@
                                 <form method="POST" action="{{ route('waiter.order-items.deliver', $item) }}" class="mt-3">
                                     @csrf
                                     @method('PATCH')
-                                    <button type="submit" class="rounded-md bg-green-700 px-4 py-2 text-sm font-bold text-white hover:bg-green-800">
+                                    <button type="submit" class="rounded-md bg-green-700 px-4 py-2 text-sm font-bold text-white transition-all duration-200 ease-out hover:bg-green-800 hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-green-700/30">
                                         Oznacz jako dostarczone
                                     </button>
                                 </form>
@@ -135,7 +135,7 @@
                 </div>
             </aside>
 
-            <a href="{{ route('waiter.tables.index') }}" class="flex w-full items-center justify-center rounded-lg border border-brand-dark/20 bg-brand-dark px-4 py-3 text-sm font-bold text-brand-light shadow-sm transition-all hover:bg-brand-light hover:text-brand-dark">
+            <a href="{{ route('waiter.tables.index') }}" class="flex w-full items-center justify-center rounded-lg border border-brand-dark/20 bg-brand-dark px-4 py-3 text-sm font-bold text-brand-light shadow-sm transition-all duration-200 ease-out hover:bg-brand-light hover:text-brand-dark hover:shadow-md active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-accent/40">
                 Wróć do stolików
             </a>
         </div>
