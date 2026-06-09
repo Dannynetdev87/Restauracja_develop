@@ -142,6 +142,11 @@ jobs:
 
             chmod ug+rwX storage storage/framework storage/framework/views 2>/dev/null || true
 
+            stale_containers="$(docker ps -aq --filter "name=restauracja-app")"
+            if [ -n "$stale_containers" ]; then
+              docker rm -f $stale_containers
+            fi
+
             docker compose up -d --build --force-recreate --remove-orphans
             docker exec restauracja-app php artisan migrate --force
             docker exec restauracja-app php artisan optimize:clear
