@@ -137,5 +137,11 @@ Route::get('/menu', function () {
 })->name('menu.index');
 
 Route::get('/o-nas', function () {
-    return view('about');
+    // 1. Pobieramy z bazy tylko aktywnych użytkowników/pracowników
+    $teamByRole = \App\Models\User::where('is_active', true)
+        ->get()
+        ->groupBy('role');
+
+    // 2. Przekazujemy pogrupowaną zmienną $teamByRole bezpośrednio do widoku o-nas
+    return view('about', compact('teamByRole'));
 })->name('about');
