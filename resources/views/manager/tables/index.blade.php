@@ -1,7 +1,7 @@
 <x-app>
     <x-slot:title>Zarządzanie stolikami - SmakPrzeszłości</x-slot>
 
-    <section class="w-full max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
+    <section class="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
         <div class="mb-8 flex flex-col gap-5 border-b border-brand-dark/10 pb-6 lg:flex-row lg:items-end lg:justify-between">
             <div>
                 <span class="text-sm font-bold uppercase text-brand-accent">Panel managera</span>
@@ -41,7 +41,7 @@
             </div>
         @endif
 
-        <div class="grid min-w-0 gap-6 lg:grid-cols-[0.8fr_1.2fr]">
+        <div class="grid min-w-0 gap-6 xl:grid-cols-[360px_1fr]">
             <div class="rounded-lg border border-brand-dark/15 bg-white p-4 shadow-sm sm:p-5">
                 <h2 class="text-xl font-black text-brand-dark">Dodaj stolik</h2>
 
