@@ -10,7 +10,7 @@
             </div>
 
             <a href="{{ route('manager.dashboard') }}"
-               class="w-full rounded-md border border-brand-dark/20 bg-white px-4 py-2 text-center text-sm font-bold text-brand-dark transition-all duration-200 ease-out hover:bg-brand-light hover:shadow-md active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-accent/40 sm:w-auto">
+               class="ml-auto w-56 rounded-md border border-brand-dark/20 bg-white px-3 py-2 text-center text-sm font-bold text-brand-dark transition-all duration-200 ease-out hover:bg-brand-light hover:shadow-md active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-accent/40">
                 Powrót do panelu
             </a>
         </div>

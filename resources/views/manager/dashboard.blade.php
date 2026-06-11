@@ -9,7 +9,7 @@
                 <p class="mt-1 text-sm text-brand-accent">Bieżący podgląd statystyk, stanu sal oraz pracy restauracji.</p>
             </div>
 
-            <div class="flex w-full flex-col gap-2 sm:w-auto sm:flex-row sm:flex-wrap">
+            <div class="ml-auto flex w-full flex-col justify-end gap-2 sm:w-auto sm:flex-row sm:flex-wrap">
                 <a href="{{ route('manager.podglad') }}"
                    class="rounded-md border border-brand-dark/20 bg-white px-4 py-2 text-center text-sm font-bold text-brand-dark transition-all duration-200 ease-out hover:bg-brand-light hover:shadow-md active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-accent/40">
                     Zarządzanie menu
