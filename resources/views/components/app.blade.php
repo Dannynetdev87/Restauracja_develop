@@ -182,13 +182,22 @@
 
 <script>
     (() => {
+        const refreshIntervals = window.restaurantAutoRefreshIntervals ?? new Map();
+        window.restaurantAutoRefreshIntervals = refreshIntervals;
+
+        const hasActiveFormControl = (container) => {
+            const activeElement = document.activeElement;
+
+            return activeElement
+                && container.contains(activeElement)
+                && activeElement.matches('input, textarea, select, button, [contenteditable="true"]');
+        };
+
         const setupAutoRefresh = () => {
             document.querySelectorAll('[data-auto-refresh]').forEach((container) => {
-                if (container.dataset.refreshReady === 'true' || !container.id) {
+                if (!container.id || refreshIntervals.has(container.id)) {
                     return;
                 }
-
-                container.dataset.refreshReady = 'true';
 
                 const refreshUrl = container.dataset.refreshUrl || window.location.href;
                 const refreshInterval = Number.parseInt(container.dataset.refreshInterval || '8000', 10);
@@ -204,7 +213,7 @@
                 });
 
                 const refresh = async () => {
-                    if (pending || paused || document.hidden) {
+                    if (pending || paused || document.hidden || hasActiveFormControl(container)) {
                         return;
                     }
 
@@ -230,7 +239,15 @@
                             return;
                         }
 
+                        if (container.innerHTML === freshContainer.innerHTML) {
+                            return;
+                        }
+
+                        const scrollX = window.scrollX;
+                        const scrollY = window.scrollY;
+
                         container.innerHTML = freshContainer.innerHTML;
+                        window.requestAnimationFrame(() => window.scrollTo(scrollX, scrollY));
 
                         const indicator = container.querySelector('[data-refresh-indicator]');
                         if (indicator) {
@@ -244,7 +261,7 @@
                     }
                 };
 
-                window.setInterval(refresh, refreshInterval);
+                refreshIntervals.set(container.id, window.setInterval(refresh, refreshInterval));
             });
         };
 
