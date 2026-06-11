@@ -112,6 +112,8 @@
     wire:poll.5s
     class="{{ $containerClass ?? 'w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10' }}"
 >
+    <x-production-tabs />
+
     @if(session('success'))
         <div class="mb-6 rounded-lg border border-green-700 bg-green-50 px-4 py-3 text-sm font-semibold text-green-800 animate-fade-in">
             {{ session('success') }}
