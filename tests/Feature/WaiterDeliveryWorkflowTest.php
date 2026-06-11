@@ -124,7 +124,7 @@ class WaiterDeliveryWorkflowTest extends TestCase
             ->get(route('waiter.orders.show', $order))
             ->assertOk()
             ->assertSee('wire:name="waiter.order-show"', false)
-            ->assertSee('wire:poll.5s', false)
+            ->assertSee('wire:poll.visible.5s', false)
             ->assertDontSee('data-refresh-interval="8000"', false)
             ->assertDontSee('wire:click', false)
             ->assertSee('Gotowa pozycja')

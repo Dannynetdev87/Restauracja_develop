@@ -1,5 +1,5 @@
 <section
-    wire:poll.5s
+    wire:poll.visible.5s
     class="w-full max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-10"
 >
     <div class="mb-8 flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">

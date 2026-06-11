@@ -66,7 +66,7 @@
 
 <section
     id="waiter-dashboard-refresh"
-    wire:poll.5s
+    wire:poll.visible.5s
     class="w-full px-4 py-6 sm:px-6 sm:py-8 lg:px-8"
 >
     <div class="mx-auto max-w-6xl min-w-0">
