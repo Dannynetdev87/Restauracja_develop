@@ -50,6 +50,7 @@ class WaiterBillController extends Controller
 
             if (in_array($order->status, [Order::STATUS_PAID, Order::STATUS_CLOSED, Order::STATUS_CANCELLED], true)) {
                 throw ValidationException::withMessages([
+                    'item_ids' => 'To zamówienie jest już rozliczone albo zamknięte.',
                     'payment_method' => 'To zamówienie jest już rozliczone albo zamknięte.',
                 ]);
             }

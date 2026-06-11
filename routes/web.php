@@ -135,3 +135,7 @@ Route::get('/menu', function () {
             ->get(),
     ]);
 })->name('menu.index');
+
+Route::get('/o-nas', function () {
+    return view('about');
+})->name('about');
