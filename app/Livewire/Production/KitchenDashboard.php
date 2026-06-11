@@ -8,6 +8,8 @@ use Livewire\Component;
 
 class KitchenDashboard extends Component
 {
+    use HandlesProductionItems;
+
     public function render()
     {
         $items = OrderItem::query()
@@ -45,10 +47,14 @@ class KitchenDashboard extends Component
             'title' => 'Pozycje do przygotowania',
             'description' => 'Podgląd pozycji przypisanych do kuchni oraz zmiana statusów przygotowania.',
             'queueDescription' => 'Zamówienia zawierające pozycje kuchenne do obsłużenia.',
-            'statusRouteName' => 'kitchen.order-items.status',
             'cancelRouteName' => 'kitchen.order-items.cancel',
             'selectCurrentRouteName' => 'kitchen.order-items.select-current',
             'containerClass' => 'w-full px-1 py-4 sm:px-2 lg:px-3',
         ]);
+    }
+
+    protected function productionArea(): string
+    {
+        return MenuItem::AREA_KITCHEN;
     }
 }

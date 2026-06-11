@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Livewire\Production\BarDashboard;
 use App\Models\MenuCategory;
 use App\Models\MenuItem;
 use App\Models\Order;
@@ -9,6 +10,7 @@ use App\Models\OrderItem;
 use App\Models\RestaurantTable;
 use App\Models\User;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
+use Livewire\Livewire;
 use Tests\TestCase;
 
 class BarDashboardTest extends TestCase
@@ -30,7 +32,7 @@ class BarDashboardTest extends TestCase
             ->assertDontSee('Schabowy testowy')
             ->assertSee('Rozpocznij przygotowanie')
             ->assertSee('wire:name="production.bar-dashboard"', false)
-            ->assertSee('wire:poll.5s', false)
+            ->assertSee('wire:poll.visible.5s', false)
             ->assertDontSee('data-refresh-interval="8000"', false);
 
         $this->assertSame(OrderItem::STATUS_NEW, $barItem->fresh()->status);
@@ -98,7 +100,7 @@ class BarDashboardTest extends TestCase
             ->assertDontSee('>Start</a>', false)
             ->assertDontSee('>Menu</a>', false)
             ->assertSee('wire:name="production.bar-current"', false)
-            ->assertSee('wire:poll.5s', false)
+            ->assertSee('wire:poll.visible.5s', false)
             ->assertDontSee('data-refresh-interval="8000"', false)
             ->assertSee('Pełny dashboard');
     }
@@ -325,6 +327,28 @@ class BarDashboardTest extends TestCase
         $this->assertDatabaseHas('order_items', [
             'id' => $orderItem->id,
             'status' => OrderItem::STATUS_NEW,
+        ]);
+    }
+
+    public function test_bar_livewire_dashboard_updates_item_status_without_redirect(): void
+    {
+        $barUser = User::factory()->create(['role' => User::ROLE_BAR]);
+        $order = $this->createOrder(status: Order::STATUS_OPEN);
+        $orderItem = $this->createOrderItem($order, 'Livewire kawa testowa', MenuItem::AREA_BAR);
+
+        $this->actingAs($barUser);
+
+        Livewire::test(BarDashboard::class)
+            ->call('updateItemStatus', $orderItem->id, OrderItem::STATUS_PREPARING)
+            ->assertHasNoErrors();
+
+        $this->assertDatabaseHas('order_items', [
+            'id' => $orderItem->id,
+            'status' => OrderItem::STATUS_PREPARING,
+        ]);
+        $this->assertDatabaseHas('orders', [
+            'id' => $order->id,
+            'status' => Order::STATUS_IN_PROGRESS,
         ]);
     }
 

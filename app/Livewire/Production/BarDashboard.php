@@ -8,6 +8,8 @@ use Livewire\Component;
 
 class BarDashboard extends Component
 {
+    use HandlesProductionItems;
+
     public function render()
     {
         $items = OrderItem::query()
@@ -45,10 +47,14 @@ class BarDashboard extends Component
             'title' => 'Napoje do przygotowania',
             'description' => 'Podgląd pozycji przypisanych do baru oraz zmiana statusów przygotowania.',
             'queueDescription' => 'Zamówienia zawierające napoje do obsłużenia.',
-            'statusRouteName' => 'bar.order-items.status',
             'cancelRouteName' => 'bar.order-items.cancel',
             'selectCurrentRouteName' => 'bar.order-items.select-current',
             'containerClass' => 'w-full px-1 py-4 sm:px-2 lg:px-3',
         ]);
+    }
+
+    protected function productionArea(): string
+    {
+        return MenuItem::AREA_BAR;
     }
 }

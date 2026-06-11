@@ -9,6 +9,8 @@ use Livewire\Component;
 
 class BarCurrent extends Component
 {
+    use HandlesProductionItems;
+
     private const SELECTED_ORDER_KEY = 'selected_bar_order_id';
 
     private const SELECTED_ORDER_ITEM_KEY = 'selected_bar_order_item_id';
@@ -24,8 +26,6 @@ class BarCurrent extends Component
             'heading' => 'Aktualne zamówienie',
             'description' => 'Widok pokazuje najstarsze aktywne zamówienie z napojami. Pełną kolejkę znajdziesz w dashboardzie.',
             'dashboardRouteName' => 'bar.dashboard',
-            'statusRouteName' => 'bar.order-items.status',
-            'cancelRouteName' => 'bar.order-items.cancel',
             'emptyHeading' => 'Brak aktywnych pozycji baru',
             'emptyDescription' => 'Nowe napoje pojawią się tutaj automatycznie po dodaniu pozycji przez kelnera.',
         ]);
@@ -84,5 +84,10 @@ class BarCurrent extends Component
             ])
             ->whereHas('menuItem', fn ($query) => $query->where('production_area', MenuItem::AREA_BAR))
             ->when($itemId, fn ($query) => $query->whereKey($itemId));
+    }
+
+    protected function productionArea(): string
+    {
+        return MenuItem::AREA_BAR;
     }
 }

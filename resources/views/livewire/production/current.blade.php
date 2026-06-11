@@ -1,5 +1,5 @@
 <section
-    wire:poll.5s
+    wire:poll.visible.5s
     class="w-full max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-10"
 >
     <x-production-tabs />
@@ -78,22 +78,14 @@
 
                             <div class="w-full md:w-56">
                                 @if($item->status === \App\Models\OrderItem::STATUS_NEW)
-                                    <form method="POST" action="{{ route($statusRouteName, $item) }}">
-                                        @csrf
-                                        @method('PATCH')
-                                        <input type="hidden" name="status" value="{{ \App\Models\OrderItem::STATUS_PREPARING }}">
-                                        <input type="hidden" name="redirect_to" value="{{ $dashboardRouteName === 'kitchen.dashboard' ? 'kitchen.current' : 'bar.current' }}">
-                                        <button type="submit" class="w-full rounded-md bg-brand-dark px-4 py-2 text-sm font-bold text-brand-light transition-all duration-200 ease-out hover:bg-brand-accent hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-accent/40">
+                                    <form wire:submit.prevent="updateItemStatus({{ $item->id }}, '{{ \App\Models\OrderItem::STATUS_PREPARING }}')" class="transition-transform active:scale-95">
+                                        <button type="submit" wire:loading.attr="disabled" class="w-full rounded-md bg-brand-dark px-4 py-2 text-sm font-bold text-brand-light transition-all duration-200 ease-out hover:bg-brand-accent hover:shadow-md disabled:cursor-wait disabled:opacity-60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-accent/40">
                                             Rozpocznij
                                         </button>
                                     </form>
                                 @elseif($item->status === \App\Models\OrderItem::STATUS_PREPARING)
-                                    <form method="POST" action="{{ route($statusRouteName, $item) }}">
-                                        @csrf
-                                        @method('PATCH')
-                                        <input type="hidden" name="status" value="{{ \App\Models\OrderItem::STATUS_READY }}">
-                                        <input type="hidden" name="redirect_to" value="{{ $dashboardRouteName === 'kitchen.dashboard' ? 'kitchen.current' : 'bar.current' }}">
-                                        <button type="submit" class="w-full rounded-md bg-green-700 px-4 py-2 text-sm font-bold text-white transition-all duration-200 ease-out hover:bg-green-800 hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-green-700/30">
+                                    <form wire:submit.prevent="updateItemStatus({{ $item->id }}, '{{ \App\Models\OrderItem::STATUS_READY }}')" class="transition-transform active:scale-95">
+                                        <button type="submit" wire:loading.attr="disabled" class="w-full rounded-md bg-green-700 px-4 py-2 text-sm font-bold text-white transition-all duration-200 ease-out hover:bg-green-800 hover:shadow-md disabled:cursor-wait disabled:opacity-60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-green-700/30">
                                             Oznacz jako gotowe
                                         </button>
                                     </form>
@@ -104,11 +96,8 @@
                                 @endif
 
                                 @if(in_array($item->status, [\App\Models\OrderItem::STATUS_NEW, \App\Models\OrderItem::STATUS_PREPARING], true))
-                                    <form method="POST" action="{{ route($cancelRouteName, $item) }}" class="mt-2">
-                                        @csrf
-                                        @method('PATCH')
-                                        <input type="hidden" name="redirect_to" value="{{ $dashboardRouteName === 'kitchen.dashboard' ? 'kitchen.current' : 'bar.current' }}">
-                                        <button type="submit" class="btn-production-cancel">
+                                    <form wire:submit.prevent="cancelItem({{ $item->id }})" class="mt-2">
+                                        <button type="submit" wire:loading.attr="disabled" class="btn-production-cancel disabled:cursor-wait disabled:opacity-60">
                                             Nie można przygotować
                                         </button>
                                     </form>

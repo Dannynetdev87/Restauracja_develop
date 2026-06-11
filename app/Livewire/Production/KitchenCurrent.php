@@ -9,6 +9,8 @@ use Livewire\Component;
 
 class KitchenCurrent extends Component
 {
+    use HandlesProductionItems;
+
     private const SELECTED_ORDER_KEY = 'selected_kitchen_order_id';
 
     private const SELECTED_ORDER_ITEM_KEY = 'selected_kitchen_order_item_id';
@@ -24,8 +26,6 @@ class KitchenCurrent extends Component
             'heading' => 'Aktualne zamówienie',
             'description' => 'Widok pokazuje najstarsze aktywne zamówienie z pozycjami kuchennymi. Pełną kolejkę znajdziesz w dashboardzie.',
             'dashboardRouteName' => 'kitchen.dashboard',
-            'statusRouteName' => 'kitchen.order-items.status',
-            'cancelRouteName' => 'kitchen.order-items.cancel',
             'emptyHeading' => 'Brak aktywnych pozycji kuchni',
             'emptyDescription' => 'Nowe zamówienia pojawią się tutaj automatycznie po dodaniu pozycji przez kelnera.',
         ]);
@@ -84,5 +84,10 @@ class KitchenCurrent extends Component
             ])
             ->whereHas('menuItem', fn ($query) => $query->where('production_area', MenuItem::AREA_KITCHEN))
             ->when($itemId, fn ($query) => $query->whereKey($itemId));
+    }
+
+    protected function productionArea(): string
+    {
+        return MenuItem::AREA_KITCHEN;
     }
 }

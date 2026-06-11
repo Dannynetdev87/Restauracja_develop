@@ -109,7 +109,7 @@
 </style>
 
 <section
-    wire:poll.5s
+    wire:poll.visible.5s
     class="{{ $containerClass ?? 'w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10' }}"
 >
     <x-production-tabs />
@@ -206,7 +206,7 @@
                                         $desktopOrderCardId = $orderCardId.'-desktop';
                                     @endphp
 
-                                    <article class="animate-kitchen-pop overflow-hidden rounded-lg border border-brand-dark/20 bg-white/85 shadow-sm transition-all duration-200 hover:scale-[1.01] hover:shadow-md">
+                                    <article wire:key="production-order-{{ $status }}-{{ $order->id }}" class="animate-kitchen-pop overflow-hidden rounded-lg border border-brand-dark/20 bg-white/85 shadow-sm transition-all duration-200 hover:scale-[1.01] hover:shadow-md">
                                         <input
                                             id="{{ $orderCardId }}"
                                             type="checkbox"
@@ -296,7 +296,7 @@
                                                     $startedAt = $startedHistory?->created_at;
                                                 @endphp
 
-                                                <section class="rounded-lg border border-brand-dark/10 bg-white/70 p-4">
+                                                <section wire:key="production-item-{{ $item->id }}" class="rounded-lg border border-brand-dark/10 bg-white/70 p-4">
                                                     <div class="flex items-start justify-between gap-3">
                                                         <div class="min-w-0">
                                                             <div class="flex flex-wrap items-center gap-2">
@@ -333,20 +333,14 @@
 
                                                     <div class="mt-4 flex flex-col gap-2">
                                                         @if($item->status === \App\Models\OrderItem::STATUS_NEW)
-                                                            <form method="POST" action="{{ route($statusRouteName, $item) }}">
-                                                                @csrf
-                                                                @method('PATCH')
-                                                                <input type="hidden" name="status" value="{{ \App\Models\OrderItem::STATUS_PREPARING }}">
-                                                                <button type="submit" class="w-full rounded-md bg-brand-dark px-4 py-2 text-sm font-bold text-brand-light transition-all duration-200 ease-out hover:bg-brand-accent hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-accent/40">
+                                                            <form wire:submit.prevent="updateItemStatus({{ $item->id }}, '{{ \App\Models\OrderItem::STATUS_PREPARING }}')" class="transition-transform active:scale-95">
+                                                                <button type="submit" wire:loading.attr="disabled" class="w-full rounded-md bg-brand-dark px-4 py-2 text-sm font-bold text-brand-light transition-all duration-200 ease-out hover:bg-brand-accent hover:shadow-md disabled:cursor-wait disabled:opacity-60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-accent/40">
                                                                     Rozpocznij przygotowanie
                                                                 </button>
                                                             </form>
                                                         @elseif($item->status === \App\Models\OrderItem::STATUS_PREPARING)
-                                                            <form method="POST" action="{{ route($statusRouteName, $item) }}">
-                                                                @csrf
-                                                                @method('PATCH')
-                                                                <input type="hidden" name="status" value="{{ \App\Models\OrderItem::STATUS_READY }}">
-                                                                <button type="submit" class="w-full rounded-md bg-green-700 px-4 py-2 text-sm font-bold text-white transition-all duration-200 ease-out hover:bg-green-800 hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-green-700/30">
+                                                            <form wire:submit.prevent="updateItemStatus({{ $item->id }}, '{{ \App\Models\OrderItem::STATUS_READY }}')" class="transition-transform active:scale-95">
+                                                                <button type="submit" wire:loading.attr="disabled" class="w-full rounded-md bg-green-700 px-4 py-2 text-sm font-bold text-white transition-all duration-200 ease-out hover:bg-green-800 hover:shadow-md disabled:cursor-wait disabled:opacity-60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-green-700/30">
                                                                     Oznacz jako gotowe
                                                                 </button>
                                                             </form>
@@ -366,10 +360,8 @@
                                                         @endif
 
                                                         @if(isset($cancelRouteName) && in_array($item->status, [\App\Models\OrderItem::STATUS_NEW, \App\Models\OrderItem::STATUS_PREPARING], true))
-                                                            <form method="POST" action="{{ route($cancelRouteName, $item) }}">
-                                                                @csrf
-                                                                @method('PATCH')
-                                                                <button type="submit" class="btn-production-cancel">
+                                                            <form wire:submit.prevent="cancelItem({{ $item->id }})">
+                                                                <button type="submit" wire:loading.attr="disabled" class="btn-production-cancel disabled:cursor-wait disabled:opacity-60">
                                                                     Nie można przygotować
                                                                 </button>
                                                             </form>
