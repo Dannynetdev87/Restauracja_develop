@@ -26,6 +26,8 @@
     data-refresh-url="{{ url()->current() }}"
     data-refresh-interval="8000"
 >
+    <x-production-tabs />
+
     @if(session('success'))
         <div class="mb-6 rounded-lg border border-green-700 bg-green-50 px-4 py-3 text-sm font-semibold text-green-800">
             {{ session('success') }}
