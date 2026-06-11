@@ -15,5 +15,6 @@
     <a href="{{ route($dashboardRouteName) }}"
        class="{{ $baseTabClass }} {{ request()->routeIs($dashboardRouteName) ? $activeTabClass : $inactiveTabClass }}">
         DASHBOARD
+
     </a>
 </nav>
